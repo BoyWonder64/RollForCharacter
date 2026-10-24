@@ -1,0 +1,98 @@
+import type { ClassDefinition } from "../types";
+
+// Core classes from the 5e SRD: hit die, saving throw proficiencies, and
+// spellcasting ability (where applicable).
+export const CLASSES_5E: ClassDefinition[] = [
+  {
+    id: "barbarian",
+    name: "Barbarian",
+    hitDie: 12,
+    savingThrows: ["strength", "constitution"],
+    summary: "A fierce warrior who channels primal rage in battle.",
+  },
+  {
+    id: "bard",
+    name: "Bard",
+    hitDie: 8,
+    savingThrows: ["dexterity", "charisma"],
+    spellcastingAbility: "charisma",
+    summary: "An inspiring magician whose power echoes through music.",
+  },
+  {
+    id: "cleric",
+    name: "Cleric",
+    hitDie: 8,
+    savingThrows: ["wisdom", "charisma"],
+    spellcastingAbility: "wisdom",
+    summary: "A priestly champion who wields divine magic in service of a deity.",
+  },
+  {
+    id: "druid",
+    name: "Druid",
+    hitDie: 8,
+    savingThrows: ["intelligence", "wisdom"],
+    spellcastingAbility: "wisdom",
+    summary: "A priest of nature, wielding elemental forces and shifting shape.",
+  },
+  {
+    id: "fighter",
+    name: "Fighter",
+    hitDie: 10,
+    savingThrows: ["strength", "constitution"],
+    summary: "A master of martial combat, skilled with a variety of weapons and armor.",
+  },
+  {
+    id: "monk",
+    name: "Monk",
+    hitDie: 8,
+    savingThrows: ["strength", "dexterity"],
+    summary: "A master of martial arts who channels inner energy.",
+  },
+  {
+    id: "paladin",
+    name: "Paladin",
+    hitDie: 10,
+    savingThrows: ["wisdom", "charisma"],
+    spellcastingAbility: "charisma",
+    summary: "A holy warrior bound by an oath to a higher cause.",
+  },
+  {
+    id: "ranger",
+    name: "Ranger",
+    hitDie: 10,
+    savingThrows: ["strength", "dexterity"],
+    spellcastingAbility: "wisdom",
+    summary: "A warrior of the wilds, skilled in tracking and survival.",
+  },
+  {
+    id: "rogue",
+    name: "Rogue",
+    hitDie: 8,
+    savingThrows: ["dexterity", "intelligence"],
+    summary: "A stealthy and cunning adventurer who relies on skill and precision.",
+  },
+  {
+    id: "sorcerer",
+    name: "Sorcerer",
+    hitDie: 6,
+    savingThrows: ["constitution", "charisma"],
+    spellcastingAbility: "charisma",
+    summary: "A spellcaster who draws on an innate magical bloodline.",
+  },
+  {
+    id: "warlock",
+    name: "Warlock",
+    hitDie: 8,
+    savingThrows: ["wisdom", "charisma"],
+    spellcastingAbility: "charisma",
+    summary: "A wielder of magic granted through a pact with an otherworldly patron.",
+  },
+  {
+    id: "wizard",
+    name: "Wizard",
+    hitDie: 6,
+    savingThrows: ["intelligence", "wisdom"],
+    spellcastingAbility: "intelligence",
+    summary: "A scholarly magic-user capable of manipulating reality through study.",
+  },
+];
