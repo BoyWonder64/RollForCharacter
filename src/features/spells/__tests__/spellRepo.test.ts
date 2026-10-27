@@ -1,18 +1,37 @@
 import { createCharacter } from "../../characters/characterRepo";
 import {
+  addCatalogSpellToCharacter,
   addSpellToCharacter,
   adjustSpellSlotUsage,
+  listSpellCatalog,
   listSpellSlots,
   listSpellsForCharacter,
   removeCharacterSpell,
   setSpellSlot,
   togglePrepared,
 } from "../spellRepo";
+import type { InferInsertModel } from "drizzle-orm";
+import { db } from "../../../db/client";
+import { spells } from "../../../db/schema";
 
 jest.mock("../../../db/client");
 
 async function makeCharacter(name: string) {
   return createCharacter(name);
+}
+
+async function makeCatalogSpell(overrides: Partial<InferInsertModel<typeof spells>> = {}) {
+  const rows = await db
+    .insert(spells)
+    .values({
+      name: "Catalog Test Spell",
+      level: 1,
+      school: "Evocation",
+      classes: "wizard",
+      ...overrides,
+    })
+    .returning();
+  return rows[0];
 }
 
 describe("spellRepo spells", () => {
@@ -75,6 +94,60 @@ describe("spellRepo spells", () => {
     await removeCharacterSpell(spell.characterSpellId);
     const remaining = await listSpellsForCharacter(character.id);
     expect(remaining).toHaveLength(0);
+  });
+});
+
+describe("spellRepo catalog", () => {
+  it("lists catalog spells filtered by class", async () => {
+    await makeCatalogSpell({ name: "Catalog Wizard Spell", classes: "wizard" });
+    await makeCatalogSpell({ name: "Catalog Cleric Spell", classes: "cleric" });
+    await makeCatalogSpell({ name: "Catalog Multi Spell", classes: "cleric,wizard" });
+
+    const wizardSpells = await listSpellCatalog({ classId: "wizard" });
+    const names = wizardSpells.map((s) => s.name);
+    expect(names).toContain("Catalog Wizard Spell");
+    expect(names).toContain("Catalog Multi Spell");
+    expect(names).not.toContain("Catalog Cleric Spell");
+  });
+
+  it("filters catalog spells by case-insensitive search text", async () => {
+    await makeCatalogSpell({ name: "Catalog Fireball Variant" });
+
+    const results = await listSpellCatalog({ search: "fireball variant" });
+    expect(results.map((s) => s.name)).toContain("Catalog Fireball Variant");
+  });
+
+  it("filters catalog spells by level", async () => {
+    await makeCatalogSpell({ name: "Catalog Level One", level: 1 });
+    await makeCatalogSpell({ name: "Catalog Level Two", level: 2 });
+
+    const results = await listSpellCatalog({ level: 1 });
+    const names = results.map((s) => s.name);
+    expect(names).toContain("Catalog Level One");
+    expect(names).not.toContain("Catalog Level Two");
+  });
+
+  it("combines class and search filters", async () => {
+    await makeCatalogSpell({ name: "Catalog Combo Match", classes: "druid" });
+    await makeCatalogSpell({ name: "Catalog Combo Mismatch Class", classes: "wizard" });
+    await makeCatalogSpell({ name: "Catalog Other Name", classes: "druid" });
+
+    const results = await listSpellCatalog({ classId: "druid", search: "combo" });
+    expect(results.map((s) => s.name)).toEqual(["Catalog Combo Match"]);
+  });
+
+  it("adds a catalog spell directly to a character by id", async () => {
+    const character = await makeCharacter("Catalog Add Target");
+    const catalogSpell = await makeCatalogSpell({ name: "Catalog Add Spell" });
+
+    await addCatalogSpellToCharacter(character.id, catalogSpell.id);
+
+    const characterSpells = await listSpellsForCharacter(character.id);
+    expect(characterSpells).toHaveLength(1);
+    expect(characterSpells[0]).toMatchObject({
+      name: "Catalog Add Spell",
+      prepared: false,
+    });
   });
 });
 

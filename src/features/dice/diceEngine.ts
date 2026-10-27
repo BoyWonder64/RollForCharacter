@@ -44,7 +44,7 @@ export type RollResult = {
   rolls: { sides: number; value: number }[];
 };
 
-function rollDie(sides: number): number {
+export function rollDie(sides: number): number {
   return Math.floor(Math.random() * sides) + 1;
 }
 
@@ -79,11 +79,14 @@ export function rollExpression(expression: string): RollResult {
     }
   }
 
-  const breakdownParts = Object.entries(rollsBySign).map(
-    ([key, values]) => `${key}[${values.join(", ")}]`
-  );
+  const breakdownParts = Object.entries(rollsBySign).map(([key, values], index) => {
+    const sign = key[0];
+    const sides = key.slice(2);
+    const term = `${values.length}d${sides} (${values.join(", ")})`;
+    return index === 0 && sign === "+" ? term : `${sign} ${term}`;
+  });
   if (modifier !== 0) {
-    breakdownParts.push(modifier > 0 ? `+${modifier}` : `${modifier}`);
+    breakdownParts.push(`${modifier > 0 ? "+" : "-"} ${Math.abs(modifier)}`);
   }
 
   return {

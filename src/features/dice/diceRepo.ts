@@ -21,3 +21,11 @@ export async function recentRolls(characterId?: number, limit = 20) {
     .sort((a, b) => b.id - a.id)
     .slice(0, limit);
 }
+
+export async function clearRollHistory(characterId?: number): Promise<void> {
+  if (characterId) {
+    await db.delete(diceRollHistory).where(eq(diceRollHistory.characterId, characterId));
+  } else {
+    await db.delete(diceRollHistory);
+  }
+}

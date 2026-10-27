@@ -1,0 +1,11 @@
+Font: Alkhemikal
+Designer: jeti (dafont.com profile: jeti.d1589)
+Source: https://www.dafont.com/alkhemikal.font
+License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
+Free for personal or commercial use as long as credit is given.
+Bundled license text (from the downloaded font file) confirms:
+"You are free to use this font for personal or commercial projects as long as you give credit."
+
+This font is used as the "Medieval Pixel" font option in RollForCharacter.
+In-app credit is shown in Settings > Credits.

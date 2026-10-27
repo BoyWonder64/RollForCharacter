@@ -133,8 +133,8 @@ describe("rollExpression", () => {
   it("includes a human-readable breakdown with the modifier", () => {
     mockRandomSequence([0.5]);
     const result = rollExpression("1d20+5");
-    expect(result.breakdown).toContain("+d20[11]");
-    expect(result.breakdown).toContain("+5");
+    expect(result.breakdown).toContain("1d20 (11)");
+    expect(result.breakdown).toContain("+ 5");
   });
 
   it("omits the modifier from the breakdown when it is zero", () => {

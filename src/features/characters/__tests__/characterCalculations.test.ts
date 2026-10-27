@@ -1,8 +1,11 @@
 import {
   applyRaceAbilityBonuses,
   armorClassBaseline,
+  averageHpGain,
   calculateMaxHp,
   proficiencyBonusForLevel,
+  roll4d6DropLowest,
+  rollHpGain,
   STANDARD_ARRAY,
 } from "../characterCalculations";
 import type { RaceDefinition } from "../../../data/rulesets/types";
@@ -153,5 +156,68 @@ describe("applyRaceAbilityBonuses", () => {
 describe("STANDARD_ARRAY", () => {
   it("is the classic 5e standard array", () => {
     expect(STANDARD_ARRAY).toEqual([15, 14, 13, 12, 10, 8]);
+  });
+});
+
+function mockRandomSequence(values: number[]) {
+  let i = 0;
+  jest.spyOn(Math, "random").mockImplementation(() => {
+    const value = values[i] ?? values[values.length - 1];
+    i += 1;
+    return value;
+  });
+}
+
+describe("roll4d6DropLowest", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("drops the lowest die and sums the other three", () => {
+    // d6 rolls from x=0,1/6,2/6,5/6 -> 1,2,3,6
+    mockRandomSequence([0, 1 / 6, 2 / 6, 5 / 6]);
+    const result = roll4d6DropLowest();
+    expect(result.dice).toEqual([1, 2, 3, 6]);
+    expect(result.dropped).toBe(1);
+    expect(result.total).toBe(11); // 2 + 3 + 6
+  });
+
+  it("drops only one instance of the lowest value when there are ties", () => {
+    // all four dice roll 1/6 -> value 2
+    mockRandomSequence([1 / 6]);
+    const result = roll4d6DropLowest();
+    expect(result.dice).toEqual([2, 2, 2, 2]);
+    expect(result.dropped).toBe(2);
+    expect(result.total).toBe(6); // 2 + 2 + 2 (three of the four twos)
+  });
+});
+
+describe("averageHpGain", () => {
+  it("uses floor(hitDie/2)+1 plus the CON modifier", () => {
+    expect(averageHpGain(8, 2)).toBe(7); // 4+1+2
+  });
+
+  it("floors at a minimum of 1 even with a very negative CON modifier", () => {
+    expect(averageHpGain(6, -5)).toBe(1);
+  });
+});
+
+describe("rollHpGain", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("rolls the hit die and adds the CON modifier", () => {
+    mockRandomSequence([0.5]); // d8 -> floor(0.5*8)+1 = 5
+    const result = rollHpGain(8, 2);
+    expect(result.roll).toBe(5);
+    expect(result.total).toBe(7);
+  });
+
+  it("floors the total at a minimum of 1", () => {
+    mockRandomSequence([0]); // d6 -> 1
+    const result = rollHpGain(6, -5);
+    expect(result.roll).toBe(1);
+    expect(result.total).toBe(1);
   });
 });

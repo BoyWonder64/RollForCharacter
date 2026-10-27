@@ -9,6 +9,10 @@ export default function CharactersStackLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontSize: 20,
+          ...(theme.displayFontFamily ? { fontFamily: theme.displayFontFamily } : null),
+        },
         headerShadowVisible: false,
       }}
     >

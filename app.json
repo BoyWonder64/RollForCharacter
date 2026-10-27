@@ -24,7 +24,17 @@
     },
     "plugins": [
       "expo-sqlite",
-      "expo-router"
+      "expo-router",
+      "expo-font",
+      "expo-splash-screen",
+      "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Let RollForCharacter use your photo library to set a character's profile picture.",
+          "cameraPermission": "Let RollForCharacter use your camera to take a character's profile picture."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
