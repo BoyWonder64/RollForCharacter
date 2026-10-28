@@ -86,6 +86,30 @@ const CAMPAIGN_ITEM_ICONS_PIXEL: Record<CampaignItemIconId, number> = {
   shield: require("../../../assets/icons/campaign-items/shield.png"),
 };
 
+// Conditions checklist (src/components/ConditionsChecklist.tsx) -- one icon per
+// 5e boolean condition plus a 15th for exhaustion. The Raven sheet has no
+// icons drawn for these specific D&D states, so these are the closest
+// generic status-effect glyphs on the sheet (see ART_ONBOARDING.md if this
+// ever gets swapped for purpose-drawn art) -- keys match `ConditionDefinition.id`
+// in src/data/conditions.ts, plus "exhaustion".
+const CONDITION_ICONS_PIXEL: Record<string, number> = {
+  blinded: require("../../../assets/icons/conditions/blinded.png"),
+  charmed: require("../../../assets/icons/conditions/charmed.png"),
+  deafened: require("../../../assets/icons/conditions/deafened.png"),
+  frightened: require("../../../assets/icons/conditions/frightened.png"),
+  grappled: require("../../../assets/icons/conditions/grappled.png"),
+  incapacitated: require("../../../assets/icons/conditions/incapacitated.png"),
+  invisible: require("../../../assets/icons/conditions/invisible.png"),
+  paralyzed: require("../../../assets/icons/conditions/paralyzed.png"),
+  petrified: require("../../../assets/icons/conditions/petrified.png"),
+  poisoned: require("../../../assets/icons/conditions/poisoned.png"),
+  prone: require("../../../assets/icons/conditions/prone.png"),
+  restrained: require("../../../assets/icons/conditions/restrained.png"),
+  stunned: require("../../../assets/icons/conditions/stunned.png"),
+  unconscious: require("../../../assets/icons/conditions/unconscious.png"),
+  exhaustion: require("../../../assets/icons/conditions/exhaustion.png"),
+};
+
 const EQUIPMENT_SLOT_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
   pixel: EQUIPMENT_SLOT_ICONS_PIXEL,
 };
@@ -103,6 +127,10 @@ const CAMPAIGN_ITEM_ICONS_BY_STYLE: Record<
   Record<CampaignItemIconId, number>
 > = {
   pixel: CAMPAIGN_ITEM_ICONS_PIXEL,
+};
+
+const CONDITION_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
+  pixel: CONDITION_ICONS_PIXEL,
 };
 
 export function getEquipmentSlotIcon(
@@ -128,4 +156,11 @@ export function getCampaignItemIcon(
   iconId: CampaignItemIconId
 ): number | undefined {
   return CAMPAIGN_ITEM_ICONS_BY_STYLE[style]?.[iconId];
+}
+
+export function getConditionIcon(
+  style: IconStyleId,
+  conditionId: string
+): number | undefined {
+  return CONDITION_ICONS_BY_STYLE[style]?.[conditionId];
 }

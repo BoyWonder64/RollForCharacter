@@ -16,6 +16,7 @@ import {
   updateCharacter,
   type OnboardingCharacterInput,
 } from "../characterRepo";
+import { listCharacterFeats } from "../featRepo";
 
 jest.mock("../../../db/client");
 
@@ -485,16 +486,20 @@ describe("levelUp", () => {
     expect(updated?.strength).toBe(20);
   });
 
-  it("appends a feat choice as freeform text", async () => {
+  it("writes a feat choice as a character_feats row", async () => {
     const character = await makeFighter({ level: 3 }); // -> level 4, an ASI/feat level
 
     await levelUp(character.id, {
       hpMethod: "manual",
-      asiChoice: { type: "feat", feat: "Great Weapon Master" },
+      asiChoice: {
+        type: "feat",
+        feat: { name: "Great Weapon Master", prerequisite: "", description: "", sourceName: "", effects: [] },
+      },
     });
 
     const updated = await getCharacter(character.id);
-    expect(updated?.feats).toBe("Great Weapon Master");
+    const feats = await listCharacterFeats(updated!);
+    expect(feats.map((f) => f.name)).toEqual(["Great Weapon Master"]);
   });
 
   it("does nothing for a character that does not exist", async () => {

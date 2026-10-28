@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { rollDeathSave, type DeathSaveOutcome } from "../features/characters/characterRepo";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  reviveCharacter,
+  rollDeathSave,
+  stabilizeDeathSaves,
+  type DeathSaveOutcome,
+} from "../features/characters/characterRepo";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../features/icons/iconAssets";
 import { useTheme } from "../theme/ThemeContext";
@@ -35,6 +40,42 @@ export function DeathSaveTracker({
     onChanged();
   }
 
+  function handleStabilize() {
+    Alert.alert(
+      "Stabilize Character",
+      "Mark this character as stabilized without rolling? Use this when an ally's Medicine check succeeds, or to stop rolling death saves.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Stabilize",
+          onPress: async () => {
+            await stabilizeDeathSaves(characterId);
+            setLastOutcome(null);
+            onChanged();
+          },
+        },
+      ]
+    );
+  }
+
+  function handleRevive() {
+    Alert.alert(
+      "Revive Character",
+      "Bring this character back from death at 1 HP? This is for DM fiat, a revivify spell, or correcting a mistake.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Revive",
+          onPress: async () => {
+            await reviveCharacter(characterId);
+            setLastOutcome(null);
+            onChanged();
+          },
+        },
+      ]
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
@@ -66,6 +107,9 @@ export function DeathSaveTracker({
           <Pressable style={styles.rollButton} onPress={handleRoll}>
             <Text style={styles.rollButtonText}>Roll Death Save</Text>
           </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={handleStabilize}>
+            <Text style={styles.secondaryButtonText}>Stabilize / Stop Rolling</Text>
+          </Pressable>
           <Text style={styles.helperText}>
             An ally within 5 feet can stabilize you instead of rolling: on their turn, they use
             an action for a DC 10 Wisdom (Medicine) check against you. Success stabilizes you (no
@@ -76,9 +120,16 @@ export function DeathSaveTracker({
       )}
 
       {resolved && (
-        <Text style={styles.resolvedText}>
-          {dead ? "Three failures — this character has died." : "Stabilized."}
-        </Text>
+        <>
+          <Text style={styles.resolvedText}>
+            {dead ? "Three failures — this character has died." : "Stabilized."}
+          </Text>
+          {dead && (
+            <Pressable style={styles.reviveButton} onPress={handleRevive}>
+              <Text style={styles.reviveButtonText}>Revive at 1 HP</Text>
+            </Pressable>
+          )}
+        </>
       )}
 
       {lastOutcome && (
@@ -134,6 +185,32 @@ function createStyles(theme: Theme) {
       marginTop: 8,
     },
     rollButtonText: {
+      color: theme.colors.primaryText,
+      fontWeight: "700",
+      fontFamily: theme.displayFontFamily,
+    },
+    secondaryButton: {
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingVertical: 10,
+      alignItems: "center",
+      marginTop: 8,
+    },
+    secondaryButtonText: {
+      color: theme.colors.text,
+      fontWeight: "600",
+      fontFamily: theme.displayFontFamily,
+    },
+    reviveButton: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radius,
+      paddingVertical: 10,
+      alignItems: "center",
+      marginTop: 8,
+    },
+    reviveButtonText: {
       color: theme.colors.primaryText,
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,

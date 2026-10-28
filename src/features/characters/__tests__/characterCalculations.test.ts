@@ -1,4 +1,5 @@
 import {
+  aggregateFeatEffects,
   applyRaceAbilityBonuses,
   armorClassBaseline,
   averageHpGain,
@@ -7,6 +8,8 @@ import {
   roll4d6DropLowest,
   rollHpGain,
   STANDARD_ARRAY,
+  type CharacterFeat,
+  type FeatEffect,
 } from "../characterCalculations";
 import type { RaceDefinition } from "../../../data/rulesets/types";
 
@@ -53,6 +56,61 @@ describe("calculateMaxHp", () => {
 
   it("never returns less than 1 HP per level even with a very negative CON modifier", () => {
     expect(calculateMaxHp(6, 5, -5)).toBeGreaterThanOrEqual(5);
+  });
+});
+
+describe("aggregateFeatEffects", () => {
+  function feat(enabled: boolean, effects: FeatEffect[]): Pick<CharacterFeat, "enabled" | "effects"> {
+    return { enabled, effects };
+  }
+
+  it("combines live effects across every enabled feat", () => {
+    const bundle = aggregateFeatEffects([
+      feat(true, [{ kind: "armorClassBonus", amount: 1 }]),
+      feat(true, [{ kind: "rangedAttackBonus", amount: 2 }]),
+      feat(true, [{ kind: "skillProficiency", skillIds: ["perception", "stealth"] }]),
+      feat(true, [{ kind: "savingThrowProficiency", ability: "wisdom" }]),
+      feat(true, [{ kind: "initiativeProficiencyBonus" }]),
+    ]);
+    expect(bundle).toEqual({
+      skillProficiencyIds: ["perception", "stealth"],
+      savingThrowProficiencies: ["wisdom"],
+      armorClassBonus: 1,
+      hasInitiativeProficiencyBonus: true,
+      rangedAttackBonus: 2,
+      meleeAttackBonus: 0,
+    });
+  });
+
+  it("excludes a disabled feat's effects entirely", () => {
+    const bundle = aggregateFeatEffects([
+      feat(false, [{ kind: "armorClassBonus", amount: 1 }]),
+      feat(true, [{ kind: "meleeAttackBonus", amount: 3 }]),
+    ]);
+    expect(bundle.armorClassBonus).toBe(0);
+    expect(bundle.meleeAttackBonus).toBe(3);
+  });
+
+  it("never contributes an abilityScoreIncrease effect -- it's a one-time mutation applied elsewhere", () => {
+    const bundle = aggregateFeatEffects([
+      feat(true, [{ kind: "abilityScoreIncrease", ability: "strength", amount: 1, max: 20 }]),
+    ]);
+    expect(bundle).toEqual({
+      skillProficiencyIds: [],
+      savingThrowProficiencies: [],
+      armorClassBonus: 0,
+      hasInitiativeProficiencyBonus: false,
+      rangedAttackBonus: 0,
+      meleeAttackBonus: 0,
+    });
+  });
+
+  it("sums the same bonus kind across multiple feats", () => {
+    const bundle = aggregateFeatEffects([
+      feat(true, [{ kind: "rangedAttackBonus", amount: 2 }]),
+      feat(true, [{ kind: "rangedAttackBonus", amount: 1 }]),
+    ]);
+    expect(bundle.rangedAttackBonus).toBe(3);
   });
 });
 

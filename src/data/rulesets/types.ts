@@ -7,6 +7,16 @@ export type RaceTrait = {
 };
 
 /**
+ * One named trait a homebrew class grants, typed in by hand (e.g. a custom
+ * class's "Wild Shape" or "Smite"). Same free-text shape as `RaceTrait` --
+ * every catalog class's real features already come structured and
+ * level-gated via `ClassFeature`/`ClassProgression`, so this only ever
+ * carries data for a character whose `className` resolved to
+ * `CUSTOM_CLASS_FALLBACK`.
+ */
+export type ClassTrait = RaceTrait;
+
+/**
  * A race's fixed language grant, for editions (2014 5e) where languages are
  * determined by race rather than chosen freely at character creation. e.g.
  * Dwarf: `{ granted: ["common", "dwarvish"] }`; Human: `{ granted: ["common"],
@@ -38,6 +48,8 @@ export type RaceDefinition = {
   traits?: RaceTrait[];
   /** This race's fixed language grant. See `RaceLanguageGrant` -- undefined when language choice is universal for the ruleset (2024 5e) or not modeled yet (3.5e). */
   languages?: RaceLanguageGrant;
+  /** This race's limited-use traits (Breath Weapon, Relentless Endurance, ...), tracked the same way as `ClassProgression.resources`. Gated by total character level rather than a class level. */
+  resources?: ClassResourceDefinition[];
 };
 
 /** A known language a character can speak/read/write. */
@@ -136,6 +148,58 @@ export type Subclass = {
    */
   srdLicensed: boolean;
   features: ClassFeature[];
+  /** This subclass's own limited-use resources (Wholeness of Body, Holy Nimbus, ...), on top of whatever the base class grants. Sparse -- only populated where the SRD-licensed subclass actually has one. */
+  resources?: ClassResourceDefinition[];
+};
+
+/**
+ * A limited-use class feature (Action Surge, Second Wind, Indomitable,
+ * Channel Divinity, Rage, ...) tracked as a generic uses-pool rather than a
+ * dedicated DB column per feature -- `character_resource_uses` stores one
+ * row per character per resource, keyed by `id` here.
+ */
+export type ClassResourceDefinition = {
+  /** Stable key, namespaced per class (e.g. "fighter-action-surge"). */
+  id: string;
+  name: string;
+  /**
+   * Total uses at each level breakpoint this class grants/increases it,
+   * e.g. `{ 2: 1, 17: 2 }` for Action Surge. The highest key <= the
+   * character's level applies; below the lowest key, the feature isn't
+   * gained yet. Mutually exclusive with `usesFromAbilityModifier` -- exactly
+   * one governs a given resource's max.
+   */
+  usesByLevel?: Record<number, number>;
+  /**
+   * For resources whose max uses is an ability modifier rather than a fixed
+   * number per level (e.g. Bardic Inspiration: Charisma modifier, minimum
+   * 1). `grantedAtLevel` is the level this feature is first gained --
+   * before it, the resource isn't shown at all, same as being absent from
+   * `usesByLevel`.
+   */
+  usesFromAbilityModifier?: {
+    ability: AbilityScoreKey;
+    grantedAtLevel: number;
+    minimum: number;
+    /** Flat addition before the `minimum` floor -- e.g. Paladin Divine Sense is "1 + Charisma modifier" (`bonus: 1`), vs. Bardic Inspiration's bare modifier (`bonus` omitted). */
+    bonus?: number;
+    /** When true, the result is multiplied by the character's level in this class -- 3.5e Lay on Hands is "paladin level x Charisma bonus" (`multiplyByLevel: true`, `minimum: 0`), a hit-point pool rather than a discrete use count. */
+    multiplyByLevel?: boolean;
+  };
+  /**
+   * Uses regained on a short rest: "all" for the common full-reset case
+   * (Action Surge), or a fixed number for partial recovery (2024 Second
+   * Wind regains only 1 use per short rest). Omitted when this resource
+   * only recovers on a long rest (e.g. Indomitable). A long rest always
+   * restores every resource to its max regardless of this field.
+   */
+  shortRestRegain?: "all" | number;
+  /**
+   * Point pools that scale into the dozens (Ki/Focus Points, Sorcery
+   * Points, Lay on Hands) rather than a handful of discrete uses --
+   * rendered as a numeric stepper instead of a pip row.
+   */
+  isPointPool?: boolean;
 };
 
 export type SpellSlotRow = {
@@ -165,6 +229,8 @@ export type ClassProgression = {
   features: ClassFeature[];
   /** Spellcasting progression table, for classes that cast spells. */
   spellProgression?: SpellSlotRow[];
+  /** This class's limited-use resources (Action Surge, Second Wind, ...). Sparse -- only populated for classes/editions covered so far. */
+  resources?: ClassResourceDefinition[];
 };
 
 export type SpellDefinition = {
@@ -245,6 +311,16 @@ export type RulesetCatalog = {
    * instead (2014 5e).
    */
   universalLanguageGrant?: { granted: string[]; chooseCount: number };
+  /**
+   * 2024 5e ties ability-score increases to Background instead of Species
+   * (see RACES_5E_2024's empty `abilityBonuses`). This app doesn't model
+   * named backgrounds' specific 3-ability lists (Background is free-text,
+   * a deliberate licensing choice), so this is generic: the player freely
+   * distributes `totalPoints` across any abilities, capped at
+   * `maxPerAbility` each -- matches the two legal splits (+2/+1 or
+   * +1/+1/+1) without needing named-background data.
+   */
+  backgroundAbilityBonus?: { totalPoints: number; maxPerAbility: number };
 };
 
 // The 9 standard alignments shared across D&D editions (not ruleset-specific

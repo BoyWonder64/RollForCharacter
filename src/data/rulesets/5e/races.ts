@@ -30,6 +30,14 @@ export const RACES_5E: RaceDefinition[] = [
         description: "You have resistance to the damage type associated with your draconic ancestry.",
       },
     ],
+    resources: [
+      {
+        id: "dragonborn-breath-weapon",
+        name: "Breath Weapon",
+        usesByLevel: { 1: 1 },
+        shortRestRegain: "all",
+      },
+    ],
   },
   {
     id: "dwarf",
@@ -160,6 +168,13 @@ export const RACES_5E: RaceDefinition[] = [
         name: "Savage Attacks",
         description:
           "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time and add it to the extra damage of the critical hit.",
+      },
+    ],
+    resources: [
+      {
+        id: "half-orc-relentless-endurance",
+        name: "Relentless Endurance",
+        usesByLevel: { 1: 1 },
       },
     ],
   },

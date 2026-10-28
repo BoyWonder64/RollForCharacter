@@ -30,8 +30,9 @@ import {
   type NaturalD20Flag,
   type RollMode,
 } from "../../features/dice/structuredRolls";
-import { ABILITY_LABELS, isSkillProficient } from "../../features/characters/characterCalculations";
+import { ABILITY_LABELS, isSkillProficient, type CharacterFeat } from "../../features/characters/characterCalculations";
 import { listCharacters } from "../../features/characters/characterRepo";
+import { listCharacterFeats } from "../../features/characters/featRepo";
 import { DEFAULT_RULESET, getRulesetCatalog } from "../../data/rulesets";
 import {
   DIE_TYPES,
@@ -213,6 +214,13 @@ export default function DiceRollerScreen() {
         : characters[0]?.id ?? null;
   const selectedCharacter = characters.find((c) => c.id === effectiveCharacterId) ?? null;
   const showCharacterSwitcher = dmMode && !lockedCharacterId;
+  const [selectedCharacterFeats, setSelectedCharacterFeats] = useState<CharacterFeat[]>([]);
+
+  useEffect(() => {
+    (selectedCharacter ? listCharacterFeats(selectedCharacter) : Promise.resolve([])).then(
+      setSelectedCharacterFeats
+    );
+  }, [selectedCharacter]);
 
   const refreshHistory = useCallback(() => {
     if (!historyEnabled) {
@@ -409,6 +417,7 @@ export default function DiceRollerScreen() {
     const plan = buildStructuredRollPlan({
       mode: resolveAttackRollMode(mode, attackType),
       character: selectedCharacter,
+      feats: selectedCharacterFeats,
       ability: ability ?? undefined,
       skillId: mode === "check" && checkBy === "skill" ? skillId ?? undefined : undefined,
       proficient,
@@ -502,6 +511,7 @@ export default function DiceRollerScreen() {
       ? buildStructuredRollPlan({
           mode: resolveAttackRollMode(mode, attackType),
           character: selectedCharacter,
+          feats: selectedCharacterFeats,
           ability: ability ?? undefined,
           skillId: mode === "check" && checkBy === "skill" ? skillId ?? undefined : undefined,
           proficient,
@@ -679,7 +689,9 @@ export default function DiceRollerScreen() {
             <View style={styles.quickRow}>
               {skillCatalog.map((skill) => {
                 const active = skillId === skill.id;
-                const prof = selectedCharacter ? isSkillProficient(selectedCharacter, skill.id) : false;
+                const prof = selectedCharacter
+                  ? isSkillProficient(selectedCharacter, skill.id, selectedCharacterFeats)
+                  : false;
                 return (
                   <Pressable
                     key={skill.id}

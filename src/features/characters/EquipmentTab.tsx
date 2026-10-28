@@ -13,6 +13,7 @@ import {
   addWeaponFromCatalog,
   describeArmorAc,
   describeAttackBonus,
+  describeWeaponDamage,
   isProficientWithWeapon,
   listArmorCatalog,
   listCharacterArmor,
@@ -24,10 +25,12 @@ import {
   setArmorEquipped,
   setWeaponEquipped,
   weaponAttackBonus,
+  weaponFeatAttackBonus,
   type CustomArmorInput,
   type CustomWeaponInput,
 } from "./gearRepo";
-import { getRulesetCatalog } from "../../data/rulesets";
+import { aggregateFeatEffects, getClassDefinitionForCharacter } from "./characterCalculations";
+import { listCharacterFeats } from "./featRepo";
 import { AddWeaponModal } from "../../components/AddWeaponModal";
 import { AddArmorModal } from "../../components/AddArmorModal";
 import { AddMagicItemModal } from "../../components/AddMagicItemModal";
@@ -54,10 +57,8 @@ export function EquipmentTab({ character }: { character: Character }) {
   const weaponCatalog = useMemo(() => listWeaponCatalog(character.ruleset), [character.ruleset]);
   const armorCatalog = useMemo(() => listArmorCatalog(character.ruleset), [character.ruleset]);
   const weaponProficiencies = useMemo(
-    () =>
-      getRulesetCatalog(character.ruleset).classes.find((c) => c.name === character.className)
-        ?.weaponProficiencies,
-    [character.ruleset, character.className]
+    () => getClassDefinitionForCharacter(character).weaponProficiencies,
+    [character]
   );
 
   const [weapons, setWeapons] = useState<WeaponRow[]>([]);
@@ -66,6 +67,8 @@ export function EquipmentTab({ character }: { character: Character }) {
   const [addWeaponOpen, setAddWeaponOpen] = useState(false);
   const [addArmorOpen, setAddArmorOpen] = useState(false);
   const [addMagicItemOpen, setAddMagicItemOpen] = useState(false);
+  const [feats, setFeats] = useState<Awaited<ReturnType<typeof listCharacterFeats>>>([]);
+  const featEffects = useMemo(() => aggregateFeatEffects(feats), [feats]);
 
   // Weapons already owned (added during onboarding or since) -- drives the
   // Add Weapon modal's "Owned" filter.
@@ -86,12 +89,17 @@ export function EquipmentTab({ character }: { character: Character }) {
     listCharacterMagicItems(characterId).then(setMagicItems);
   }, [characterId]);
 
+  const refreshFeats = useCallback(() => {
+    listCharacterFeats(character).then(setFeats);
+  }, [character]);
+
   useFocusEffect(
     useCallback(() => {
       refreshWeapons();
       refreshArmor();
       refreshMagicItems();
-    }, [refreshWeapons, refreshArmor, refreshMagicItems])
+      refreshFeats();
+    }, [refreshWeapons, refreshArmor, refreshMagicItems, refreshFeats])
   );
 
   async function handlePickWeapon(catalogId: string) {
@@ -217,7 +225,8 @@ export function EquipmentTab({ character }: { character: Character }) {
             character.strength,
             character.dexterity,
             character.proficiencyBonus,
-            proficient
+            proficient,
+            weaponFeatAttackBonus(weapon, featEffects)
           );
           return (
             <Pressable
@@ -227,12 +236,14 @@ export function EquipmentTab({ character }: { character: Character }) {
             >
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>
+                  {weapon.isMagic ? "✨ " : ""}
                   {weapon.name}
+                  {weapon.isMagic && weapon.magicBonus ? ` (+${weapon.magicBonus})` : ""}
                   {weapon.equipped ? " (Equipped)" : ""}
                 </Text>
                 <Text style={styles.itemDescription}>
                   Attack {describeAttackBonus(attackBonus)}
-                  {weapon.damageDice ? ` · ${weapon.damageDice} ${weapon.damageType}` : " · No damage"}
+                  {` · ${describeWeaponDamage(weapon)}`}
                   {weapon.category ? ` · ${weapon.category}` : ""}
                 </Text>
                 {parseWeaponProperties(weapon.properties).length > 0 && (
@@ -282,7 +293,9 @@ export function EquipmentTab({ character }: { character: Character }) {
           >
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>
+                {item.isMagic ? "✨ " : ""}
                 {item.name}
+                {item.isMagic && item.magicBonus ? ` (+${item.magicBonus})` : ""}
                 {item.equipped ? " (Equipped)" : ""}
               </Text>
               <Text style={styles.itemDescription}>

@@ -10,6 +10,8 @@ import {
   toggleInspiration,
 } from "./characterRepo";
 import {
+  aggregateFeatEffects,
+  classFeaturesForCharacter,
   getClassDefinitionForCharacter,
   initiativeModifier,
   isSavingThrowProficient,
@@ -18,16 +20,21 @@ import {
   passiveSkillScore,
   racialTraitsForCharacter,
 } from "./characterCalculations";
+import { listCharacterFeats } from "./featRepo";
 import { addClass, levelUpClass, listCharacterClasses } from "./characterClassRepo";
 import { formatMulticlassLabel, isMulticlassed } from "./multiclass";
 import { ConditionsChecklist } from "../../components/ConditionsChecklist";
+import { ClassResourceTracker } from "../../components/ClassResourceTracker";
+import { FeatsList } from "../../components/FeatsList";
 import {
   describeArmorAc,
   describeAttackBonus,
+  describeWeaponDamage,
   isProficientWithWeapon,
   listCharacterArmor,
   listCharacterWeapons,
   weaponAttackBonus,
+  weaponFeatAttackBonus,
 } from "./gearRepo";
 import { levelForXp, xpToNextLevel } from "./xpTable";
 import { getRulesetCatalog } from "../../data/rulesets";
@@ -219,13 +226,22 @@ export function StatsTab({
   const [weapons, setWeapons] = useState<WeaponRow[]>([]);
   const [armor, setArmor] = useState<ArmorRow[]>([]);
   const [classRows, setClassRows] = useState<CharacterClass[]>([]);
+  const [feats, setFeats] = useState<Awaited<ReturnType<typeof listCharacterFeats>>>([]);
+  const featEffects = useMemo(() => aggregateFeatEffects(feats), [feats]);
+  // `character.level` is the SUM across every class once multiclassed (see
+  // `characterClasses` schema comment) -- the primary class's own level is
+  // `classRows[0]`'s level once multiclass rows exist, or `character.level`
+  // itself beforehand (zero rows = that's still the single source of truth).
+  const primaryClassLevel = classRows.length > 0 ? classRows[0].level : character.level;
+  const classFeatures = classFeaturesForCharacter(character, primaryClassLevel);
 
   useFocusEffect(
     useCallback(() => {
       listCharacterWeapons(character.id).then(setWeapons);
       listCharacterArmor(character.id).then(setArmor);
       listCharacterClasses(character.id).then(setClassRows);
-    }, [character.id])
+      listCharacterFeats(character).then(setFeats);
+    }, [character])
   );
 
   async function handleCurrencyConfirm(denomination: CurrencyDenomination, delta: number) {
@@ -322,6 +338,9 @@ export function StatsTab({
           ✦ Inspiration{character.inspiration ? " (ready)" : ""}
         </Text>
       </Pressable>
+
+      <ClassResourceTracker character={character} />
+
       <LevelUpModal
         visible={levelUpModalOpen}
         character={character}
@@ -362,9 +381,16 @@ export function StatsTab({
       )}
 
       <View style={styles.summaryRow}>
-        <SummaryStat label="Armor Class" value={String(character.armorClass)} />
+        <SummaryStat
+          label="Armor Class"
+          value={
+            featEffects.armorClassBonus > 0
+              ? `${character.armorClass} (+${featEffects.armorClassBonus} feat)`
+              : String(character.armorClass)
+          }
+        />
         <SummaryStat label="Speed" value={`${character.speed} ft`} />
-        <SummaryStat label="Initiative" value={formatModifier(initiativeModifier(character))} />
+        <SummaryStat label="Initiative" value={formatModifier(initiativeModifier(character, feats))} />
         <SummaryStat label="Prof. Bonus" value={formatModifier(character.proficiencyBonus)} />
         <SummaryStat label="Spell Save DC" value={String(spellSaveDc(character))} />
       </View>
@@ -418,7 +444,7 @@ export function StatsTab({
       <SectionTitle icon={savingThrowIcon} title="Saving Throws" />
       <View style={styles.proficiencyGrid}>
         {ABILITY_KEYS.map((key) => {
-          const proficient = isSavingThrowProficient(character, key);
+          const proficient = isSavingThrowProficient(character, key, feats);
           const modifier =
             abilityModifier(character[key]) + (proficient ? character.proficiencyBonus : 0);
           return (
@@ -447,7 +473,7 @@ export function StatsTab({
       <SectionTitle icon={skillsIcon} title="Skills" />
       <View style={styles.proficiencyGrid}>
         {catalog.skills.map((skill) => {
-          const proficient = isSkillProficient(character, skill.id);
+          const proficient = isSkillProficient(character, skill.id, feats);
           const modifier =
             abilityModifier(character[skill.ability]) +
             (proficient ? character.proficiencyBonus : 0);
@@ -489,7 +515,7 @@ export function StatsTab({
               style={styles.summaryCard}
               onPress={() => Alert.alert(label, PASSIVE_SCORE_DESCRIPTION)}
             >
-              <Text style={styles.summaryValue}>{passiveSkillScore(character, skill)}</Text>
+              <Text style={styles.summaryValue}>{passiveSkillScore(character, skill, feats)}</Text>
               <Text style={styles.summaryLabel}>{label}</Text>
             </Pressable>
           );
@@ -514,20 +540,27 @@ export function StatsTab({
               character.strength,
               character.dexterity,
               character.proficiencyBonus,
-              proficient
+              proficient,
+              weaponFeatAttackBonus(weapon, featEffects)
             );
             return (
               <Text key={`w-${weapon.id}`} style={styles.flavorLine}>
-                <Text style={styles.flavorLabel}>{weapon.name}: </Text>
+                <Text style={styles.flavorLabel}>
+                  {weapon.isMagic ? "✨ " : ""}
+                  {weapon.name}:{" "}
+                </Text>
                 Attack {describeAttackBonus(attackBonus)}
-                {weapon.damageDice ? ` · ${weapon.damageDice} ${weapon.damageType}` : ""}
+                {` · ${describeWeaponDamage(weapon)}`}
                 {weapon.equipped ? " (Equipped)" : ""}
               </Text>
             );
           })}
           {armor.map((item) => (
             <Text key={`a-${item.id}`} style={styles.flavorLine}>
-              <Text style={styles.flavorLabel}>{item.name}: </Text>
+              <Text style={styles.flavorLabel}>
+                {item.isMagic ? "✨ " : ""}
+                {item.name}:{" "}
+              </Text>
               AC {describeArmorAc(item)}
               {item.equipped ? " (Equipped)" : ""}
             </Text>
@@ -552,6 +585,28 @@ export function StatsTab({
           </View>
         </>
       )}
+
+      {classFeatures.length > 0 && (
+        <>
+          <SectionTitle title={`${character.className} Features`} />
+          <View style={styles.proficiencyGrid}>
+            {classFeatures.map((feature, i) => (
+              <Pressable
+                key={`${feature.name}-${i}`}
+                style={styles.proficiencyRow}
+                onPress={() => Alert.alert(feature.name, feature.description)}
+              >
+                <View style={[styles.proficiencyDot, styles.proficiencyDotOn]} />
+                <Text style={styles.proficiencyName}>{feature.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
+
+      <View style={{ marginTop: 20 }}>
+        <FeatsList character={character} />
+      </View>
 
       {knownLanguages.length > 0 && (
         <>
@@ -705,7 +760,7 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     inspirationChipTextActive: { color: theme.colors.primaryText },
-    summaryRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 20 },
+    summaryRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 20, marginBottom: 20 },
     summaryCard: {
       flexBasis: "47%",
       flexGrow: 1,

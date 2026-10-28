@@ -12,7 +12,6 @@ import {
   endConcentration,
   getCharacter,
 } from "../../../../features/characters/characterRepo";
-import { getClassDefinitionForCharacter } from "../../../../features/characters/characterCalculations";
 import { listCharacterClasses } from "../../../../features/characters/characterClassRepo";
 import { formatMulticlassLabel } from "../../../../features/characters/multiclass";
 import type { Character, CharacterClass } from "../../../../types/models";
@@ -253,9 +252,7 @@ function CharacterSheetBody({
         <View style={styles.restRow}>
           <Pressable onPress={() => setRestModalOpen(true)}>
             <Text style={styles.hitDiceText}>
-              Hit Dice: {character.hitDiceRemaining}/{character.level} (d
-              {getClassDefinitionForCharacter(character).hitDie}) -- spend during a short rest to
-              heal
+              Hit Dice: {character.hitDiceRemaining}/{character.level}
             </Text>
           </Pressable>
           <Pressable style={styles.restButton} onPress={() => setRestModalOpen(true)}>

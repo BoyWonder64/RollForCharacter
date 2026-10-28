@@ -19,16 +19,32 @@ import {
   updateCharacter,
 } from "../../../../features/characters/characterRepo";
 import {
+  getClassDefinition,
   getClassDefinitionForCharacter,
+  getRaceDefinition,
+  parseCustomClassTraits,
+  parseCustomProficiencyList,
+  parseCustomRaceTraits,
+  parseCustomClassSavingThrows,
   parseLanguages,
   parseSavingThrowProficiencies,
   parseSkillProficiencies,
+  serializeCustomClassSavingThrows,
+  serializeCustomClassTraits,
+  serializeCustomProficiencyList,
+  serializeCustomRaceTraits,
   serializeLanguages,
   serializeSavingThrowProficiencies,
   serializeSkillProficiencies,
 } from "../../../../features/characters/characterCalculations";
 import { deletePortrait, persistPortrait } from "../../../../features/characters/portraitStorage";
-import { ALIGNMENTS, getRulesetCatalog } from "../../../../data/rulesets";
+import {
+  ALIGNMENTS,
+  CUSTOM_OPTION_ID,
+  getRulesetCatalog,
+  type ClassTrait,
+  type RaceTrait,
+} from "../../../../data/rulesets";
 import type { AbilityScoreKey, Character } from "../../../../types/models";
 import { useTheme } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
@@ -80,6 +96,12 @@ type FormState = {
   fontChoice: FontChoiceId | null;
   portraitUri: string | null;
   abilities: Record<AbilityScoreKey, string>;
+  customRaceTraits: RaceTrait[];
+  customClassHitDie: 6 | 8 | 10 | 12;
+  customClassSavingThrows: AbilityScoreKey[];
+  customClassArmorProficiencies: string;
+  customClassWeaponProficiencies: string;
+  customClassTraits: ClassTrait[];
 };
 
 function toFormState(character: Character): FormState {
@@ -113,6 +135,16 @@ function toFormState(character: Character): FormState {
       wisdom: String(character.wisdom),
       charisma: String(character.charisma),
     },
+    customRaceTraits: parseCustomRaceTraits(character.customRaceTraits),
+    customClassHitDie: (character.customClassHitDie as 6 | 8 | 10 | 12) || 8,
+    customClassSavingThrows: parseCustomClassSavingThrows(character.customClassSavingThrows),
+    customClassArmorProficiencies: parseCustomProficiencyList(character.customClassArmorProficiencies).join(
+      ", "
+    ),
+    customClassWeaponProficiencies: parseCustomProficiencyList(
+      character.customClassWeaponProficiencies
+    ).join(", "),
+    customClassTraits: parseCustomClassTraits(character.customClassTraits),
   };
 }
 
@@ -197,11 +229,17 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
     });
   }
 
+  const isCustomRace = getRaceDefinition(ruleset, form?.race ?? "").id === CUSTOM_OPTION_ID;
+  const isCustomClass = getClassDefinition(ruleset, form?.className ?? "").id === CUSTOM_OPTION_ID;
+
   // The class's own two saves are fixed, not a player choice -- this only
   // toggles EXTRA proficiencies (e.g. from the Resilient feat).
   const classSavingThrows: AbilityScoreKey[] =
-    getClassDefinitionForCharacter({ ruleset, className: form?.className ?? "" }).savingThrows ??
-    [];
+    getClassDefinitionForCharacter({
+      ruleset,
+      className: form?.className ?? "",
+      customClassSavingThrows: serializeCustomClassSavingThrows(form?.customClassSavingThrows ?? []),
+    }).savingThrows ?? [];
 
   function toggleSavingThrow(key: AbilityScoreKey) {
     if (classSavingThrows.includes(key)) return;
@@ -297,6 +335,16 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
       experiencePoints: Math.max(0, toInt(form.experiencePoints, 0)),
       themeFamily: form.themeFamily,
       fontChoice: form.fontChoice,
+      customRaceTraits: serializeCustomRaceTraits(form.customRaceTraits),
+      customClassHitDie: form.customClassHitDie,
+      customClassSavingThrows: serializeCustomClassSavingThrows(form.customClassSavingThrows),
+      customClassArmorProficiencies: serializeCustomProficiencyList(
+        parseCustomProficiencyList(form.customClassArmorProficiencies)
+      ),
+      customClassWeaponProficiencies: serializeCustomProficiencyList(
+        parseCustomProficiencyList(form.customClassWeaponProficiencies)
+      ),
+      customClassTraits: serializeCustomClassTraits(form.customClassTraits),
     });
     router.back();
   }
@@ -365,6 +413,126 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
           style={styles.half}
         />
       </View>
+
+      {isCustomRace && (
+        <View style={styles.homebrewSection}>
+          <Text style={styles.sectionTitle}>Homebrew Race Traits</Text>
+          <Text style={styles.hint}>
+            Darkvision, Trance, Breath Weapon, etc -- shown on the sheet the same way a catalog
+            race&apos;s traits are.
+          </Text>
+          {form.customRaceTraits.map((trait, i) => (
+            <View key={`${trait.name}-${i}`} style={styles.traitRow}>
+              <View style={styles.traitInfo}>
+                <Text style={styles.traitName}>{trait.name}</Text>
+                {trait.description.length > 0 && (
+                  <Text style={styles.traitDescription}>{trait.description}</Text>
+                )}
+              </View>
+              <Pressable
+                onPress={() =>
+                  updateField(
+                    "customRaceTraits",
+                    form.customRaceTraits.filter((_, idx) => idx !== i)
+                  )
+                }
+              >
+                <Text style={styles.traitRemove}>×</Text>
+              </Pressable>
+            </View>
+          ))}
+          <NewTraitForm
+            onAdd={(trait) => updateField("customRaceTraits", [...form.customRaceTraits, trait])}
+            styles={styles}
+          />
+        </View>
+      )}
+
+      {isCustomClass && (
+        <View style={styles.homebrewSection}>
+          <Text style={styles.sectionTitle}>Homebrew Class Details</Text>
+          <Text style={styles.hint}>Hit Die</Text>
+          <View style={styles.skillGrid}>
+            {([6, 8, 10, 12] as const).map((die) => {
+              const selected = form.customClassHitDie === die;
+              return (
+                <Pressable
+                  key={die}
+                  onPress={() => updateField("customClassHitDie", die)}
+                  style={[styles.skillChip, selected && styles.skillChipActive]}
+                >
+                  <Text style={[styles.skillChipText, selected && styles.skillChipTextActive]}>
+                    d{die}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text style={styles.hint}>Saving Throw Proficiencies (choose 2)</Text>
+          <View style={styles.skillGrid}>
+            {ABILITY_FIELDS.map(({ key, label }) => {
+              const selected = form.customClassSavingThrows.includes(key);
+              return (
+                <Pressable
+                  key={key}
+                  onPress={() =>
+                    updateField(
+                      "customClassSavingThrows",
+                      selected
+                        ? form.customClassSavingThrows.filter((k) => k !== key)
+                        : form.customClassSavingThrows.length >= 2
+                          ? form.customClassSavingThrows
+                          : [...form.customClassSavingThrows, key]
+                    )
+                  }
+                  style={[styles.skillChip, selected && styles.skillChipActive]}
+                >
+                  <Text style={[styles.skillChipText, selected && styles.skillChipTextActive]}>
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Field
+            label="Armor Proficiencies"
+            value={form.customClassArmorProficiencies}
+            onChangeText={(v) => updateField("customClassArmorProficiencies", v)}
+            placeholder="e.g. Light armor, Shields"
+          />
+          <Field
+            label="Weapon Proficiencies"
+            value={form.customClassWeaponProficiencies}
+            onChangeText={(v) => updateField("customClassWeaponProficiencies", v)}
+            placeholder="e.g. Simple weapons, Shortswords"
+          />
+          <Text style={styles.hint}>Traits</Text>
+          {form.customClassTraits.map((trait, i) => (
+            <View key={`${trait.name}-${i}`} style={styles.traitRow}>
+              <View style={styles.traitInfo}>
+                <Text style={styles.traitName}>{trait.name}</Text>
+                {trait.description.length > 0 && (
+                  <Text style={styles.traitDescription}>{trait.description}</Text>
+                )}
+              </View>
+              <Pressable
+                onPress={() =>
+                  updateField(
+                    "customClassTraits",
+                    form.customClassTraits.filter((_, idx) => idx !== i)
+                  )
+                }
+              >
+                <Text style={styles.traitRemove}>×</Text>
+              </Pressable>
+            </View>
+          ))}
+          <NewTraitForm
+            onAdd={(trait) => updateField("customClassTraits", [...form.customClassTraits, trait])}
+            styles={styles}
+          />
+        </View>
+      )}
 
       <View style={styles.row}>
         <Field
@@ -654,6 +822,7 @@ function Field({
   keyboardType,
   multiline,
   style,
+  placeholder,
 }: {
   label: string;
   value: string;
@@ -661,6 +830,7 @@ function Field({
   keyboardType?: "default" | "number-pad";
   multiline?: boolean;
   style?: object;
+  placeholder?: string;
 }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -674,9 +844,54 @@ function Field({
         onChangeText={onChangeText}
         keyboardType={keyboardType ?? "default"}
         multiline={multiline}
+        placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
       />
     </View>
+  );
+}
+
+/** Add-a-trait mini-form for the Homebrew Race Traits section -- kept as its own module-scope component (not inline in EditCharacterBody) so its name/description TextInputs don't lose focus on every parent re-render. */
+function NewTraitForm({
+  onAdd,
+  styles,
+}: {
+  onAdd: (trait: RaceTrait) => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const theme = useTheme();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  return (
+    <>
+      <TextInput
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+        placeholder="Trait name (e.g. Darkvision)"
+        placeholderTextColor={theme.colors.textMuted}
+      />
+      <TextInput
+        style={[styles.input, styles.multilineInput]}
+        value={description}
+        onChangeText={setDescription}
+        placeholder="What does it do?"
+        placeholderTextColor={theme.colors.textMuted}
+        multiline
+      />
+      <Pressable
+        style={[styles.smallAddButton, !name.trim() && styles.smallAddButtonDisabled]}
+        disabled={!name.trim()}
+        onPress={() => {
+          onAdd({ name: name.trim(), description: description.trim() });
+          setName("");
+          setDescription("");
+        }}
+      >
+        <Text style={styles.smallAddButtonText}>Add Trait</Text>
+      </Pressable>
+    </>
   );
 }
 
@@ -792,6 +1007,41 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     skillChipTextActive: { color: theme.colors.primaryText },
+    homebrewSection: { marginBottom: 14 },
+    traitRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: 10,
+      marginBottom: 8,
+    },
+    traitInfo: { flex: 1, paddingRight: 8 },
+    traitName: {
+      color: theme.colors.text,
+      fontWeight: "700",
+      fontSize: 13,
+      fontFamily: theme.displayFontFamily,
+    },
+    traitDescription: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
+    traitRemove: { color: theme.colors.accent, fontSize: 16, paddingHorizontal: 4 },
+    smallAddButton: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radius,
+      paddingVertical: 10,
+      alignItems: "center",
+      marginTop: 4,
+      marginBottom: 14,
+    },
+    smallAddButtonDisabled: { opacity: 0.4 },
+    smallAddButtonText: {
+      color: theme.colors.primaryText,
+      fontWeight: "700",
+      fontFamily: theme.displayFontFamily,
+    },
     xpToggle: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
     xpCheckbox: {
       width: 20,

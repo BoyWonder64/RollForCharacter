@@ -63,6 +63,18 @@ export const RACES_5E_2024: RaceDefinition[] = [
           "When you reach character level 5, you can channel draconic magic to give yourself temporary flight. As a Bonus Action, you sprout spectral wings on your back that last for 10 minutes or until you retract the wings (no action required) or have the Incapacitated condition. During that time, you have a Fly Speed equal to your Speed. Once you use this trait, you can't use it again until you finish a Long Rest.",
       },
     ],
+    resources: [
+      {
+        id: "dragonborn-breath-weapon",
+        name: "Breath Weapon",
+        usesByLevel: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
+      },
+      {
+        id: "dragonborn-draconic-flight",
+        name: "Draconic Flight",
+        usesByLevel: { 5: 1 },
+      },
+    ],
   },
   {
     id: "dwarf",
@@ -148,7 +160,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
     size: "Medium",
     abilityBonuses: {},
     summary:
-      "New to the 2024 SRD. Giant ancestry grants a chosen supernatural boon, Large Form lets you grow a size category from level 5, and Powerful Build eases grapples and carrying capacity.",
+      "Giant ancestry grants a chosen supernatural boon, Large Form lets you grow a size category from level 5, and Powerful Build eases grapples and carrying capacity.",
     traits: [
       {
         name: "Giant Ancestry",
@@ -221,7 +233,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
     size: "Medium",
     abilityBonuses: {},
     summary:
-      "Now its own full species (Half-Orc was dropped from the SRD). Adrenaline Rush grants a bonus-action Dash with temporary hit points, plus 120-foot darkvision and Relentless Endurance to drop to 1 HP instead of 0.",
+      "Adrenaline Rush grants a bonus-action Dash with temporary hit points, plus 120-foot darkvision and Relentless Endurance to drop to 1 HP instead of 0.",
     traits: [
       {
         name: "Adrenaline Rush",
@@ -233,6 +245,19 @@ export const RACES_5E_2024: RaceDefinition[] = [
         name: "Relentless Endurance",
         description:
           "When you are reduced to 0 Hit Points but not killed outright, you can drop to 1 Hit Point instead. Once you use this trait, you can't do so again until you finish a Long Rest.",
+      },
+    ],
+    resources: [
+      {
+        id: "orc-adrenaline-rush",
+        name: "Adrenaline Rush",
+        usesByLevel: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
+        shortRestRegain: "all",
+      },
+      {
+        id: "orc-relentless-endurance",
+        name: "Relentless Endurance",
+        usesByLevel: { 1: 1 },
       },
     ],
   },

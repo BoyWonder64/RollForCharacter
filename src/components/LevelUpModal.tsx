@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import {
   ABILITY_LABELS,
+  describeFeatEffect,
   featuresGainedAtLevel,
   getClassDefinition,
   getClassDefinitionForCharacter,
@@ -21,6 +22,7 @@ import {
   needsSubclassChoice,
   spellProgressionRowForLevel,
   type FeatureGrant,
+  type ResolvedFeatPick,
 } from "../features/characters/characterCalculations";
 import {
   combinedCasterLevel,
@@ -30,6 +32,7 @@ import {
 } from "../features/characters/multiclass";
 import type { AsiOrFeatChoice, HpGainMethod, LevelUpChoices } from "../features/characters/characterRepo";
 import type { AbilityScoreKey, Character, CharacterClass } from "../types/models";
+import { CUSTOM_OPTION_ID } from "../data/rulesets";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { FeatPickerModal } from "./FeatPickerModal";
@@ -97,6 +100,7 @@ type Step =
   | "choose"
   | "hp-method"
   | "subclass"
+  | "homebrew-level"
   | "asi-type"
   | "asi-ability-mode"
   | "asi-ability-pick"
@@ -137,6 +141,11 @@ function LevelUpModalForm({
     : getClassProgressionForCharacter(character);
   const needsSubclass = progression ? needsSubclassChoice(progression, newLevel, currentSubclass) : false;
   const needsAsi = progression ? needsAsiOrFeatChoice(progression, newLevel) : false;
+  // A homebrew class has no `ClassProgression` to look up ASI levels, class
+  // features, or a subclass table from (needsSubclass/needsAsi above are
+  // always false for it) -- the "homebrew-level" step below lets the player
+  // supply that themselves instead of silently skipping straight to HP only.
+  const isCustomClass = targetClassDef.id === CUSTOM_OPTION_ID;
 
   const [step, setStep] = useState<Step>("choose-class");
   const [multiclassMode, setMulticlassMode] = useState(false);
@@ -145,8 +154,12 @@ function LevelUpModalForm({
   const [customSubclassName, setCustomSubclassName] = useState("");
   const [abilityMode, setAbilityMode] = useState<"one" | "two">("one");
   const [selectedAbilities, setSelectedAbilities] = useState<AbilityScoreKey[]>([]);
-  const [featText, setFeatText] = useState("");
+  const [featPick, setFeatPick] = useState<ResolvedFeatPick | null>(null);
   const [featPickerVisible, setFeatPickerVisible] = useState(false);
+  const [grantsAsi, setGrantsAsi] = useState(false);
+  const [homebrewFeatures, setHomebrewFeatures] = useState<{ name: string; description: string }[]>([]);
+  const [newFeatureName, setNewFeatureName] = useState("");
+  const [newFeatureDescription, setNewFeatureDescription] = useState("");
 
   if (multiclassMode) {
     return (
@@ -160,9 +173,23 @@ function LevelUpModalForm({
   }
 
   const effectiveSubclassId = subclassId || currentSubclass;
-  const gainedFeatures: FeatureGrant[] = progression
-    ? featuresGainedAtLevel(progression, newLevel, effectiveSubclassId)
-    : [];
+  const gainedFeatures: FeatureGrant[] = isCustomClass
+    ? homebrewFeatures.map((f) => ({ ...f, level: newLevel, source: "class" as const }))
+    : progression
+      ? featuresGainedAtLevel(progression, newLevel, effectiveSubclassId)
+      : [];
+
+  function finishHomebrewLevel() {
+    if (grantsAsi) {
+      setStep("asi-type");
+      return;
+    }
+    if (homebrewFeatures.length > 0) {
+      setStep("features");
+      return;
+    }
+    setStep("summary");
+  }
 
   // Single-class: the ruleset's own per-level slot table, same as always.
   // Multiclass: only this class's own level-up can ever change a slot pool
@@ -201,6 +228,14 @@ function LevelUpModalForm({
   }
 
   function finishAsi() {
+    if (isCustomClass) {
+      if (homebrewFeatures.length > 0) {
+        setStep("features");
+      } else {
+        setStep("summary");
+      }
+      return;
+    }
     nextAfter(effectiveSubclassId, true);
   }
 
@@ -209,14 +244,17 @@ function LevelUpModalForm({
     if (needsSubclass) {
       choices.subclassId = subclassId || customSubclassName.trim();
     }
-    if (needsAsi) {
+    if (isCustomClass && homebrewFeatures.length > 0) {
+      choices.homebrewFeatures = homebrewFeatures;
+    }
+    if (needsAsi || (isCustomClass && grantsAsi)) {
       if (abilityMode && selectedAbilities.length > 0) {
         const amount = abilityMode === "one" ? 2 : 1;
         const increases: Partial<Record<AbilityScoreKey, number>> = {};
         for (const key of selectedAbilities) increases[key] = amount;
         choices.asiChoice = { type: "ability", increases } satisfies AsiOrFeatChoice;
-      } else if (featText.trim()) {
-        choices.asiChoice = { type: "feat", feat: featText.trim() } satisfies AsiOrFeatChoice;
+      } else if (featPick) {
+        choices.asiChoice = { type: "feat", feat: featPick } satisfies AsiOrFeatChoice;
       }
     }
     if (spellRow) {
@@ -262,7 +300,9 @@ function LevelUpModalForm({
           )}
           <Pressable style={styles.optionButton} onPress={() => setMulticlassMode(true)}>
             <Text style={styles.optionButtonTitle}>+ Multiclass</Text>
-            <Text style={styles.optionButtonSub}>Take your first level in a new class</Text>
+            <Text style={styles.optionButtonSub}>
+              {isMulticlass ? "Take your first level in another new class" : "Take your first level in a new class"}
+            </Text>
           </Pressable>
         </View>
         <Pressable style={styles.cancelButton} onPress={onClose}>
@@ -316,8 +356,12 @@ function LevelUpModalForm({
             style={styles.optionButton}
             onPress={() => {
               setHpMethod("average");
-              nextAfter(effectiveSubclassId, !needsAsi);
-              if (needsSubclass) setStep("subclass");
+              if (isCustomClass) {
+                setStep("homebrew-level");
+              } else {
+                nextAfter(effectiveSubclassId, !needsAsi);
+                if (needsSubclass) setStep("subclass");
+              }
             }}
           >
             <Text style={styles.optionButtonTitle}>Take Average</Text>
@@ -327,7 +371,9 @@ function LevelUpModalForm({
             style={styles.optionButton}
             onPress={() => {
               setHpMethod("roll");
-              if (needsSubclass) {
+              if (isCustomClass) {
+                setStep("homebrew-level");
+              } else if (needsSubclass) {
                 setStep("subclass");
               } else {
                 nextAfter(effectiveSubclassId, !needsAsi);
@@ -399,12 +445,88 @@ function LevelUpModalForm({
     );
   }
 
+  if (step === "homebrew-level") {
+    return (
+      <StepCard
+        title={`${targetClassDef.name} ${currentLevel} → ${newLevel}`}
+        hint="This is a homebrew class -- there's no catalog of what it gains at each level, so tell us yourself."
+        onBack={() => setStep("hp-method")}
+        styles={styles}
+        scroll
+      >
+        <Pressable
+          style={styles.checkboxRow}
+          onPress={() => setGrantsAsi((prev) => !prev)}
+        >
+          <View style={[styles.checkbox, grantsAsi && styles.checkboxChecked]}>
+            {grantsAsi && <Text style={styles.checkboxMark}>✓</Text>}
+          </View>
+          <Text style={styles.checkboxLabel}>
+            This level grants an Ability Score Improvement or feat
+          </Text>
+        </Pressable>
+
+        <Text style={styles.sectionLabel}>New Features at This Level</Text>
+        <View style={{ gap: 8 }}>
+          {homebrewFeatures.map((f, idx) => (
+            <View key={`${f.name}-${idx}`} style={styles.traitRow}>
+              <View style={styles.traitInfo}>
+                <Text style={styles.featureName}>{f.name}</Text>
+                {f.description.length > 0 && <Text style={styles.featureText}>{f.description}</Text>}
+              </View>
+              <Pressable
+                onPress={() => setHomebrewFeatures((prev) => prev.filter((_, i) => i !== idx))}
+              >
+                <Text style={styles.traitRemove}>×</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+        <TextInput
+          style={styles.input}
+          value={newFeatureName}
+          onChangeText={setNewFeatureName}
+          placeholder="Feature name (e.g. Switch Axe Mastery)"
+          placeholderTextColor={theme.colors.textMuted}
+        />
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          value={newFeatureDescription}
+          onChangeText={setNewFeatureDescription}
+          placeholder="What does it do?"
+          placeholderTextColor={theme.colors.textMuted}
+          multiline
+        />
+        <Pressable
+          style={[styles.optionButton, !newFeatureName.trim() && styles.primaryButtonDisabled]}
+          disabled={!newFeatureName.trim()}
+          onPress={() => {
+            setHomebrewFeatures((prev) => [
+              ...prev,
+              { name: newFeatureName.trim(), description: newFeatureDescription.trim() },
+            ]);
+            setNewFeatureName("");
+            setNewFeatureDescription("");
+          }}
+        >
+          <Text style={styles.optionButtonTitle}>+ Add Feature</Text>
+        </Pressable>
+
+        <Pressable style={styles.primaryButton} onPress={finishHomebrewLevel}>
+          <Text style={styles.primaryButtonText}>Continue</Text>
+        </Pressable>
+      </StepCard>
+    );
+  }
+
   if (step === "asi-type") {
     return (
       <StepCard
         title="Ability Score Improvement"
         hint={`At level ${newLevel}, you can increase your ability scores or take a feat.`}
-        onBack={() => (needsSubclass ? setStep("subclass") : setStep("hp-method"))}
+        onBack={() =>
+          isCustomClass ? setStep("homebrew-level") : needsSubclass ? setStep("subclass") : setStep("hp-method")
+        }
         styles={styles}
       >
         <View style={styles.buttonColumn}>
@@ -502,34 +624,39 @@ function LevelUpModalForm({
     return (
       <StepCard
         title="Take a Feat"
-        hint="Browse the feat catalog, or type your own (e.g. a homebrew feat your table uses)."
+        hint="Browse the SRD 2024 feat catalog, or create your own."
         onBack={() => setStep("asi-type")}
         styles={styles}
       >
+        {featPick && (
+          <View style={[styles.traitRow, { marginBottom: 14 }]}>
+            <View style={styles.traitInfo}>
+              <Text style={styles.featureName}>{featPick.name}</Text>
+              {featPick.effects.map((effect, idx) => (
+                <Text key={idx} style={styles.featureText}>
+                  {describeFeatEffect(effect, character.ruleset)}
+                </Text>
+              ))}
+            </View>
+          </View>
+        )}
         <Pressable style={styles.optionButton} onPress={() => setFeatPickerVisible(true)}>
-          <Text style={styles.optionButtonTitle}>Browse Feat Catalog</Text>
-          <Text style={styles.optionButtonSub}>SRD 2024 + Level Up A5E&apos;s Adventurer&apos;s Guide</Text>
+          <Text style={styles.optionButtonTitle}>{featPick ? "Change Feat" : "Browse Feat Catalog"}</Text>
+          <Text style={styles.optionButtonSub}>SRD 2024, or create your own</Text>
         </Pressable>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={featText}
-          onChangeText={setFeatText}
-          placeholder="e.g. Great Weapon Master"
-          placeholderTextColor={theme.colors.textMuted}
-          multiline
-        />
         <Pressable
-          style={[styles.primaryButton, !featText.trim() && styles.primaryButtonDisabled]}
-          disabled={!featText.trim()}
+          style={[styles.primaryButton, !featPick && styles.primaryButtonDisabled]}
+          disabled={!featPick}
           onPress={finishAsi}
         >
           <Text style={styles.primaryButtonText}>Continue</Text>
         </Pressable>
         <FeatPickerModal
           visible={featPickerVisible}
+          character={character}
           onClose={() => setFeatPickerVisible(false)}
-          onPick={(entry) => {
-            setFeatText(entry.description ? `${entry.name} -- ${entry.description}` : entry.name);
+          onPick={(feat) => {
+            setFeatPick(feat);
             setFeatPickerVisible(false);
           }}
         />
@@ -621,11 +748,17 @@ function LevelUpModalForm({
           </Text>
         ) : null}
         {choices.asiChoice?.type === "feat" ? (
-          <Text style={styles.featureText}>Feat: {choices.asiChoice.feat}</Text>
+          <Text style={styles.featureText}>Feat: {choices.asiChoice.feat.name}</Text>
         ) : null}
         {choices.spellSlotUpdates ? (
           <Text style={styles.featureText}>Spell slots updated for level {newLevel}.</Text>
         ) : null}
+        {choices.homebrewFeatures?.map((f, idx) => (
+          <Text key={`${f.name}-${idx}`} style={styles.featureText}>
+            New: {f.name}
+            {f.description ? ` -- ${f.description}` : ""}
+          </Text>
+        ))}
       </View>
       <Pressable
         style={styles.primaryButton}
@@ -787,5 +920,38 @@ function createStyles(theme: Theme) {
       marginBottom: 2,
     },
     featureText: { color: theme.colors.textMuted, fontSize: 13, lineHeight: 18 },
+    sectionLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 10,
+      marginBottom: 8,
+      fontFamily: theme.displayFontFamily,
+    },
+    checkboxRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
+    checkbox: {
+      width: 22,
+      height: 22,
+      borderRadius: 4,
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    checkboxChecked: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    checkboxMark: { color: theme.colors.primaryText, fontSize: 13, fontWeight: "700" },
+    checkboxLabel: { color: theme.colors.text, fontSize: 13, flex: 1, fontFamily: theme.displayFontFamily },
+    traitRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: 10,
+    },
+    traitInfo: { flex: 1, paddingRight: 8 },
+    traitRemove: { color: theme.colors.accent, fontSize: 16, paddingHorizontal: 4 },
   });
 }

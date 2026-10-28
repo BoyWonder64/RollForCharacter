@@ -5,24 +5,31 @@ import type { AbilityScoreKey, Character } from "../../types/models";
 import {
   ABILITY_LABELS,
   abilityModifier,
+  appendHomebrewFeatures,
   averageHpGain,
   featuresGainedAtLevel,
   getClassDefinitionForCharacter,
   getClassProgressionForCharacter,
   parseConditions,
-  parseFeats,
   proficiencyBonusForLevel,
   rollHpGain,
   serializeConditions,
-  serializeFeats,
+  serializeCustomClassSavingThrows,
+  serializeCustomClassTraits,
+  serializeCustomProficiencyList,
+  serializeCustomRaceAbilityBonuses,
+  serializeCustomRaceTraits,
   serializeLanguages,
   serializeSkillProficiencies,
   type FeatureGrant,
+  type ResolvedFeatPick,
 } from "./characterCalculations";
 import { MAX_EXHAUSTION_LEVEL } from "../../data/conditions";
 import { rollExpression, type RollResult } from "../dice/diceEngine";
 import { saveRoll } from "../dice/diceRepo";
 import { resetSpellSlotUsage, setSpellSlot } from "../spells/spellRepo";
+import { applyShortRestRecharge, restoreAllResources } from "./resourceRepo";
+import { addResolvedFeat } from "./featRepo";
 
 export { ABILITY_LABELS, abilityModifier };
 
@@ -72,6 +79,16 @@ export type OnboardingCharacterInput = {
   notes?: string;
   usesXp?: boolean;
   experiencePoints?: number;
+  /** Only meaningful when `race`/`className` is the typed-in "Custom…" option -- see `getRaceDefinitionForCharacter`/`getClassDefinitionForCharacter`. */
+  customRaceAbilityBonuses?: Partial<Record<AbilityScoreKey, number>>;
+  customRaceSize?: "Small" | "Medium";
+  customRaceSpeed?: number;
+  customRaceTraits?: { name: string; description: string }[];
+  customClassHitDie?: 6 | 8 | 10 | 12;
+  customClassSavingThrows?: AbilityScoreKey[];
+  customClassArmorProficiencies?: string[];
+  customClassWeaponProficiencies?: string[];
+  customClassTraits?: { name: string; description: string }[];
 };
 
 export async function createCharacterFromOnboarding(
@@ -110,6 +127,19 @@ export async function createCharacterFromOnboarding(
       usesXp: input.usesXp ?? false,
       experiencePoints: input.experiencePoints ?? 0,
       hitDiceRemaining: input.level,
+      customRaceAbilityBonuses: serializeCustomRaceAbilityBonuses(input.customRaceAbilityBonuses ?? {}),
+      customRaceSize: input.customRaceSize ?? "Medium",
+      customRaceSpeed: input.customRaceSpeed ?? 30,
+      customRaceTraits: serializeCustomRaceTraits(input.customRaceTraits ?? []),
+      customClassHitDie: input.customClassHitDie ?? 8,
+      customClassSavingThrows: serializeCustomClassSavingThrows(input.customClassSavingThrows ?? []),
+      customClassArmorProficiencies: serializeCustomProficiencyList(
+        input.customClassArmorProficiencies ?? []
+      ),
+      customClassWeaponProficiencies: serializeCustomProficiencyList(
+        input.customClassWeaponProficiencies ?? []
+      ),
+      customClassTraits: serializeCustomClassTraits(input.customClassTraits ?? []),
     })
     .returning();
   return rows[0];
@@ -255,7 +285,7 @@ export type HpGainMethod = "average" | "roll" | "manual";
 
 export type AsiOrFeatChoice =
   | { type: "ability"; increases: Partial<Record<AbilityScoreKey, number>> }
-  | { type: "feat"; feat: string };
+  | { type: "feat"; feat: ResolvedFeatPick };
 
 export type LevelUpChoices = {
   hpMethod: HpGainMethod;
@@ -265,6 +295,13 @@ export type LevelUpChoices = {
   asiChoice?: AsiOrFeatChoice;
   /** New total slots per spell level (1-9), for classes whose spellcasting table changes at this level. */
   spellSlotUpdates?: { spellLevel: number; total: number }[];
+  /** Only for a homebrew class (no `ClassProgression` exists to look this up) -- whatever the player typed in on the Level Up workflow's homebrew-features step. See `appendHomebrewFeatures`. */
+  homebrewFeatures?: { name: string; description: string }[];
+  /** Only set once, the moment a brand-new homebrew class is created (onboarding's custom-class step, or Multiclass's) -- persisted onto `characters.customClass*` by `addClass` so later `levelUpClass` calls resolve the same hit die/saves/proficiencies instead of silently falling back to generic defaults. See `OnboardingCharacterInput`'s identical fields. */
+  customClassHitDie?: 6 | 8 | 10 | 12;
+  customClassSavingThrows?: AbilityScoreKey[];
+  customClassArmorProficiencies?: string[];
+  customClassWeaponProficiencies?: string[];
 };
 
 export type LevelUpOutcome = {
@@ -283,10 +320,11 @@ export type LevelUpOutcome = {
  * via Edit instead), proficiency bonus (recomputed in case the new level
  * crosses a breakpoint), a subclass pick (only legal/expected at that
  * class's subclass-choice level), an Ability Score Improvement or feat
- * (ability increases are clamped at 20 per the 5e rule; feats are appended
- * as freeform text -- no structured feat catalog exists yet), and any
- * updated spell slot totals. Returns the newly-granted class/subclass
- * features too, so the UI can show them after the fact.
+ * (ability increases are clamped at 20 per the 5e rule; a feat choice is
+ * written as its own `character_feats` row via `addResolvedFeat`, which
+ * also applies any ability-score-increase effects the feat itself grants),
+ * and any updated spell slot totals. Returns the newly-granted class/
+ * subclass features too, so the UI can show them after the fact.
  */
 export async function levelUp(
   id: number,
@@ -328,11 +366,21 @@ export async function levelUp(
     ][]) {
       updates[key] = Math.min(20, character[key] + amount);
     }
-  } else if (choices.asiChoice?.type === "feat") {
-    updates.feats = serializeFeats([...parseFeats(character), choices.asiChoice.feat]);
+  }
+
+  if (choices.homebrewFeatures && choices.homebrewFeatures.length > 0) {
+    updates.featuresAndTraits = appendHomebrewFeatures(
+      character.featuresAndTraits,
+      newLevel,
+      choices.homebrewFeatures
+    );
   }
 
   await updateCharacter(id, updates);
+
+  if (choices.asiChoice?.type === "feat") {
+    await addResolvedFeat(character, choices.asiChoice.feat);
+  }
 
   if (choices.spellSlotUpdates) {
     for (const { spellLevel, total } of choices.spellSlotUpdates) {
@@ -420,6 +468,21 @@ export async function rollDeathSave(id: number): Promise<DeathSaveOutcome | unde
   };
 }
 
+/**
+ * Manually stabilize a dying character without rolling -- e.g. an ally's
+ * successful DC 10 Wisdom (Medicine) check, or a DM call to stop the death
+ * save loop. Same end state as 3 successes: HP stays at 0, but no more
+ * death saves are needed until the character is healed or takes damage again.
+ */
+export async function stabilizeDeathSaves(id: number): Promise<void> {
+  await updateCharacter(id, { deathSaveSuccesses: 0, deathSaveFailures: 0 });
+}
+
+/** Revive a character who has died: clears death save progress and restores them to 1 HP. */
+export async function reviveCharacter(id: number): Promise<void> {
+  await updateCharacter(id, { currentHp: 1, deathSaveSuccesses: 0, deathSaveFailures: 0 });
+}
+
 /** Starts concentrating on a spell, replacing any previous one -- 5e only allows concentrating on one spell at a time. */
 export async function startConcentration(
   id: number,
@@ -443,19 +506,41 @@ export type SpendHitDieOutcome = {
   hitDiceRemaining: number;
 };
 
+/** Builds the RollResult for a hit die the player rolled on physical dice, rather than letting the app roll it. */
+function manualHitDieRoll(rawRoll: number, hitDie: number, conModifier: number): RollResult {
+  const value = Math.max(1, Math.min(hitDie, Math.round(rawRoll)));
+  const sign = conModifier >= 0 ? "+" : "-";
+  const breakdown =
+    conModifier !== 0
+      ? `1d${hitDie} (${value}, manual) ${sign} ${Math.abs(conModifier)}`
+      : `1d${hitDie} (${value}, manual)`;
+  return {
+    expression: `1d${hitDie}${conModifier !== 0 ? `${sign}${Math.abs(conModifier)}` : ""} (manual)`,
+    total: value + conModifier,
+    breakdown,
+    rolls: [{ sides: hitDie, value }],
+  };
+}
+
 /**
  * Spends one Hit Die during a short rest: rolls the class's hit die + CON
  * modifier (never healing less than 0), adds it to current HP (capped at
  * max), and removes one Hit Die from the pool. No-op if none remain.
+ *
+ * Pass `manualRoll` when the player rolled their own physical die instead of
+ * letting the app roll it -- it's used in place of the app's roll, clamped
+ * to the die's range, with CON modifier still applied on top.
  */
-export async function spendHitDie(id: number): Promise<SpendHitDieOutcome | undefined> {
+export async function spendHitDie(id: number, manualRoll?: number): Promise<SpendHitDieOutcome | undefined> {
   const character = await getCharacter(id);
   if (!character || character.hitDiceRemaining <= 0) return undefined;
 
   const hitDie = getClassDefinitionForCharacter(character).hitDie;
   const conModifier = abilityModifier(character.constitution);
-  const sign = conModifier >= 0 ? "+" : "-";
-  const roll = rollExpression(`1d${hitDie}${sign}${Math.abs(conModifier)}`);
+  const roll =
+    manualRoll !== undefined
+      ? manualHitDieRoll(manualRoll, hitDie, conModifier)
+      : rollExpression(`1d${hitDie}${conModifier >= 0 ? "+" : "-"}${Math.abs(conModifier)}`);
   await saveRoll(roll, id);
 
   const healed = Math.max(0, roll.total);
@@ -466,6 +551,13 @@ export async function spendHitDie(id: number): Promise<SpendHitDieOutcome | unde
   return { roll, healed, hitDiceRemaining };
 }
 
+/** 5e short rest: no automatic HP recovery (Hit Dice are spent manually via `spendHitDie`), but recharges any class resource that regains uses on a short rest (e.g. Action Surge, Second Wind). */
+export async function shortRest(id: number): Promise<void> {
+  const character = await getCharacter(id);
+  if (!character) return;
+  await applyShortRestRecharge(character);
+}
+
 export type LongRestOutcome = {
   hpRestored: number;
   hitDiceRestored: number;
@@ -474,7 +566,8 @@ export type LongRestOutcome = {
 /**
  * 5e long rest: full HP restore, regain half the total Hit Dice pool
  * (rounded down, minimum 1, capped at the pool's max), every spell slot
- * refreshed, one level of exhaustion removed, and death save progress
+ * refreshed, every class resource (Action Surge, Second Wind, Indomitable,
+ * ...) recharged, one level of exhaustion removed, and death save progress
  * cleared.
  */
 export async function longRest(id: number): Promise<LongRestOutcome | undefined> {
@@ -496,6 +589,7 @@ export async function longRest(id: number): Promise<LongRestOutcome | undefined>
     exhaustionLevel: Math.max(0, character.exhaustionLevel - 1),
   });
   await resetSpellSlotUsage(id);
+  await restoreAllResources(character);
 
   return { hpRestored, hitDiceRestored };
 }

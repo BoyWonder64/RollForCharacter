@@ -1,5 +1,12 @@
 import type { ClassProgression } from "../types";
 
+/** A resource pool that grows by exactly 1 per level (Focus/Sorcery points) or `multiplier` per level (Lay on Hands, at x5) -- a breakpoint table from `fromLevel` through `toLevel` inclusive. */
+function pointsEqualToLevel(fromLevel: number, toLevel: number, multiplier = 1): Record<number, number> {
+  const byLevel: Record<number, number> = {};
+  for (let level = fromLevel; level <= toLevel; level++) byLevel[level] = level * multiplier;
+  return byLevel;
+}
+
 // Per-level class & subclass progression for 5e (2024 SRD 5.2, CC BY 4.0).
 // Sourced verbatim from the open5e API v2 (document__key=srd-2024), not
 // transcribed from memory -- see src/data/rulesets/5e-2024/classes.ts's top
@@ -46,6 +53,15 @@ export const CLASS_PROGRESSIONS_5E_2024: ClassProgression[] = [
     subclassLevel: 3,
     subclassLabel: "Barbarian Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "barbarian-rage",
+        name: "Rage",
+        // 20th-level Barbarians rage an unlimited number of times -- approximated as a very large number since usesByLevel has no "unlimited" concept.
+        usesByLevel: { 1: 2, 3: 3, 6: 4, 12: 5, 17: 6, 20: 999 },
+        shortRestRegain: 1,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -214,6 +230,14 @@ Once you use this feature, you can't use it again until you finish a Long Rest u
     subclassLevel: 3,
     subclassLabel: "Bard Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "bard-bardic-inspiration",
+        name: "Bardic Inspiration",
+        // From level 5 (Font of Inspiration), uses also regain on a short rest -- not modeled since shortRestRegain can't vary by level yet.
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 1, minimum: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -365,6 +389,14 @@ You always have the chosen spells prepared, and whenever you gain a Bard level, 
     subclassLevel: 3,
     subclassLabel: "Cleric Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "cleric-channel-divinity",
+        name: "Channel Divinity",
+        usesByLevel: { 2: 2, 6: 3, 18: 4 },
+        shortRestRegain: 1,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -533,6 +565,14 @@ Table: Life Domain Spells
     subclassLevel: 3,
     subclassLabel: "Druid Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "druid-wild-shape",
+        name: "Wild Shape",
+        usesByLevel: { 2: 2, 6: 3, 17: 4 },
+        shortRestRegain: 1,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -669,6 +709,18 @@ In addition, you can expend one use of Wild Shape (no action required) to give y
         name: "Circle of the Land",
         summary: `The Circle of the Land comprises mystics and sages who safeguard ancient knowledge and rites. These Druids meet within sacred circles of trees or standing stones to whisper primal secrets in Druidic. The circle's wisest members preside as the chief priests of their communities.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "druid-natural-recovery-spell",
+            name: "Natural Recovery (free Circle Spell)",
+            usesByLevel: { 6: 1 },
+          },
+          {
+            id: "druid-natural-recovery-slots",
+            name: "Natural Recovery (slot recovery)",
+            usesByLevel: { 6: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -767,6 +819,25 @@ In addition, when you finish a Short Rest, you can choose expended spell slots t
     subclassLevel: 3,
     subclassLabel: "Fighter Subclass",
     asiLevels: [4, 6, 8, 12, 14, 16, 19],
+    resources: [
+      {
+        id: "fighter-second-wind",
+        name: "Second Wind",
+        usesByLevel: { 1: 2, 13: 3, 17: 4 },
+        shortRestRegain: 1,
+      },
+      {
+        id: "fighter-action-surge",
+        name: "Action Surge",
+        usesByLevel: { 2: 1, 17: 2 },
+        shortRestRegain: "all",
+      },
+      {
+        id: "fighter-indomitable",
+        name: "Indomitable",
+        usesByLevel: { 9: 1, 13: 2, 17: 3 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -899,6 +970,15 @@ Once you use this feature, you can't do so again until you finish a Short or Lon
     subclassLevel: 3,
     subclassLabel: "Monk Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "monk-focus",
+        name: "Focus Points",
+        usesByLevel: pointsEqualToLevel(2, 20),
+        shortRestRegain: "all",
+        isPointPool: true,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1051,6 +1131,13 @@ Additionally, whenever you make a saving throw and fail, you can expend 1 Focus 
         name: "Warrior of the Open Hand",
         summary: `Warriors of the Open Hand are masters of unarmed combat. They learn techniques to push and trip their opponents and manipulate their own energy to protect themselves from harm.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "monk-wholeness-of-body",
+            name: "Wholeness of Body",
+            usesFromAbilityModifier: { ability: "wisdom", grantedAtLevel: 6, minimum: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -1091,6 +1178,20 @@ You can have only one creature under the effect of this feature at a time. You c
     subclassLevel: 3,
     subclassLabel: "Paladin Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "paladin-channel-divinity",
+        name: "Channel Divinity",
+        usesByLevel: { 3: 2, 11: 3 },
+        shortRestRegain: 1,
+      },
+      {
+        id: "paladin-lay-on-hands",
+        name: "Lay on Hands",
+        usesByLevel: pointsEqualToLevel(1, 20, 5),
+        isPointPool: true,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1221,6 +1322,13 @@ These paladins share the following tenets:
 - Protect the weak and never fear to act.
 - Let your honorable deeds be an example.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "paladin-holy-nimbus",
+            name: "Holy Nimbus",
+            usesByLevel: { 20: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -1298,6 +1406,14 @@ You can end this effect early (no action required). This effect also ends if you
     subclassLevel: 3,
     subclassLabel: "Ranger Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "ranger-favored-enemy",
+        name: "Favored Enemy",
+        // Free Hunter's Mark casts, scaling with proficiency bonus (2/3/4/5/6 at levels 1/5/9/13/17).
+        usesByLevel: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1481,6 +1597,14 @@ You can use this feature a number of times equal to your Wisdom modifier (minimu
     subclassLevel: 3,
     subclassLabel: "Rogue Subclass",
     asiLevels: [4, 8, 10, 12, 16, 19],
+    resources: [
+      {
+        id: "rogue-stroke-of-luck",
+        name: "Stroke of Luck",
+        usesByLevel: { 20: 1 },
+        shortRestRegain: "all",
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1649,6 +1773,14 @@ Once you use this feature, you can't use it again until you finish a Short or Lo
     subclassLevel: 3,
     subclassLabel: "Sorcerer Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "sorcerer-sorcery-points",
+        name: "Sorcery Points",
+        usesByLevel: pointsEqualToLevel(2, 20),
+        isPointPool: true,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1887,6 +2019,38 @@ Whenever you start casting the spell, you can modify it so that it doesn't requi
     subclassLevel: 3,
     subclassLabel: "Warlock Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "warlock-magic-cunning",
+        name: "Magic Cunning",
+        usesByLevel: { 2: 1 },
+      },
+      {
+        id: "warlock-contact-patron",
+        name: "Contact Patron",
+        usesByLevel: { 9: 1 },
+      },
+      {
+        id: "warlock-arcanum-6",
+        name: "Mystic Arcanum (6th level)",
+        usesByLevel: { 11: 1 },
+      },
+      {
+        id: "warlock-arcanum-7",
+        name: "Mystic Arcanum (7th level)",
+        usesByLevel: { 13: 1 },
+      },
+      {
+        id: "warlock-arcanum-8",
+        name: "Mystic Arcanum (8th level)",
+        usesByLevel: { 15: 1 },
+      },
+      {
+        id: "warlock-arcanum-9",
+        name: "Mystic Arcanum (9th level)",
+        usesByLevel: { 17: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -2169,6 +2333,18 @@ Whenever you gain a Warlock level, you can replace one of your arcanum spells wi
         name: "Fiend Patron",
         summary: `Your pact draws on the Lower Planes, the realms of perdition. You might forge a bargain with a demon lord, an archdevil, or another fiend that is especially mighty. That patron's aims are evil—the corruption or destruction of all things, ultimately including you—and your path is defined by the extent to which you strive against those aims.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "warlock-dark-ones-own-luck",
+            name: "Dark One's Own Luck",
+            usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 6, minimum: 1 },
+          },
+          {
+            id: "warlock-hurl-through-hell",
+            name: "Hurl Through Hell",
+            usesByLevel: { 14: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -2217,6 +2393,13 @@ Once you use this feature, you can't use it again until you finish a Long Rest u
     subclassLevel: 3,
     subclassLabel: "Wizard Subclass",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "wizard-arcane-recovery",
+        name: "Arcane Recovery",
+        usesByLevel: { 1: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -2308,6 +2491,13 @@ Whenever you finish a Long Rest, you can study your spellbook and replace one of
         name: "Evoker",
         summary: `Your studies focus on magic that creates powerful elemental effects such as bitter cold, searing flame, rolling thunder, crackling lightning, and burning acid. Some Evokers find employment in military forces, serving as artillery to blast armies from afar. Others use their power to protect others, while some seek their own gain.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "wizard-overchannel",
+            name: "Overchannel (safe use)",
+            usesByLevel: { 14: 1 },
+          },
+        ],
         features: [
           {
             level: 3,

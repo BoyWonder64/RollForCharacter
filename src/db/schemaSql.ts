@@ -30,6 +30,15 @@ export const CREATE_TABLES_SQL = `
     concentrating_spell_name TEXT NOT NULL DEFAULT '',
     skill_proficiencies TEXT NOT NULL DEFAULT '',
     saving_throw_proficiencies TEXT NOT NULL DEFAULT '',
+    custom_race_ability_bonuses TEXT NOT NULL DEFAULT '',
+    custom_race_size TEXT NOT NULL DEFAULT 'Medium',
+    custom_race_speed INTEGER NOT NULL DEFAULT 30,
+    custom_race_traits TEXT NOT NULL DEFAULT '',
+    custom_class_hit_die INTEGER NOT NULL DEFAULT 8,
+    custom_class_saving_throws TEXT NOT NULL DEFAULT '',
+    custom_class_armor_proficiencies TEXT NOT NULL DEFAULT '',
+    custom_class_weapon_proficiencies TEXT NOT NULL DEFAULT '',
+    custom_class_traits TEXT NOT NULL DEFAULT '',
     armor_class INTEGER NOT NULL DEFAULT 10,
     speed INTEGER NOT NULL DEFAULT 30,
     proficiency_bonus INTEGER NOT NULL DEFAULT 2,
@@ -126,6 +135,8 @@ export const CREATE_TABLES_SQL = `
     properties TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
     equipped INTEGER NOT NULL DEFAULT 0,
+    is_magic INTEGER NOT NULL DEFAULT 0,
+    magic_bonus INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -143,6 +154,8 @@ export const CREATE_TABLES_SQL = `
     weight REAL NOT NULL DEFAULT 0,
     description TEXT NOT NULL DEFAULT '',
     equipped INTEGER NOT NULL DEFAULT 0,
+    is_magic INTEGER NOT NULL DEFAULT 0,
+    magic_bonus INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -173,6 +186,19 @@ export const CREATE_TABLES_SQL = `
     description TEXT NOT NULL DEFAULT '',
     source_key TEXT NOT NULL DEFAULT '',
     source_name TEXT NOT NULL DEFAULT ''
+  );
+
+  CREATE TABLE IF NOT EXISTS character_feats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    catalog_feat_id INTEGER REFERENCES feats(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    prerequisite TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    source_name TEXT NOT NULL DEFAULT '',
+    enabled INTEGER NOT NULL DEFAULT 1,
+    effects TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
   CREATE TABLE IF NOT EXISTS magic_items (
@@ -240,6 +266,13 @@ export const CREATE_TABLES_SQL = `
     notes TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS character_resource_uses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    resource_id TEXT NOT NULL,
+    uses_remaining INTEGER NOT NULL DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS dice_roll_history (

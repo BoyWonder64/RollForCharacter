@@ -109,6 +109,39 @@ const COLUMN_MIGRATIONS: ColumnMigration[] = [
     definition: "TEXT NOT NULL DEFAULT ''",
   },
   { table: "characters", column: "languages", definition: "TEXT NOT NULL DEFAULT ''" },
+  {
+    table: "characters",
+    column: "custom_race_ability_bonuses",
+    definition: "TEXT NOT NULL DEFAULT ''",
+  },
+  { table: "characters", column: "custom_race_size", definition: "TEXT NOT NULL DEFAULT 'Medium'" },
+  { table: "characters", column: "custom_race_speed", definition: "INTEGER NOT NULL DEFAULT 30" },
+  { table: "characters", column: "custom_race_traits", definition: "TEXT NOT NULL DEFAULT ''" },
+  { table: "characters", column: "custom_class_hit_die", definition: "INTEGER NOT NULL DEFAULT 8" },
+  {
+    table: "characters",
+    column: "custom_class_saving_throws",
+    definition: "TEXT NOT NULL DEFAULT ''",
+  },
+  {
+    table: "characters",
+    column: "custom_class_armor_proficiencies",
+    definition: "TEXT NOT NULL DEFAULT ''",
+  },
+  {
+    table: "characters",
+    column: "custom_class_weapon_proficiencies",
+    definition: "TEXT NOT NULL DEFAULT ''",
+  },
+  {
+    table: "characters",
+    column: "custom_class_traits",
+    definition: "TEXT NOT NULL DEFAULT ''",
+  },
+  { table: "character_weapons", column: "is_magic", definition: "INTEGER NOT NULL DEFAULT 0" },
+  { table: "character_weapons", column: "magic_bonus", definition: "INTEGER NOT NULL DEFAULT 0" },
+  { table: "character_armor", column: "is_magic", definition: "INTEGER NOT NULL DEFAULT 0" },
+  { table: "character_armor", column: "magic_bonus", definition: "INTEGER NOT NULL DEFAULT 0" },
 ];
 
 // The `equipment_item_id` entry in COLUMN_MIGRATIONS above only ever ADDED
@@ -213,6 +246,46 @@ function migrateWeaponCategoryRedo(sqliteDb: SQLiteDatabase): void {
   );
 }
 
+// `characters.feats` was the only place a feat lived -- a newline-separated
+// free-text blob, never shown anywhere on the sheet (see
+// `src/features/characters/featRepo.ts`). Structured `character_feats` rows
+// replace it; this is the one-time move of whatever free text already
+// exists into that table, one row per non-blank line, so no on-device
+// character loses feats it already had. Guarded per-character (not just on
+// `character_feats` being empty overall) so re-running this after the
+// player has already added real structured feats of their own can't
+// duplicate anything -- it only ever backfills a character with zero rows.
+// `characters.feats` itself is left untouched (nothing writes to it
+// anymore, but this app's SQLite migrations never drop columns).
+function migrateLegacyFeatsIfNeeded(sqliteDb: SQLiteDatabase): void {
+  const rows = sqliteDb.getAllSync<{ id: number; feats: string }>(
+    "SELECT id, feats FROM characters WHERE feats IS NOT NULL AND feats != '';",
+    []
+  );
+  if (rows.length === 0) return;
+
+  sqliteDb.withTransactionSync(() => {
+    for (const row of rows) {
+      const existing = sqliteDb.getFirstSync<{ count: number }>(
+        "SELECT COUNT(*) as count FROM character_feats WHERE character_id = ?;",
+        [row.id]
+      );
+      if (existing && existing.count > 0) continue;
+
+      const lines = row.feats
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      for (const line of lines) {
+        sqliteDb.runSync(
+          "INSERT INTO character_feats (character_id, name, effects) VALUES (?, ?, '[]');",
+          [row.id, line]
+        );
+      }
+    }
+  });
+}
+
 export function runColumnMigrations(sqliteDb: SQLiteDatabase): void {
   migrateDressUpItemIdRename(sqliteDb);
   migrateLegsSlotRemoval(sqliteDb);
@@ -231,4 +304,9 @@ export function runColumnMigrations(sqliteDb: SQLiteDatabase): void {
       // Column already exists on this install -- nothing to do.
     }
   }
+
+  // Must run after the loop above -- on a device old enough to be missing
+  // the `feats` column entirely, this query would fail until that ADD
+  // COLUMN has run.
+  migrateLegacyFeatsIfNeeded(sqliteDb);
 }

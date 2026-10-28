@@ -48,6 +48,7 @@ export const RULESETS: Record<string, RulesetCatalog> = {
     // a universal chargen grant independent of species (verified against
     // the real document's "Choose Languages" section).
     universalLanguageGrant: { granted: ["common"], chooseCount: 2 },
+    backgroundAbilityBonus: { totalPoints: 3, maxPerAbility: 2 },
   },
   "3.5e": {
     id: "3.5e",
@@ -72,6 +73,7 @@ export type {
   ClassDefinition,
   ClassFeature,
   ClassProgression,
+  ClassTrait,
   EquipmentGrant,
   EquipmentLine,
   EquipmentOption,

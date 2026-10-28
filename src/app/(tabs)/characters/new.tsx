@@ -23,10 +23,12 @@ import {
   getRulesetCatalog,
   type ArmorDefinition,
   type ClassDefinition,
+  type ClassTrait,
   type EquipmentGrant,
   type EquipmentLine,
   type EquipmentOption,
   type RaceDefinition,
+  type RaceTrait,
   type WeaponDefinition,
   type WeaponProficiencyCategory,
 } from "../../../data/rulesets";
@@ -114,6 +116,32 @@ export default function NewCharacterScreen() {
     if (event.target === undefined) return;
     scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard(event.target, 120, true);
   }
+
+  // Custom-text fields ("Type your own race/class/weapon") tend to sit below
+  // a long list of choices, so the keyboard can cover them even once
+  // scrollFieldIntoView runs. Mirroring the live value into a banner fixed
+  // above the ScrollView (so it's never under the keyboard) lets the user
+  // see what they're typing regardless of scroll position.
+  const [livePreview, setLivePreview] = useState<{
+    key: string;
+    label: string;
+    value: string;
+  } | null>(null);
+
+  function showPreview(key: string, label: string, value: string) {
+    setLivePreview({ key, label, value });
+  }
+
+  function previewBlurHandler(key: string) {
+    return () => setLivePreview((prev) => (prev?.key === key ? null : prev));
+  }
+
+  function previewChangeHandler(key: string, setValue: (text: string) => void) {
+    return (text: string) => {
+      setValue(text);
+      setLivePreview((prev) => (prev?.key === key ? { ...prev, value: text } : prev));
+    };
+  }
   const { iconsEnabled, iconStyle } = useIconSettings();
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -125,11 +153,35 @@ export default function NewCharacterScreen() {
   const [raceId, setRaceId] = useState<string | null>(null);
   const [customRaceName, setCustomRaceName] = useState("");
   const [selectedExtraLanguageIds, setSelectedExtraLanguageIds] = useState<Set<string>>(new Set());
+  // Homebrew race fields -- only used when raceId === CUSTOM_OPTION_ID, see
+  // `getRaceDefinitionForCharacter`.
+  const [customRaceAbilityBonuses, setCustomRaceAbilityBonuses] = useState<
+    Partial<Record<AbilityScoreKey, number>>
+  >({});
+  const [customRaceSize, setCustomRaceSize] = useState<"Small" | "Medium">("Medium");
+  const [customRaceSpeed, setCustomRaceSpeed] = useState("30");
+  const [customRaceTraits, setCustomRaceTraits] = useState<RaceTrait[]>([]);
+  const [newTraitName, setNewTraitName] = useState("");
+  const [newTraitDescription, setNewTraitDescription] = useState("");
 
   const [classId, setClassId] = useState<string | null>(null);
   const [customClassName, setCustomClassName] = useState("");
+  // Homebrew class fields -- only used when classId === CUSTOM_OPTION_ID, see
+  // `getClassDefinitionForCharacter`.
+  const [customClassHitDie, setCustomClassHitDie] = useState<6 | 8 | 10 | 12>(8);
+  const [customClassSavingThrows, setCustomClassSavingThrows] = useState<AbilityScoreKey[]>([]);
+  const [customClassArmorProficiencies, setCustomClassArmorProficiencies] = useState("");
+  const [customClassWeaponProficiencies, setCustomClassWeaponProficiencies] = useState("");
+  const [customClassTraits, setCustomClassTraits] = useState<ClassTrait[]>([]);
+  const [newClassTraitName, setNewClassTraitName] = useState("");
+  const [newClassTraitDescription, setNewClassTraitDescription] = useState("");
 
   const [background, setBackground] = useState("");
+  // 2024 5e only -- see `RulesetCatalog.backgroundAbilityBonus`. Unused (and
+  // reset) for rulesets where ability increases come from race instead.
+  const [backgroundAbilityBonuses, setBackgroundAbilityBonuses] = useState<
+    Partial<Record<AbilityScoreKey, number>>
+  >({});
   const [alignment, setAlignment] = useState<string | null>(null);
   const [personalityTraits, setPersonalityTraits] = useState("");
   const [ideals, setIdeals] = useState("");
@@ -177,7 +229,13 @@ export default function NewCharacterScreen() {
 
   const selectedRace: RaceDefinition | null =
     raceId === CUSTOM_OPTION_ID
-      ? CUSTOM_RACE_FALLBACK
+      ? {
+          ...CUSTOM_RACE_FALLBACK,
+          abilityBonuses: customRaceAbilityBonuses,
+          size: customRaceSize,
+          speed: parseInt(customRaceSpeed, 10) || 30,
+          traits: customRaceTraits,
+        }
       : catalog.races.find((r) => r.id === raceId) ?? null;
 
   // Only meaningful once a language catalog exists for this ruleset (5e,
@@ -196,6 +254,7 @@ export default function NewCharacterScreen() {
   function selectRuleset(id: string) {
     setRuleset(id);
     setSelectedExtraLanguageIds(new Set());
+    setBackgroundAbilityBonuses({});
   }
 
   function selectRace(id: string) {
@@ -216,10 +275,35 @@ export default function NewCharacterScreen() {
     });
   }
 
-  const selectedClass: ClassDefinition | null =
-    classId === CUSTOM_OPTION_ID
-      ? CUSTOM_CLASS_FALLBACK
-      : catalog.classes.find((c) => c.id === classId) ?? null;
+  const selectedClass: ClassDefinition | null = useMemo(
+    () =>
+      classId === CUSTOM_OPTION_ID
+        ? {
+            ...CUSTOM_CLASS_FALLBACK,
+            hitDie: customClassHitDie,
+            savingThrows:
+              customClassSavingThrows.length === 2
+                ? (customClassSavingThrows as [AbilityScoreKey, AbilityScoreKey])
+                : CUSTOM_CLASS_FALLBACK.savingThrows,
+            armorProficiencies: customClassArmorProficiencies
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            weaponProficiencies: customClassWeaponProficiencies
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+          }
+        : catalog.classes.find((c) => c.id === classId) ?? null,
+    [
+      classId,
+      catalog,
+      customClassHitDie,
+      customClassSavingThrows,
+      customClassArmorProficiencies,
+      customClassWeaponProficiencies,
+    ]
+  );
 
   const raceNameValue =
     raceId === CUSTOM_OPTION_ID
@@ -481,12 +565,16 @@ export default function NewCharacterScreen() {
                 <TextInput
                   style={styles.input}
                   value={customWeaponNameFor(grantKey)}
-                  onChangeText={(text) =>
+                  onChangeText={previewChangeHandler(`weapon:${grantKey}`, (text) =>
                     setCustomWeaponNames((prev) => ({ ...prev, [grantKey]: text }))
-                  }
+                  )}
                   placeholder="Weapon name"
                   placeholderTextColor={theme.colors.textMuted}
-                  onFocus={scrollFieldIntoView}
+                  onFocus={(event) => {
+                    scrollFieldIntoView(event);
+                    showPreview(`weapon:${grantKey}`, "Weapon name", customWeaponNameFor(grantKey));
+                  }}
+                  onBlur={previewBlurHandler(`weapon:${grantKey}`)}
                 />
               )}
             </View>
@@ -536,10 +624,31 @@ export default function NewCharacterScreen() {
     wisdom: assignments.wisdom ?? 10,
     charisma: assignments.charisma ?? 10,
   };
-  const finalAbilityScores: Record<AbilityScoreKey, number> =
-    !selectedRace || raceId === CUSTOM_OPTION_ID
+  const finalAbilityScores: Record<AbilityScoreKey, number> = (() => {
+    const withRace = !selectedRace
       ? baseAbilityScores
       : applyRaceAbilityBonuses(baseAbilityScores, selectedRace, chosenBonusAbilities);
+    if (!catalog.backgroundAbilityBonus) return withRace;
+    const result = { ...withRace };
+    for (const [key, bonus] of Object.entries(backgroundAbilityBonuses) as [
+      AbilityScoreKey,
+      number,
+    ][]) {
+      result[key] += bonus;
+    }
+    return result;
+  })();
+
+  /** Combined race + background ability-score bonus for one ability, for display while assigning scores -- doesn't include the base assigned value. */
+  function totalBonusFor(key: AbilityScoreKey): number {
+    const fixed = selectedRace?.abilityBonuses[key] ?? 0;
+    const chosen =
+      selectedRace?.chooseAbilityBonus && chosenBonusAbilities.includes(key)
+        ? selectedRace.chooseAbilityBonus.amount
+        : 0;
+    const background = backgroundAbilityBonuses[key] ?? 0;
+    return fixed + chosen + background;
+  }
 
   const spellLimits =
     selectedClass && selectedClass.spellcastingAbility
@@ -581,8 +690,14 @@ export default function NewCharacterScreen() {
         );
       case "equipment":
         return true;
-      case "background":
-        return true;
+      case "background": {
+        if (!catalog.backgroundAbilityBonus) return true;
+        const total = Object.values(backgroundAbilityBonuses).reduce(
+          (a, b) => a + (b ?? 0),
+          0
+        );
+        return total === catalog.backgroundAbilityBonus.totalPoints;
+      }
       case "alignment":
         return true;
       case "personality":
@@ -732,6 +847,29 @@ export default function NewCharacterScreen() {
       notes: "",
       usesXp: usesXp ?? false,
       experiencePoints: usesXp ? xpThresholdForLevel(ruleset, levelNum) : 0,
+      ...(raceId === CUSTOM_OPTION_ID
+        ? {
+            customRaceAbilityBonuses,
+            customRaceSize,
+            customRaceSpeed: parseInt(customRaceSpeed, 10) || 30,
+            customRaceTraits,
+          }
+        : {}),
+      ...(classId === CUSTOM_OPTION_ID
+        ? {
+            customClassHitDie,
+            customClassSavingThrows,
+            customClassArmorProficiencies: customClassArmorProficiencies
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            customClassWeaponProficiencies: customClassWeaponProficiencies
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            customClassTraits,
+          }
+        : {}),
     });
     await addStartingEquipment(created.id);
     for (const spellId of selectedSpellIds) {
@@ -751,6 +889,15 @@ export default function NewCharacterScreen() {
       <Text style={styles.stepCounter}>
         Step {stepIndex + 1} of {steps.length}
       </Text>
+
+      {livePreview && (
+        <View style={styles.livePreviewBanner}>
+          <Text style={styles.livePreviewLabel}>{livePreview.label}</Text>
+          <Text style={styles.livePreviewValue} numberOfLines={1}>
+            {livePreview.value.length > 0 ? livePreview.value : "…"}
+          </Text>
+        </View>
+      )}
 
       <ScrollView
         ref={scrollRef}
@@ -818,7 +965,7 @@ export default function NewCharacterScreen() {
                         {Object.entries(race.abilityBonuses)
                           .map(
                             ([key, value]) =>
-                              `+${value} ${ABILITY_LABELS[key as AbilityScoreKey]}`
+                              `${value >= 0 ? "+" : ""}${value} ${ABILITY_LABELS[key as AbilityScoreKey]}`
                           )
                           .join(", ")}
                       </Text>
@@ -857,11 +1004,136 @@ export default function NewCharacterScreen() {
               <TextInput
                 style={styles.input}
                 value={customRaceName}
-                onChangeText={setCustomRaceName}
+                onChangeText={previewChangeHandler("customRace", setCustomRaceName)}
                 placeholder="Race name"
                 placeholderTextColor={theme.colors.textMuted}
-                onFocus={scrollFieldIntoView}
+                onFocus={(event) => {
+                  scrollFieldIntoView(event);
+                  showPreview("customRace", "Race name", customRaceName);
+                }}
+                onBlur={previewBlurHandler("customRace")}
               />
+            )}
+            {raceId === CUSTOM_OPTION_ID && (
+              <View style={styles.customBuilderSection}>
+                <Text style={styles.customBuilderLabel}>Ability Score Bonuses</Text>
+                {ABILITY_KEYS.map((key) => {
+                  const value = customRaceAbilityBonuses[key] ?? 0;
+                  return (
+                    <View key={key} style={styles.stepperRow}>
+                      <Text style={styles.stepperLabel}>{ABILITY_LABELS[key]}</Text>
+                      <View style={styles.stepperControls}>
+                        <Pressable
+                          style={styles.stepperButton}
+                          onPress={() =>
+                            setCustomRaceAbilityBonuses((prev) => ({
+                              ...prev,
+                              [key]: Math.max(-2, (prev[key] ?? 0) - 1),
+                            }))
+                          }
+                        >
+                          <Text style={styles.stepperButtonText}>−</Text>
+                        </Pressable>
+                        <Text style={styles.stepperValue}>
+                          {value > 0 ? `+${value}` : value}
+                        </Text>
+                        <Pressable
+                          style={styles.stepperButton}
+                          onPress={() =>
+                            setCustomRaceAbilityBonuses((prev) => ({
+                              ...prev,
+                              [key]: Math.min(3, (prev[key] ?? 0) + 1),
+                            }))
+                          }
+                        >
+                          <Text style={styles.stepperButtonText}>+</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                })}
+
+                <Text style={styles.customBuilderLabel}>Size</Text>
+                <View style={styles.skillGrid}>
+                  {(["Small", "Medium"] as const).map((size) => (
+                    <Pressable
+                      key={size}
+                      onPress={() => setCustomRaceSize(size)}
+                      style={[styles.skillCard, customRaceSize === size && styles.skillCardActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.skillCardText,
+                          customRaceSize === size && styles.skillCardTextActive,
+                        ]}
+                      >
+                        {size}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <Text style={styles.customBuilderLabel}>Speed (feet)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={customRaceSpeed}
+                  onChangeText={setCustomRaceSpeed}
+                  keyboardType="number-pad"
+                  placeholder="30"
+                  placeholderTextColor={theme.colors.textMuted}
+                  onFocus={scrollFieldIntoView}
+                />
+
+                <Text style={styles.customBuilderLabel}>Traits</Text>
+                {customRaceTraits.map((trait, i) => (
+                  <View key={`${trait.name}-${i}`} style={styles.traitRow}>
+                    <View style={styles.traitInfo}>
+                      <Text style={styles.traitName}>{trait.name}</Text>
+                      {trait.description.length > 0 && (
+                        <Text style={styles.traitDescription}>{trait.description}</Text>
+                      )}
+                    </View>
+                    <Pressable
+                      onPress={() =>
+                        setCustomRaceTraits((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                    >
+                      <Text style={styles.traitRemove}>×</Text>
+                    </Pressable>
+                  </View>
+                ))}
+                <TextInput
+                  style={styles.input}
+                  value={newTraitName}
+                  onChangeText={setNewTraitName}
+                  placeholder="Trait name (e.g. Darkvision)"
+                  placeholderTextColor={theme.colors.textMuted}
+                  onFocus={scrollFieldIntoView}
+                />
+                <TextInput
+                  style={[styles.input, styles.multilineInput]}
+                  value={newTraitDescription}
+                  onChangeText={setNewTraitDescription}
+                  placeholder="What does it do?"
+                  placeholderTextColor={theme.colors.textMuted}
+                  multiline
+                  onFocus={scrollFieldIntoView}
+                />
+                <Pressable
+                  style={[styles.smallAddButton, !newTraitName.trim() && styles.smallAddButtonDisabled]}
+                  disabled={!newTraitName.trim()}
+                  onPress={() => {
+                    setCustomRaceTraits((prev) => [
+                      ...prev,
+                      { name: newTraitName.trim(), description: newTraitDescription.trim() },
+                    ]);
+                    setNewTraitName("");
+                    setNewTraitDescription("");
+                  }}
+                >
+                  <Text style={styles.smallAddButtonText}>Add Trait</Text>
+                </Pressable>
+              </View>
             )}
           </View>
         )}
@@ -985,11 +1257,142 @@ export default function NewCharacterScreen() {
               <TextInput
                 style={styles.input}
                 value={customClassName}
-                onChangeText={setCustomClassName}
+                onChangeText={previewChangeHandler("customClass", setCustomClassName)}
                 placeholder="Class name"
                 placeholderTextColor={theme.colors.textMuted}
-                onFocus={scrollFieldIntoView}
+                onFocus={(event) => {
+                  scrollFieldIntoView(event);
+                  showPreview("customClass", "Class name", customClassName);
+                }}
+                onBlur={previewBlurHandler("customClass")}
               />
+            )}
+            {classId === CUSTOM_OPTION_ID && (
+              <View style={styles.customBuilderSection}>
+                <Text style={styles.customBuilderLabel}>Hit Die</Text>
+                <View style={styles.skillGrid}>
+                  {([6, 8, 10, 12] as const).map((die) => (
+                    <Pressable
+                      key={die}
+                      onPress={() => setCustomClassHitDie(die)}
+                      style={[
+                        styles.skillCard,
+                        customClassHitDie === die && styles.skillCardActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.skillCardText,
+                          customClassHitDie === die && styles.skillCardTextActive,
+                        ]}
+                      >
+                        d{die}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <Text style={styles.customBuilderLabel}>
+                  Saving Throw Proficiencies (choose {customClassSavingThrows.length}/2)
+                </Text>
+                <View style={styles.skillGrid}>
+                  {ABILITY_KEYS.map((key) => {
+                    const selected = customClassSavingThrows.includes(key);
+                    return (
+                      <Pressable
+                        key={key}
+                        onPress={() =>
+                          setCustomClassSavingThrows((prev) => {
+                            if (prev.includes(key)) return prev.filter((k) => k !== key);
+                            if (prev.length >= 2) return prev;
+                            return [...prev, key];
+                          })
+                        }
+                        style={[styles.skillCard, selected && styles.skillCardActive]}
+                      >
+                        <Text
+                          style={[styles.skillCardText, selected && styles.skillCardTextActive]}
+                        >
+                          {ABILITY_LABELS[key]}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                <Text style={styles.customBuilderLabel}>Armor Proficiencies</Text>
+                <TextInput
+                  style={styles.input}
+                  value={customClassArmorProficiencies}
+                  onChangeText={setCustomClassArmorProficiencies}
+                  placeholder="e.g. Light armor, Shields"
+                  placeholderTextColor={theme.colors.textMuted}
+                  onFocus={scrollFieldIntoView}
+                />
+
+                <Text style={styles.customBuilderLabel}>Weapon Proficiencies</Text>
+                <TextInput
+                  style={styles.input}
+                  value={customClassWeaponProficiencies}
+                  onChangeText={setCustomClassWeaponProficiencies}
+                  placeholder="e.g. Simple weapons, Shortswords"
+                  placeholderTextColor={theme.colors.textMuted}
+                  onFocus={scrollFieldIntoView}
+                />
+
+                <Text style={styles.customBuilderLabel}>Traits</Text>
+                {customClassTraits.map((trait, i) => (
+                  <View key={`${trait.name}-${i}`} style={styles.traitRow}>
+                    <View style={styles.traitInfo}>
+                      <Text style={styles.traitName}>{trait.name}</Text>
+                      {trait.description.length > 0 && (
+                        <Text style={styles.traitDescription}>{trait.description}</Text>
+                      )}
+                    </View>
+                    <Pressable
+                      onPress={() =>
+                        setCustomClassTraits((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                    >
+                      <Text style={styles.traitRemove}>×</Text>
+                    </Pressable>
+                  </View>
+                ))}
+                <TextInput
+                  style={styles.input}
+                  value={newClassTraitName}
+                  onChangeText={setNewClassTraitName}
+                  placeholder="Trait name (e.g. Second Wind)"
+                  placeholderTextColor={theme.colors.textMuted}
+                  onFocus={scrollFieldIntoView}
+                />
+                <TextInput
+                  style={[styles.input, styles.multilineInput]}
+                  value={newClassTraitDescription}
+                  onChangeText={setNewClassTraitDescription}
+                  placeholder="What does it do?"
+                  placeholderTextColor={theme.colors.textMuted}
+                  multiline
+                  onFocus={scrollFieldIntoView}
+                />
+                <Pressable
+                  style={[
+                    styles.smallAddButton,
+                    !newClassTraitName.trim() && styles.smallAddButtonDisabled,
+                  ]}
+                  disabled={!newClassTraitName.trim()}
+                  onPress={() => {
+                    setCustomClassTraits((prev) => [
+                      ...prev,
+                      { name: newClassTraitName.trim(), description: newClassTraitDescription.trim() },
+                    ]);
+                    setNewClassTraitName("");
+                    setNewClassTraitDescription("");
+                  }}
+                >
+                  <Text style={styles.smallAddButtonText}>Add Trait</Text>
+                </Pressable>
+              </View>
             )}
           </View>
         )}
@@ -1058,6 +1461,67 @@ export default function NewCharacterScreen() {
               placeholderTextColor={theme.colors.textMuted}
               onFocus={scrollFieldIntoView}
             />
+            {catalog.backgroundAbilityBonus && (
+              <View style={styles.customBuilderSection}>
+                <Text style={styles.customBuilderLabel}>Background Ability Scores</Text>
+                <Text style={styles.hint}>
+                  2024 rules grant ability score increases from your background rather than
+                  your species. Distribute {catalog.backgroundAbilityBonus.totalPoints} points
+                  across your abilities ({catalog.backgroundAbilityBonus.maxPerAbility} max
+                  each) — e.g. +2/+1 to two abilities, or +1/+1/+1 to three.
+                </Text>
+                <Text style={styles.hint}>
+                  {Object.values(backgroundAbilityBonuses).reduce(
+                    (a, b) => a + (b ?? 0),
+                    0
+                  )}{" "}
+                  / {catalog.backgroundAbilityBonus.totalPoints} points allocated
+                </Text>
+                {ABILITY_KEYS.map((key) => {
+                  const value = backgroundAbilityBonuses[key] ?? 0;
+                  const total = Object.values(backgroundAbilityBonuses).reduce(
+                    (a, b) => a + (b ?? 0),
+                    0
+                  );
+                  const maxPerAbility = catalog.backgroundAbilityBonus!.maxPerAbility;
+                  const totalPoints = catalog.backgroundAbilityBonus!.totalPoints;
+                  return (
+                    <View key={key} style={styles.stepperRow}>
+                      <Text style={styles.stepperLabel}>{ABILITY_LABELS[key]}</Text>
+                      <View style={styles.stepperControls}>
+                        <Pressable
+                          style={styles.stepperButton}
+                          disabled={value <= 0}
+                          onPress={() =>
+                            setBackgroundAbilityBonuses((prev) => ({
+                              ...prev,
+                              [key]: Math.max(0, (prev[key] ?? 0) - 1),
+                            }))
+                          }
+                        >
+                          <Text style={styles.stepperButtonText}>−</Text>
+                        </Pressable>
+                        <Text style={styles.stepperValue}>
+                          {value > 0 ? `+${value}` : value}
+                        </Text>
+                        <Pressable
+                          style={styles.stepperButton}
+                          disabled={value >= maxPerAbility || total >= totalPoints}
+                          onPress={() =>
+                            setBackgroundAbilityBonuses((prev) => ({
+                              ...prev,
+                              [key]: Math.min(maxPerAbility, (prev[key] ?? 0) + 1),
+                            }))
+                          }
+                        >
+                          <Text style={styles.stepperButtonText}>+</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
 
@@ -1247,38 +1711,49 @@ export default function NewCharacterScreen() {
                 <Text style={styles.hint}>
                   Place each of {STANDARD_ARRAY.join(", ")} on an ability score.
                 </Text>
-                {ABILITY_KEYS.map((key) => (
-                  <View key={key} style={styles.abilityRow}>
-                    <Text style={styles.abilityRowLabel}>{ABILITY_LABELS[key]}</Text>
-                    <View style={styles.abilityValues}>
-                      {STANDARD_ARRAY.map((value) => {
-                        const assignedHere = assignments[key] === value;
-                        const disabled = !assignedHere && isValueUsedByOther(value, key);
-                        return (
-                          <Pressable
-                            key={value}
-                            disabled={disabled}
-                            onPress={() => selectAbilityValue(key, value)}
-                            style={[
-                              styles.abilityValueButton,
-                              assignedHere && styles.abilityValueButtonActive,
-                              disabled && styles.abilityValueButtonDisabled,
-                            ]}
-                          >
-                            <Text
+                {ABILITY_KEYS.map((key) => {
+                  const bonus = totalBonusFor(key);
+                  return (
+                    <View key={key} style={styles.abilityRow}>
+                      <Text style={styles.abilityRowLabel}>{ABILITY_LABELS[key]}</Text>
+                      {bonus !== 0 && (
+                        <Text style={styles.rollAbilityDetail}>
+                          {bonus > 0 ? `+${bonus}` : bonus} racial/background bonus
+                          {assignments[key] !== undefined
+                            ? ` → ${assignments[key]! + bonus}`
+                            : ""}
+                        </Text>
+                      )}
+                      <View style={styles.abilityValues}>
+                        {STANDARD_ARRAY.map((value) => {
+                          const assignedHere = assignments[key] === value;
+                          const disabled = !assignedHere && isValueUsedByOther(value, key);
+                          return (
+                            <Pressable
+                              key={value}
+                              disabled={disabled}
+                              onPress={() => selectAbilityValue(key, value)}
                               style={[
-                                styles.abilityValueText,
-                                assignedHere && styles.abilityValueTextActive,
+                                styles.abilityValueButton,
+                                assignedHere && styles.abilityValueButtonActive,
+                                disabled && styles.abilityValueButtonDisabled,
                               ]}
                             >
-                              {value}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
+                              <Text
+                                style={[
+                                  styles.abilityValueText,
+                                  assignedHere && styles.abilityValueTextActive,
+                                ]}
+                              >
+                                {value}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  );
+                })}
               </>
             ) : (
               <>
@@ -1289,10 +1764,17 @@ export default function NewCharacterScreen() {
                 {ABILITY_KEYS.map((key) => {
                   const detail = rolledDetails[key];
                   const score = assignments[key];
+                  const bonus = totalBonusFor(key);
                   return (
                     <View key={key} style={styles.rollAbilityRow}>
                       <Text style={styles.abilityRowLabel}>{ABILITY_LABELS[key]}</Text>
                       <View style={styles.rollAbilityResult}>
+                        {bonus !== 0 && (
+                          <Text style={styles.rollAbilityDetail}>
+                            {bonus > 0 ? `+${bonus}` : bonus} racial/background
+                            {score !== undefined ? ` → ${score + bonus}` : ""}
+                          </Text>
+                        )}
                         {score !== undefined && detail ? (
                           <Text style={styles.rollAbilityDetail}>
                             {detail.dice.join(", ")} (dropped {detail.dropped})
@@ -1640,6 +2122,29 @@ function createStyles(theme: Theme) {
     },
     body: { flex: 1 },
     bodyContent: { padding: 16 },
+    livePreviewBanner: {
+      marginHorizontal: 16,
+      marginTop: 10,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 2,
+      borderColor: theme.colors.primary,
+      borderRadius: theme.radius,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    livePreviewLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      fontWeight: "700",
+      textTransform: "uppercase",
+    },
+    livePreviewValue: {
+      color: theme.colors.text,
+      fontSize: 18,
+      fontWeight: "700",
+      marginTop: 2,
+      fontFamily: theme.displayFontFamily,
+    },
     title: {
       color: theme.colors.text,
       fontSize: 22,
@@ -2010,5 +2515,75 @@ function createStyles(theme: Theme) {
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
     },
+    customBuilderSection: { marginTop: 16 },
+    customBuilderLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginBottom: 8,
+      marginTop: 4,
+      fontFamily: theme.displayFontFamily,
+    },
+    stepperRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 6,
+    },
+    stepperLabel: { color: theme.colors.text, fontSize: 13, fontFamily: theme.displayFontFamily },
+    stepperControls: { flexDirection: "row", alignItems: "center", gap: 10 },
+    stepperButton: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stepperButtonText: { color: theme.colors.text, fontSize: 16, fontWeight: "700" },
+    stepperValue: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: "700",
+      minWidth: 28,
+      textAlign: "center",
+      fontFamily: theme.displayFontFamily,
+    },
+    smallAddButton: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radius,
+      paddingVertical: 10,
+      alignItems: "center",
+      marginTop: 4,
+      marginBottom: 12,
+    },
+    smallAddButtonDisabled: { opacity: 0.4 },
+    smallAddButtonText: {
+      color: theme.colors.primaryText,
+      fontWeight: "700",
+      fontFamily: theme.displayFontFamily,
+    },
+    traitRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: 10,
+      marginBottom: 8,
+    },
+    traitInfo: { flex: 1, paddingRight: 8 },
+    traitName: {
+      color: theme.colors.text,
+      fontWeight: "700",
+      fontSize: 13,
+      fontFamily: theme.displayFontFamily,
+    },
+    traitDescription: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
+    traitRemove: { color: theme.colors.accent, fontSize: 16, paddingHorizontal: 4 },
   });
 }

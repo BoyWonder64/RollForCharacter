@@ -93,6 +93,8 @@ function AddWeaponModalForm({
   const [weightText, setWeightText] = useState("");
   const [propertiesText, setPropertiesText] = useState("");
   const [description, setDescription] = useState("");
+  const [isMagic, setIsMagic] = useState(false);
+  const [magicBonusText, setMagicBonusText] = useState("");
 
   const visibleCatalog =
     categoryFilter === "All"
@@ -116,6 +118,8 @@ function AddWeaponModalForm({
         .map((p) => p.trim())
         .filter(Boolean),
       description: description.trim(),
+      isMagic,
+      magicBonus: isMagic ? parseInt(magicBonusText, 10) || 0 : 0,
     });
   }
 
@@ -296,6 +300,24 @@ function AddWeaponModalForm({
             placeholderTextColor={theme.colors.textMuted}
             multiline
           />
+
+          <Pressable style={styles.checkboxRow} onPress={() => setIsMagic((v) => !v)}>
+            <View style={[styles.checkbox, isMagic && styles.checkboxChecked]} />
+            <Text style={styles.checkboxLabel}>Magic item (enchanted)</Text>
+          </Pressable>
+          {isMagic && (
+            <>
+              <Text style={styles.fieldLabel}>Enchantment Bonus</Text>
+              <TextInput
+                style={styles.input}
+                value={magicBonusText}
+                onChangeText={setMagicBonusText}
+                placeholder="e.g. 1 for a +1 weapon"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="number-pad"
+              />
+            </>
+          )}
         </ScrollView>
       )}
 
@@ -435,6 +457,17 @@ function createStyles(theme: Theme) {
     multilineInput: { minHeight: 60, textAlignVertical: "top" },
     row: { flexDirection: "row", gap: 10 },
     rowField: { flex: 1 },
+    checkboxRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14 },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    checkboxChecked: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    checkboxLabel: { color: theme.colors.text, fontFamily: theme.displayFontFamily, fontSize: 13 },
     buttonRow: { flexDirection: "row", gap: 8, marginTop: 16 },
     secondaryButton: {
       flex: 1,

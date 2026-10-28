@@ -1,5 +1,6 @@
 import { createCharacterFromOnboarding, getCharacter, type OnboardingCharacterInput } from "../characterRepo";
 import { addClass, levelUpClass, listCharacterClasses } from "../characterClassRepo";
+import { listCharacterFeats } from "../featRepo";
 
 jest.mock("../../../db/client");
 
@@ -80,6 +81,21 @@ describe("addClass", () => {
   it("returns undefined for a character that does not exist", async () => {
     await expect(addClass(999999, "wizard", "Wizard", { hpMethod: "average" })).resolves.toBeUndefined();
   });
+
+  it("allows multiclassing into a third (or further) class -- RAW has no cap", async () => {
+    const character = await makeFighter();
+    await addClass(character.id, "wizard", "Wizard", { hpMethod: "average" });
+
+    const outcome = await addClass(character.id, "rogue", "Rogue", { hpMethod: "average" });
+
+    expect(outcome).toMatchObject({ newLevel: 1 });
+    const rows = await listCharacterClasses(character.id);
+    expect(rows).toMatchObject([
+      { classId: "fighter", level: 4, sortOrder: 0 },
+      { classId: "wizard", level: 1, sortOrder: 1 },
+      { classId: "rogue", level: 1, sortOrder: 2 },
+    ]);
+  });
 });
 
 describe("levelUpClass", () => {
@@ -123,5 +139,31 @@ describe("levelUpClass", () => {
 
   it("returns undefined for a character that does not exist", async () => {
     await expect(levelUpClass(999999, "fighter", { hpMethod: "manual" })).resolves.toBeUndefined();
+  });
+
+  it("writes a feat choice as a character_feats row and applies its ability score increase", async () => {
+    const character = await makeFighter({ level: 3, strength: 16 }); // -> level 4, an ASI/feat level
+    await addClass(character.id, "wizard", "Wizard", { hpMethod: "manual" });
+
+    const outcome = await levelUpClass(character.id, "fighter", {
+      hpMethod: "manual",
+      asiChoice: {
+        type: "feat",
+        feat: {
+          name: "Grappler",
+          prerequisite: "Level 4+, Strength or Dexterity 13+",
+          description: "",
+          sourceName: "System Reference Document 5.2",
+          effects: [{ kind: "abilityScoreIncrease", ability: "strength", amount: 1, max: 20 }],
+        },
+      },
+    });
+
+    expect(outcome).toMatchObject({ newLevel: 4 });
+    const updated = await getCharacter(character.id);
+    expect(updated?.strength).toBe(17);
+
+    const feats = await listCharacterFeats(character);
+    expect(feats).toMatchObject([{ name: "Grappler", enabled: true }]);
   });
 });

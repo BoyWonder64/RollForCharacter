@@ -1,5 +1,12 @@
 import type { ClassProgression } from "../types";
 
+/** A resource pool that grows by exactly 1 per level (Ki points, Sorcery points) or `multiplier` per level (Lay on Hands, at x5) -- a breakpoint table from `fromLevel` through `toLevel` inclusive. */
+function pointsEqualToLevel(fromLevel: number, toLevel: number, multiplier = 1): Record<number, number> {
+  const byLevel: Record<number, number> = {};
+  for (let level = fromLevel; level <= toLevel; level++) byLevel[level] = level * multiplier;
+  return byLevel;
+}
+
 // Per-level class & subclass progression for 5e (2014 SRD 5.1, OGL 1.0a).
 // Sourced verbatim from the open5e API (document__slug=wotc-srd), not
 // transcribed from memory -- see TODO.md for the sourcing method. Each
@@ -12,6 +19,14 @@ export const CLASS_PROGRESSIONS_5E: ClassProgression[] = [
     subclassLevel: 3,
     subclassLabel: "Primal Path",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "barbarian-rage",
+        name: "Rage",
+        // 20th-level Barbarians rage an unlimited number of times -- approximated as a very large number since usesByLevel has no "unlimited" concept.
+        usesByLevel: { 1: 2, 3: 3, 6: 4, 12: 5, 17: 6, 20: 999 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -137,6 +152,13 @@ If the creature succeeds on its saving throw, you can't use this feature on that
     subclassLevel: 3,
     subclassLabel: "Bard College",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "bard-bardic-inspiration",
+        name: "Bardic Inspiration",
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 1, minimum: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -297,6 +319,14 @@ You learn two additional spells from any class at 14th level and again at 18th l
     subclassLevel: 1,
     subclassLabel: "Divine Domain",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "cleric-channel-divinity",
+        name: "Channel Divinity",
+        usesByLevel: { 2: 1, 6: 2, 18: 3 },
+        shortRestRegain: "all",
+      },
+    ],
     features: [
       {
         level: 1,
@@ -455,6 +485,14 @@ As an action, you present your holy symbol and evoke healing energy that can res
     subclassLevel: 2,
     subclassLabel: "Druid Circle",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "druid-wild-shape",
+        name: "Wild Shape",
+        usesByLevel: { 2: 2 },
+        shortRestRegain: "all",
+      },
+    ],
     features: [
       {
         level: 1,
@@ -534,6 +572,13 @@ Additionally, you can ignore the verbal and somatic components of your druid spe
         name: "Circle of the Land",
         summary: `The Circle of the Land is made up of mystics and sages who safeguard ancient knowledge and rites through a vast oral tradition. These druids meet within sacred circles of trees or standing stones to whisper primal secrets in Druidic. The circle's wisest members preside as the chief priests of communities that hold to the Old Faith and serve as advisors to the rulers of those folk. As a member of t`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "druid-natural-recovery",
+            name: "Natural Recovery",
+            usesByLevel: { 2: 1 },
+          },
+        ],
         features: [
           {
             level: 2,
@@ -680,6 +725,25 @@ The creature is aware of this effect before it makes its attack against you.
     subclassLevel: 3,
     subclassLabel: "Martial Archetype",
     asiLevels: [4, 6, 8, 12, 14, 16, 19],
+    resources: [
+      {
+        id: "fighter-second-wind",
+        name: "Second Wind",
+        usesByLevel: { 1: 1 },
+        shortRestRegain: "all",
+      },
+      {
+        id: "fighter-action-surge",
+        name: "Action Surge",
+        usesByLevel: { 2: 1, 17: 2 },
+        shortRestRegain: "all",
+      },
+      {
+        id: "fighter-indomitable",
+        name: "Indomitable",
+        usesByLevel: { 9: 1, 13: 2, 17: 3 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -785,6 +849,15 @@ In addition, when you make a running long jump, the distance you can cover incre
     subclassLevel: 3,
     subclassLabel: "Monastic Tradition",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "monk-ki",
+        name: "Ki Points",
+        usesByLevel: pointsEqualToLevel(2, 20),
+        shortRestRegain: "all",
+        isPointPool: true,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -919,6 +992,13 @@ Additionally, you can spend 8 ki points to cast the *astral projection* spell, w
         name: "Way of the Open Hand",
         summary: `Monks of the Way of the Open Hand are the ultimate masters of martial arts combat, whether armed or unarmed. They learn techniques to push and trip their opponents, manipulate ki to heal damage to their bodies, and practice advanced meditation that can protect them from harm.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "monk-wholeness-of-body",
+            name: "Wholeness of Body",
+            usesByLevel: { 6: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -954,6 +1034,31 @@ You can have only one creature under the effect of this feature at a time. You c
     subclassLevel: 3,
     subclassLabel: "Sacred Oath",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "paladin-channel-divinity",
+        name: "Channel Divinity",
+        usesByLevel: { 3: 1 },
+        shortRestRegain: "all",
+      },
+      {
+        id: "paladin-lay-on-hands",
+        name: "Lay on Hands",
+        usesByLevel: pointsEqualToLevel(1, 20, 5),
+        isPointPool: true,
+      },
+      {
+        id: "paladin-divine-sense",
+        name: "Divine Sense",
+        // "1 + Charisma modifier" (no stated minimum of 1, unlike Bardic Inspiration).
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 1, minimum: 0, bonus: 1 },
+      },
+      {
+        id: "paladin-cleansing-touch",
+        name: "Cleansing Touch",
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 14, minimum: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1109,6 +1214,13 @@ You can use this feature a number of times equal to your Charisma modifier (a mi
         name: "Oath of Devotion",
         summary: `The Oath of Devotion binds a paladin to the loftiest ideals of justice, virtue, and order. Sometimes called cavaliers, white knights, or holy warriors, these paladins meet the ideal of the knight in shining armor, acting with honor in pursuit of justice and the greater good. They hold themselves to the highest standards of conduct, and some, for better or worse, hold the rest of the world to the s`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "paladin-holy-nimbus",
+            name: "Holy Nimbus",
+            usesByLevel: { 20: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -1409,6 +1521,14 @@ You are also aware of the location of any invisible creature within 30 feet of y
     subclassLevel: 3,
     subclassLabel: "Roguish Archetype",
     asiLevels: [4, 8, 10, 12, 16, 19],
+    resources: [
+      {
+        id: "rogue-stroke-of-luck",
+        name: "Stroke of Luck",
+        usesByLevel: { 20: 1 },
+        shortRestRegain: "all",
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1524,6 +1644,14 @@ In addition, when you make a running jump, the distance you cover increases by a
     subclassLevel: 1,
     subclassLabel: "Sorcerous Origin",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "sorcerer-sorcery-points",
+        name: "Sorcery Points",
+        usesByLevel: pointsEqualToLevel(2, 20),
+        isPointPool: true,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -1729,6 +1857,28 @@ You can't manifest your wings while wearing armor unless the armor is made to ac
     subclassLevel: 1,
     subclassLabel: "Otherworldly Patron",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "warlock-arcanum-6",
+        name: "Mystic Arcanum (6th level)",
+        usesByLevel: { 11: 1 },
+      },
+      {
+        id: "warlock-arcanum-7",
+        name: "Mystic Arcanum (7th level)",
+        usesByLevel: { 13: 1 },
+      },
+      {
+        id: "warlock-arcanum-8",
+        name: "Mystic Arcanum (8th level)",
+        usesByLevel: { 15: 1 },
+      },
+      {
+        id: "warlock-arcanum-9",
+        name: "Mystic Arcanum (9th level)",
+        usesByLevel: { 17: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -2007,6 +2157,19 @@ At higher levels, you gain more warlock spells of your choice that can be cast i
         name: "The Fiend",
         summary: `You have made a pact with a fiend from the lower planes of existence, a being whose aims are evil, even if you strive against those aims. Such beings desire the corruption or destruction of all things, ultimately including you. Fiends powerful enough to forge a pact include demon lords such as Demogorgon, Orcus, Fraz'Urb-luu, and Baphomet; archdevils such as Asmodeus, Dispater, Mephistopheles, and`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "warlock-dark-ones-own-luck",
+            name: "Dark One's Own Luck",
+            usesByLevel: { 6: 1 },
+            shortRestRegain: "all",
+          },
+          {
+            id: "warlock-hurl-through-hell",
+            name: "Hurl Through Hell",
+            usesByLevel: { 14: 1 },
+          },
+        ],
         features: [
           {
             level: 1,
@@ -2058,6 +2221,13 @@ Once you use this feature, you can't use it again until you finish a long rest.`
     subclassLevel: 2,
     subclassLabel: "Arcane Tradition",
     asiLevels: [4, 8, 12, 16, 19],
+    resources: [
+      {
+        id: "wizard-arcane-recovery",
+        name: "Arcane Recovery",
+        usesByLevel: { 1: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -2151,6 +2321,13 @@ If you want to cast either spell at a higher level, you must expend a spell slot
         name: "School of Evocation",
         summary: `You focus your study on magic that creates powerful elemental effects such as bitter cold, searing flame, rolling thunder, crackling lightning, and burning acid. Some evokers find employment in military forces, serving as artillery to blast enemy armies from afar. Others use their spectacular power to protect the weak, while some seek their own gain as bandits, adventurers, or aspiring tyrants.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "wizard-overchannel",
+            name: "Overchannel (safe use)",
+            usesByLevel: { 14: 1 },
+          },
+        ],
         features: [
           {
             level: 2,

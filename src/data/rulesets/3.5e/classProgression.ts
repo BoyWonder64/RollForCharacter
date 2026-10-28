@@ -1,5 +1,12 @@
 import type { ClassProgression } from "../types";
 
+/** A resource pool that grows by exactly 1 per level (Bardic Music uses/day) or `multiplier` per level (Wholeness of Body, at x2) -- a breakpoint table from `fromLevel` through `toLevel` inclusive. */
+function pointsEqualToLevel(fromLevel: number, toLevel: number, multiplier = 1): Record<number, number> {
+  const byLevel: Record<number, number> = {};
+  for (let level = fromLevel; level <= toLevel; level++) byLevel[level] = level * multiplier;
+  return byLevel;
+}
+
 // Per-level class & subclass progression for 3.5e (d20srd.org, "The
 // Hypertext d20 SRD", OGL 1.0a Open Game Content). Sourced verbatim from
 // each class's own SRD page (e.g. http://www.d20srd.org/srd/classes/barbarian.htm)
@@ -88,6 +95,14 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     classId: "barbarian",
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 3, 6, 9, 12, 15, 18],
+    resources: [
+      {
+        id: "barbarian-rage",
+        name: "Rage",
+        // "Once per day at 1st level, one additional time every four levels thereafter, to a maximum of six times per day at 20th level."
+        usesByLevel: { 1: 1, 4: 2, 8: 3, 12: 4, 16: 5, 20: 6 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -150,6 +165,15 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     classId: "bard",
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 3, 6, 9, 12, 15, 18],
+    resources: [
+      {
+        id: "bard-bardic-music",
+        name: "Bardic Music",
+        // "Once per day per bard level" -- a single shared pool across every bardic music ability (Countersong, Fascinate, Inspire Courage, ...).
+        usesByLevel: pointsEqualToLevel(1, 20),
+        isPointPool: true,
+      },
+    ],
     features: [
       {
         level: 1,
@@ -241,6 +265,14 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     subclassLabel: "Domain",
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 3, 6, 9, 12, 15, 18],
+    resources: [
+      {
+        id: "cleric-turn-rebuke-undead",
+        name: "Turn or Rebuke Undead",
+        // "3 + Charisma modifier" times per day; no stated minimum.
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 1, minimum: 0, bonus: 3 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -588,6 +620,14 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     classId: "druid",
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 3, 6, 9, 12, 15, 18],
+    resources: [
+      {
+        id: "druid-wild-shape",
+        name: "Wild Shape",
+        // "Once per day" at 5th level; "more times per day at 6th, 7th, 10th, 14th, and 18th level" (+1 each).
+        usesByLevel: { 5: 1, 6: 2, 7: 3, 10: 4, 14: 5, 18: 6 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -694,6 +734,20 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     classId: "monk",
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 2, 3, 6, 9, 12, 15, 18],
+    resources: [
+      {
+        id: "monk-wholeness-of-body",
+        name: "Wholeness of Body",
+        // "A number of hit points of damage equal to twice her current monk level each day" -- a healing pool, not a flat use count.
+        usesByLevel: pointsEqualToLevel(7, 20, 2),
+        isPointPool: true,
+      },
+      {
+        id: "monk-abundant-step",
+        name: "Abundant Step",
+        usesByLevel: { 12: 1 },
+      },
+    ],
     features: [
       {
         level: 1,
@@ -801,6 +855,27 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     classId: "paladin",
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 3, 6, 9, 12, 15, 18],
+    resources: [
+      {
+        id: "paladin-smite-evil",
+        name: "Smite Evil",
+        // "Once per day" at 1st level, +1 every five levels thereafter, to a maximum of five times per day at 20th.
+        usesByLevel: { 1: 1, 5: 2, 10: 3, 15: 4, 20: 5 },
+      },
+      {
+        id: "paladin-lay-on-hands",
+        name: "Lay on Hands",
+        // "Paladin level x her Charisma bonus" hit points per day.
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 2, minimum: 0, multiplyByLevel: true },
+        isPointPool: true,
+      },
+      {
+        id: "paladin-turn-undead",
+        name: "Turn Undead",
+        // "3 + Charisma modifier" times per day, same as a cleric's turning (as a cleric three levels lower).
+        usesFromAbilityModifier: { ability: "charisma", grantedAtLevel: 4, minimum: 0, bonus: 3 },
+      },
+    ],
     features: [
       {
         level: 1,

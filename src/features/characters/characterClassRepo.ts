@@ -1,22 +1,44 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { characterClasses } from "../../db/schema";
+import { CUSTOM_OPTION_ID } from "../../data/rulesets";
 import type { AbilityScoreKey, Character, CharacterClass } from "../../types/models";
 import {
   abilityModifier,
+  appendHomebrewFeatures,
   averageHpGain,
   featuresGainedAtLevel,
   getClassDefinition,
   getClassDefinitionForCharacter,
   getClassProgression,
-  parseFeats,
   proficiencyBonusForLevel,
   rollHpGain,
-  serializeFeats,
+  serializeCustomClassSavingThrows,
+  serializeCustomProficiencyList,
   type FeatureGrant,
 } from "./characterCalculations";
 import { getCharacter, updateCharacter, type LevelUpChoices } from "./characterRepo";
+import { addResolvedFeat } from "./featRepo";
 import { setSpellSlot } from "../spells/spellRepo";
+
+/**
+ * A `characterClasses` row's own `ClassDefinition`, honoring the custom-class
+ * overlay fields on `characters` (hit die, saves, proficiencies) when that
+ * row is the homebrew slot (`classId === CUSTOM_OPTION_ID`) -- same merge
+ * `getClassDefinitionForCharacter` does for the primary class, just keyed by
+ * this row's own `classId` instead of `character.className`. Only one
+ * `characterClasses` row can ever be the homebrew slot (see `addClass`'s
+ * duplicate-classId guard), so there's no ambiguity about whose overlay data
+ * the shared `characters.customClass*` columns belong to.
+ */
+function classDefinitionForRow(
+  character: Character,
+  classId: string
+): ReturnType<typeof getClassDefinition> {
+  return classId === CUSTOM_OPTION_ID
+    ? getClassDefinitionForCharacter({ ...character, className: classId })
+    : getClassDefinition(character.ruleset, classId);
+}
 
 export type ClassLevelOutcome = {
   /** This class's own new level (not the character's total level). */
@@ -86,6 +108,7 @@ async function syncCharacterClassMirror(characterId: number): Promise<CharacterC
   return rows;
 }
 
+/** Only the "ability" branch mutates `updates` directly -- a "feat" choice is written as its own `character_feats` row afterward, via `addResolvedFeat` (see `levelUpClass`), since it needs its own insert rather than a column on `characters`. */
 function applyAsiChoice(
   character: Character,
   updates: Partial<Character>,
@@ -98,8 +121,6 @@ function applyAsiChoice(
     ][]) {
       updates[key] = Math.min(20, character[key] + amount);
     }
-  } else if (choices.asiChoice?.type === "feat") {
-    updates.feats = serializeFeats([...parseFeats(character), choices.asiChoice.feat]);
   }
 }
 
@@ -117,8 +138,10 @@ async function applySpellSlotUpdates(characterId: number, choices: LevelUpChoice
  * multiclassing. HP gain always comes from `classId`'s own hit die (never
  * the level-1 max-hit-die formula -- that only ever applies to a
  * character's very first level overall, which this never re-triggers).
- * Returns undefined if the character doesn't exist or already has this
+ * Returns undefined if the character doesn't exist, or already has this
  * class (use `levelUpClass` to add a level to an existing class instead).
+ * A character may multiclass into any number of classes -- RAW 5e places
+ * no cap on how many classes a character can take.
  */
 export async function addClass(
   characterId: number,
@@ -132,7 +155,29 @@ export async function addClass(
   const existingRows = await seedPrimaryClassRowIfNeeded(character);
   if (existingRows.some((row) => row.classId === classId)) return undefined;
 
-  const classDef = getClassDefinition(character.ruleset, classId);
+  // A brand-new homebrew class's hit die/saves/proficiencies are being set
+  // up for the very first time right now (the Multiclass workflow's
+  // custom-class builder, same fields onboarding's does) -- read `classDef`
+  // off a character shimmed with whatever was just chosen, not the
+  // (not-yet-persisted) character row, so this level's HP roll uses the
+  // right hit die immediately.
+  const isCustomClass = classId === CUSTOM_OPTION_ID;
+  const characterForClassDef: Character = isCustomClass
+    ? {
+        ...character,
+        customClassHitDie: choices.customClassHitDie ?? character.customClassHitDie,
+        customClassSavingThrows: choices.customClassSavingThrows
+          ? serializeCustomClassSavingThrows(choices.customClassSavingThrows)
+          : character.customClassSavingThrows,
+        customClassArmorProficiencies: choices.customClassArmorProficiencies
+          ? serializeCustomProficiencyList(choices.customClassArmorProficiencies)
+          : character.customClassArmorProficiencies,
+        customClassWeaponProficiencies: choices.customClassWeaponProficiencies
+          ? serializeCustomProficiencyList(choices.customClassWeaponProficiencies)
+          : character.customClassWeaponProficiencies,
+      }
+    : character;
+  const classDef = classDefinitionForRow(characterForClassDef, classId);
   const conModifier = abilityModifier(character.constitution);
 
   const gain =
@@ -151,7 +196,7 @@ export async function addClass(
     sortOrder: existingRows.length,
   });
 
-  await updateCharacter(characterId, {
+  const characterUpdates: Partial<Character> = {
     maxHp: character.maxHp + gain.total,
     currentHp: character.currentHp + gain.total,
     // A new level (in any class) grants one more (unspent) Hit Die to the
@@ -160,7 +205,21 @@ export async function addClass(
     // undifferentiated pool, same simplification noted on the schema
     // column until multiclass hit dice are modeled).
     hitDiceRemaining: character.hitDiceRemaining + 1,
-  });
+  };
+  if (isCustomClass) {
+    characterUpdates.customClassHitDie = characterForClassDef.customClassHitDie;
+    characterUpdates.customClassSavingThrows = characterForClassDef.customClassSavingThrows;
+    characterUpdates.customClassArmorProficiencies = characterForClassDef.customClassArmorProficiencies;
+    characterUpdates.customClassWeaponProficiencies = characterForClassDef.customClassWeaponProficiencies;
+  }
+  if (choices.homebrewFeatures && choices.homebrewFeatures.length > 0) {
+    characterUpdates.featuresAndTraits = appendHomebrewFeatures(
+      character.featuresAndTraits,
+      1,
+      choices.homebrewFeatures
+    );
+  }
+  await updateCharacter(characterId, characterUpdates);
 
   await applySpellSlotUpdates(characterId, choices);
 
@@ -168,7 +227,11 @@ export async function addClass(
   const totalLevel = rows.reduce((sum, row) => sum + row.level, 0);
 
   const progression = getClassProgression(character.ruleset, classId);
-  const featuresGained = progression ? featuresGainedAtLevel(progression, 1, "") : [];
+  const featuresGained = isCustomClass
+    ? (choices.homebrewFeatures ?? []).map((f) => ({ ...f, level: 1, source: "class" as const }))
+    : progression
+      ? featuresGainedAtLevel(progression, 1, "")
+      : [];
 
   return {
     newLevel: 1,
@@ -201,7 +264,7 @@ export async function levelUpClass(
   const row = rows.find((r) => r.classId === classId);
   if (!row) return undefined;
 
-  const classDef = getClassDefinition(character.ruleset, classId);
+  const classDef = classDefinitionForRow(character, classId);
   const conModifier = abilityModifier(character.constitution);
   const newClassLevel = row.level + 1;
 
@@ -226,7 +289,18 @@ export async function levelUpClass(
     hitDiceRemaining: character.hitDiceRemaining + 1,
   };
   applyAsiChoice(character, characterUpdates, choices);
+  if (choices.homebrewFeatures && choices.homebrewFeatures.length > 0) {
+    characterUpdates.featuresAndTraits = appendHomebrewFeatures(
+      character.featuresAndTraits,
+      newClassLevel,
+      choices.homebrewFeatures
+    );
+  }
   await updateCharacter(characterId, characterUpdates);
+
+  if (choices.asiChoice?.type === "feat") {
+    await addResolvedFeat(character, choices.asiChoice.feat);
+  }
 
   await applySpellSlotUpdates(characterId, choices);
 
@@ -235,9 +309,11 @@ export async function levelUpClass(
 
   const progression = getClassProgression(character.ruleset, classId);
   const effectiveSubclass = choices.subclassId ?? row.subclass;
-  const featuresGained = progression
-    ? featuresGainedAtLevel(progression, newClassLevel, effectiveSubclass)
-    : [];
+  const featuresGained = classId === CUSTOM_OPTION_ID
+    ? (choices.homebrewFeatures ?? []).map((f) => ({ ...f, level: newClassLevel, source: "class" as const }))
+    : progression
+      ? featuresGainedAtLevel(progression, newClassLevel, effectiveSubclass)
+      : [];
 
   return {
     newLevel: newClassLevel,

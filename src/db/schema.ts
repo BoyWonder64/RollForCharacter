@@ -86,6 +86,23 @@ export const characters = sqliteTable("characters", {
   // Resilient feat), unioned with the class's fixed list rather than
   // replacing it.
   savingThrowProficiencies: text("saving_throw_proficiencies").notNull().default(""),
+  // Homebrew overlay fields, read only when `race`/`className` doesn't match
+  // any entry in the ruleset's catalog (i.e. resolves to CUSTOM_RACE_FALLBACK/
+  // CUSTOM_CLASS_FALLBACK -- see getRaceDefinitionForCharacter/
+  // getClassDefinitionForCharacter in characterCalculations.ts, which merge
+  // these onto the fallback). One custom race and one custom class per
+  // character -- a second multiclassed custom class isn't modeled, same
+  // limitation as the rest of this schema until multiclassing is modeled
+  // more fully.
+  customRaceAbilityBonuses: text("custom_race_ability_bonuses").notNull().default(""), // JSON: Partial<Record<AbilityScoreKey, number>>
+  customRaceSize: text("custom_race_size").notNull().default("Medium"),
+  customRaceSpeed: integer("custom_race_speed").notNull().default(30),
+  customRaceTraits: text("custom_race_traits").notNull().default(""), // JSON: RaceTrait[]
+  customClassHitDie: integer("custom_class_hit_die").notNull().default(8),
+  customClassSavingThrows: text("custom_class_saving_throws").notNull().default(""), // comma-separated AbilityScoreKey, e.g. "strength,constitution"
+  customClassArmorProficiencies: text("custom_class_armor_proficiencies").notNull().default(""), // comma-separated free-text labels
+  customClassWeaponProficiencies: text("custom_class_weapon_proficiencies").notNull().default(""), // comma-separated free-text labels
+  customClassTraits: text("custom_class_traits").notNull().default(""), // JSON: ClassTrait[]
   armorClass: integer("armor_class").notNull().default(10),
   speed: integer("speed").notNull().default(30),
   proficiencyBonus: integer("proficiency_bonus").notNull().default(2),
@@ -234,6 +251,10 @@ export const characterWeapons = sqliteTable("character_weapons", {
   properties: text("properties").notNull().default(""),
   description: text("description").notNull().default(""),
   equipped: integer("equipped", { mode: "boolean" }).notNull().default(false),
+  // Whether this is an enchanted weapon (e.g. a "+1 Longsword") -- magicBonus
+  // is the flat enchantment bonus applied to attack rolls.
+  isMagic: integer("is_magic", { mode: "boolean" }).notNull().default(false),
+  magicBonus: integer("magic_bonus").notNull().default(0),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -261,6 +282,10 @@ export const characterArmor = sqliteTable("character_armor", {
   weight: real("weight").notNull().default(0),
   description: text("description").notNull().default(""),
   equipped: integer("equipped", { mode: "boolean" }).notNull().default(false),
+  // Whether this is an enchanted item (e.g. "+1 Plate Armor") -- magicBonus is
+  // the flat enchantment bonus applied to AC.
+  isMagic: integer("is_magic", { mode: "boolean" }).notNull().default(false),
+  magicBonus: integer("magic_bonus").notNull().default(0),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -320,6 +345,31 @@ export const feats = sqliteTable("feats", {
   // "Scope" note.
   sourceKey: text("source_key").notNull().default(""),
   sourceName: text("source_name").notNull().default(""),
+});
+
+// A feat a character has actually taken -- catalog pick or homebrew,
+// same catalog-or-custom pattern as `characterMagicItems`. Replaces the
+// old freeform `characters.feats` text column (kept in place, no longer
+// written to -- see `migrateLegacyFeatsIfNeeded`) so a feat can be shown,
+// toggled, and removed individually instead of living in one opaque blob.
+// `effects` is a JSON-encoded array of resolved `FeatEffect` objects (see
+// characterCalculations.ts) -- any player choice (which ability, which
+// skills) is already baked in, same spirit as `customRaceTraits`.
+export const characterFeats = sqliteTable("character_feats", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  catalogFeatId: integer("catalog_feat_id").references(() => feats.id, { onDelete: "set null" }),
+  name: text("name").notNull(),
+  prerequisite: text("prerequisite").notNull().default(""),
+  description: text("description").notNull().default(""),
+  sourceName: text("source_name").notNull().default(""),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  effects: text("effects").notNull().default("[]"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
 });
 
 // Reference catalog of magic items (5e SRD 5.1 + 5.2, CC BY 4.0).
@@ -408,6 +458,22 @@ export const dmCreatures = sqliteTable("dm_creatures", {
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
+});
+
+// One row per character per limited-use class resource they've spent any
+// uses of (Action Surge, Second Wind, Indomitable, ...) -- see
+// `ClassResourceDefinition` (src/data/rulesets/types.ts). A generic pool
+// shared by every such feature across every class, instead of a dedicated
+// column per feature; `resourceId` matches a `ClassResourceDefinition.id`.
+// No row yet means "at max for the character's current level" -- rows are
+// only written once a use is spent or a rest recharges one.
+export const characterResourceUses = sqliteTable("character_resource_uses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  resourceId: text("resource_id").notNull(),
+  usesRemaining: integer("uses_remaining").notNull().default(0),
 });
 
 export const diceRollHistory = sqliteTable("dice_roll_history", {

@@ -87,6 +87,8 @@ function AddArmorModalForm({
   const [stealthDisadvantage, setStealthDisadvantage] = useState(false);
   const [weightText, setWeightText] = useState("");
   const [description, setDescription] = useState("");
+  const [isMagic, setIsMagic] = useState(false);
+  const [magicBonusText, setMagicBonusText] = useState("");
 
   const visibleCatalog =
     categoryFilter === "All" ? catalog : catalog.filter((a) => a.category === categoryFilter);
@@ -104,6 +106,8 @@ function AddArmorModalForm({
       stealthDisadvantage,
       weight: parseFloat(weightText) || 0,
       description: description.trim(),
+      isMagic,
+      magicBonus: isMagic ? parseInt(magicBonusText, 10) || 0 : 0,
     });
   }
 
@@ -290,6 +294,24 @@ function AddArmorModalForm({
             placeholderTextColor={theme.colors.textMuted}
             multiline
           />
+
+          <Pressable style={styles.checkboxRow} onPress={() => setIsMagic((v) => !v)}>
+            <View style={[styles.checkbox, isMagic && styles.checkboxChecked]} />
+            <Text style={styles.checkboxLabel}>Magic item (enchanted)</Text>
+          </Pressable>
+          {isMagic && (
+            <>
+              <Text style={styles.fieldLabel}>Enchantment Bonus</Text>
+              <TextInput
+                style={styles.input}
+                value={magicBonusText}
+                onChangeText={setMagicBonusText}
+                placeholder="e.g. 1 for a +1 armor"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="number-pad"
+              />
+            </>
+          )}
         </ScrollView>
       )}
 

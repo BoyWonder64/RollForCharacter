@@ -5,6 +5,8 @@ import type {
   characterArmor,
   characterClasses,
   characterEquipment,
+  characterFeats,
+  characterResourceUses,
   characterSpells,
   characterWeapons,
   characters,
@@ -26,6 +28,8 @@ export type CharacterArmor = InferSelectModel<typeof characterArmor>;
 export type CampaignItem = InferSelectModel<typeof campaignItems>;
 export type CampaignNote = InferSelectModel<typeof campaignNotes>;
 export type DiceRoll = InferSelectModel<typeof diceRollHistory>;
+export type CharacterResourceUse = InferSelectModel<typeof characterResourceUses>;
+export type CharacterFeatRow = InferSelectModel<typeof characterFeats>;
 
 export type AbilityScoreKey =
   | "strength"

@@ -6,6 +6,7 @@ import {
   initiativeModifier,
   isSavingThrowProficient,
   isSkillProficient,
+  type CharacterFeat,
 } from "../characters/characterCalculations";
 import type { AbilityScoreKey, Character } from "../../types/models";
 import { rollDie, type RollResult } from "./diceEngine";
@@ -16,6 +17,8 @@ export type AdvantageMode = "normal" | "advantage" | "disadvantage";
 export type StructuredRollInput = {
   mode: RollMode;
   character: Character;
+  /** This character's feats -- only "initiative" and a skill-based "check" currently fold any of these in (Alert's initiative bonus, a feat-granted skill proficiency). Defaults to none. */
+  feats?: CharacterFeat[];
   /** Ignored for "spell" (the class's spellcasting ability is used instead). */
   ability?: AbilityScoreKey;
   /** "check" mode only: a specific skill (e.g. "perception") instead of a raw ability. Overrides `ability`/`proficient`. */
@@ -63,7 +66,7 @@ export function spellSaveDc(character: Character): number {
 export function buildStructuredRollPlan(
   input: StructuredRollInput
 ): StructuredRollPlan | { error: string } {
-  const { mode, character, extraModifier = 0 } = input;
+  const { mode, character, extraModifier = 0, feats = [] } = input;
   const parts: string[] = [];
   let modifier = 0;
   let label: string;
@@ -80,7 +83,7 @@ export function buildStructuredRollPlan(
     pushPart(character.proficiencyBonus, "Proficiency");
     label = "Spell Attack";
   } else if (mode === "initiative") {
-    const mod = initiativeModifier(character);
+    const mod = initiativeModifier(character, feats);
     modifier += mod;
     pushPart(mod, ABILITY_LABELS.dexterity);
     label = "Initiative";
@@ -90,7 +93,7 @@ export function buildStructuredRollPlan(
     const mod = abilityModifier(character[skill.ability]);
     modifier += mod;
     pushPart(mod, ABILITY_LABELS[skill.ability]);
-    if (isSkillProficient(character, skill.id)) {
+    if (isSkillProficient(character, skill.id, feats)) {
       modifier += character.proficiencyBonus;
       pushPart(character.proficiencyBonus, "Proficiency");
     }
@@ -103,7 +106,7 @@ export function buildStructuredRollPlan(
     pushPart(mod, ABILITY_LABELS[ability]);
 
     if (mode === "save") {
-      if (isSavingThrowProficient(character, ability)) {
+      if (isSavingThrowProficient(character, ability, feats)) {
         modifier += character.proficiencyBonus;
         pushPart(character.proficiencyBonus, "Proficiency");
       }

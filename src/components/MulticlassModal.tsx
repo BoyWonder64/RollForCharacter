@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { getRulesetCatalog } from "../data/rulesets";
+import { CUSTOM_OPTION_ID, getRulesetCatalog } from "../data/rulesets";
 import type { ClassDefinition } from "../data/rulesets/types";
 import {
+  ABILITY_LABELS,
   abilityModifier,
   featuresGainedAtLevel,
   getClassDefinitionForCharacter,
@@ -14,7 +15,7 @@ import {
   type ClassLevelEntry,
 } from "../features/characters/multiclass";
 import type { HpGainMethod, LevelUpChoices } from "../features/characters/characterRepo";
-import type { Character, CharacterClass } from "../types/models";
+import type { AbilityScoreKey, Character, CharacterClass } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 
@@ -26,7 +27,7 @@ type MulticlassModalFormProps = {
   onConfirm: (classId: string, className: string, choices: LevelUpChoices) => void;
 };
 
-type Step = "choose-class" | "hp-method" | "features" | "spells" | "summary";
+type Step = "choose-class" | "hp-method" | "homebrew-features" | "features" | "spells" | "summary";
 
 export function MulticlassModalForm({
   character,
@@ -41,16 +42,35 @@ export function MulticlassModalForm({
   const availableClasses = getRulesetCatalog(character.ruleset).classes.filter(
     (c) => !heldClassIds.has(c.id)
   );
+  // The custom-class overlay fields (hit die, saves, proficiencies) live as
+  // a single shared slot on `characters` -- see `getClassDefinitionForCharacter`
+  // -- so only one `characterClasses` row can ever be the homebrew one.
+  const alreadyHasCustomClass = heldClassIds.has(CUSTOM_OPTION_ID);
 
   const [step, setStep] = useState<Step>("choose-class");
   const [chosenClass, setChosenClass] = useState<ClassDefinition | null>(null);
   const [hpMethod, setHpMethod] = useState<HpGainMethod>("average");
   const [customClassName, setCustomClassName] = useState("");
   const [customHitDie, setCustomHitDie] = useState<ClassDefinition["hitDie"]>(8);
+  const [customSavingThrows, setCustomSavingThrows] = useState<AbilityScoreKey[]>([]);
+  const [customArmorProficiencies, setCustomArmorProficiencies] = useState("");
+  const [customWeaponProficiencies, setCustomWeaponProficiencies] = useState("");
+  const [homebrewFeatures, setHomebrewFeatures] = useState<{ name: string; description: string }[]>([]);
+  const [newFeatureName, setNewFeatureName] = useState("");
+  const [newFeatureDescription, setNewFeatureDescription] = useState("");
 
+  const isCustomClass = chosenClass?.id === CUSTOM_OPTION_ID;
   const conModifier = abilityModifier(character.constitution);
   const progression = chosenClass ? getClassProgression(character.ruleset, chosenClass.id) : undefined;
-  const gainedFeatures = progression ? featuresGainedAtLevel(progression, 1, "") : [];
+  // A homebrew class has no catalog `ClassProgression` to list level-1
+  // features from -- the player's own `homebrewFeatures` (entered on the
+  // "homebrew-features" step below) stand in for it instead, same spirit as
+  // the Level Up workflow's own "homebrew-level" step.
+  const gainedFeatures = isCustomClass
+    ? homebrewFeatures.map((f) => ({ ...f, level: 1, source: "class" as const }))
+    : progression
+      ? featuresGainedAtLevel(progression, 1, "")
+      : [];
 
   // Gaining this class's first level only ever matters for spell slots if
   // the new class itself casts -- Warlock's Pact Magic is a wholly separate
@@ -84,7 +104,30 @@ export function MulticlassModalForm({
     if (projectedSlots) {
       choices.spellSlotUpdates = projectedSlots.map((total, idx) => ({ spellLevel: idx + 1, total }));
     }
+    if (isCustomClass) {
+      choices.customClassHitDie = customHitDie;
+      choices.customClassSavingThrows = customSavingThrows;
+      choices.customClassArmorProficiencies = customArmorProficiencies
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      choices.customClassWeaponProficiencies = customWeaponProficiencies
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (homebrewFeatures.length > 0) {
+        choices.homebrewFeatures = homebrewFeatures;
+      }
+    }
     return choices;
+  }
+
+  function afterHpMethod() {
+    if (isCustomClass) {
+      setStep("homebrew-features");
+      return;
+    }
+    setStep(gainedFeatures.length > 0 ? "features" : projectedSlots ? "spells" : "summary");
   }
 
   if (step === "choose-class") {
@@ -115,46 +158,107 @@ export function MulticlassModalForm({
               <Text style={styles.hint}>This character already has every class in this ruleset.</Text>
             )}
           </View>
-          <Text style={[styles.hint, { marginTop: 16 }]}>
-            Don&apos;t see it, or using homebrew? Add a custom class.
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={customClassName}
-            onChangeText={setCustomClassName}
-            placeholder="e.g. Artificer"
-            placeholderTextColor={theme.colors.textMuted}
-          />
-          <Text style={[styles.hint, { marginTop: 12, marginBottom: 8 }]}>Hit die</Text>
-          <View style={styles.chipRow}>
-            {hitDieOptions.map((die) => (
+
+          {alreadyHasCustomClass ? (
+            <Text style={[styles.hint, { marginTop: 16 }]}>
+              This character already has a homebrew class -- only one homebrew class slot is
+              supported per character.
+            </Text>
+          ) : (
+            <>
+              <Text style={[styles.hint, { marginTop: 16 }]}>
+                Don&apos;t see it, or using homebrew? Add a custom class.
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={customClassName}
+                onChangeText={setCustomClassName}
+                placeholder="e.g. Artificer"
+                placeholderTextColor={theme.colors.textMuted}
+              />
+              <Text style={[styles.hint, { marginTop: 12, marginBottom: 8 }]}>Hit die</Text>
+              <View style={styles.chipRow}>
+                {hitDieOptions.map((die) => (
+                  <Pressable
+                    key={die}
+                    style={[styles.chip, customHitDie === die && styles.chipSelected]}
+                    onPress={() => setCustomHitDie(die)}
+                  >
+                    <Text style={[styles.chipText, customHitDie === die && styles.chipTextSelected]}>
+                      d{die}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={[styles.hint, { marginBottom: 8 }]}>
+                Saving throw proficiencies (choose {customSavingThrows.length}/2)
+              </Text>
+              <View style={styles.chipRow}>
+                {(Object.keys(ABILITY_LABELS) as AbilityScoreKey[]).map((key) => {
+                  const selected = customSavingThrows.includes(key);
+                  return (
+                    <Pressable
+                      key={key}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                      onPress={() =>
+                        setCustomSavingThrows((prev) => {
+                          if (prev.includes(key)) return prev.filter((k) => k !== key);
+                          if (prev.length >= 2) return prev;
+                          return [...prev, key];
+                        })
+                      }
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                        {ABILITY_LABELS[key]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text style={[styles.hint, { marginBottom: 8 }]}>Armor proficiencies</Text>
+              <TextInput
+                style={styles.input}
+                value={customArmorProficiencies}
+                onChangeText={setCustomArmorProficiencies}
+                placeholder="e.g. Light armor, Shields"
+                placeholderTextColor={theme.colors.textMuted}
+              />
+              <Text style={[styles.hint, { marginTop: 10, marginBottom: 8 }]}>Weapon proficiencies</Text>
+              <TextInput
+                style={styles.input}
+                value={customWeaponProficiencies}
+                onChangeText={setCustomWeaponProficiencies}
+                placeholder="e.g. Simple weapons, Shortswords"
+                placeholderTextColor={theme.colors.textMuted}
+              />
+
               <Pressable
-                key={die}
-                style={[styles.chip, customHitDie === die && styles.chipSelected]}
-                onPress={() => setCustomHitDie(die)}
+                style={[
+                  styles.primaryButton,
+                  !customClassName.trim() && styles.primaryButtonDisabled,
+                ]}
+                disabled={!customClassName.trim()}
+                onPress={() => {
+                  const name = customClassName.trim();
+                  setChosenClass({
+                    id: CUSTOM_OPTION_ID,
+                    name,
+                    hitDie: customHitDie,
+                    savingThrows:
+                      customSavingThrows.length === 2
+                        ? (customSavingThrows as [AbilityScoreKey, AbilityScoreKey])
+                        : undefined,
+                    summary: "Custom class",
+                  });
+                  setStep("hp-method");
+                }}
               >
-                <Text style={[styles.chipText, customHitDie === die && styles.chipTextSelected]}>
-                  d{die}
-                </Text>
+                <Text style={styles.primaryButtonText}>Continue</Text>
               </Pressable>
-            ))}
-          </View>
-          <Pressable
-            style={[styles.primaryButton, !customClassName.trim() && styles.primaryButtonDisabled]}
-            disabled={!customClassName.trim()}
-            onPress={() => {
-              const name = customClassName.trim();
-              setChosenClass({
-                id: `custom:${name.toLowerCase()}`,
-                name,
-                hitDie: customHitDie,
-                summary: "Custom class",
-              });
-              setStep("hp-method");
-            }}
-          >
-            <Text style={styles.primaryButtonText}>Continue</Text>
-          </Pressable>
+            </>
+          )}
         </ScrollView>
         <Pressable style={styles.cancelButton} onPress={onClose}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -178,7 +282,7 @@ export function MulticlassModalForm({
             style={styles.optionButton}
             onPress={() => {
               setHpMethod("average");
-              setStep(gainedFeatures.length > 0 ? "features" : projectedSlots ? "spells" : "summary");
+              afterHpMethod();
             }}
           >
             <Text style={styles.optionButtonTitle}>Take Average</Text>
@@ -190,13 +294,76 @@ export function MulticlassModalForm({
             style={styles.optionButton}
             onPress={() => {
               setHpMethod("roll");
-              setStep(gainedFeatures.length > 0 ? "features" : projectedSlots ? "spells" : "summary");
+              afterHpMethod();
             }}
           >
             <Text style={styles.optionButtonTitle}>Roll Hit Die</Text>
             <Text style={styles.optionButtonSub}>Could be higher, could be lower</Text>
           </Pressable>
         </View>
+      </StepCard>
+    );
+  }
+
+  if (step === "homebrew-features") {
+    return (
+      <StepCard
+        title={`${chosenClass.name} 1`}
+        hint="This is a homebrew class -- there's no catalog of what it gains at level 1, so tell us yourself."
+        onBack={() => setStep("hp-method")}
+        styles={styles}
+        scroll
+      >
+        <View style={{ gap: 8 }}>
+          {homebrewFeatures.map((f, idx) => (
+            <View key={`${f.name}-${idx}`} style={styles.traitRow}>
+              <View style={styles.traitInfo}>
+                <Text style={styles.featureName}>{f.name}</Text>
+                {f.description.length > 0 && <Text style={styles.featureText}>{f.description}</Text>}
+              </View>
+              <Pressable
+                onPress={() => setHomebrewFeatures((prev) => prev.filter((_, i) => i !== idx))}
+              >
+                <Text style={styles.traitRemove}>×</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+        <TextInput
+          style={styles.input}
+          value={newFeatureName}
+          onChangeText={setNewFeatureName}
+          placeholder="Feature name (e.g. Switch Axe Mastery)"
+          placeholderTextColor={theme.colors.textMuted}
+        />
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          value={newFeatureDescription}
+          onChangeText={setNewFeatureDescription}
+          placeholder="What does it do?"
+          placeholderTextColor={theme.colors.textMuted}
+          multiline
+        />
+        <Pressable
+          style={[styles.optionButton, !newFeatureName.trim() && styles.primaryButtonDisabled]}
+          disabled={!newFeatureName.trim()}
+          onPress={() => {
+            setHomebrewFeatures((prev) => [
+              ...prev,
+              { name: newFeatureName.trim(), description: newFeatureDescription.trim() },
+            ]);
+            setNewFeatureName("");
+            setNewFeatureDescription("");
+          }}
+        >
+          <Text style={styles.optionButtonTitle}>+ Add Feature</Text>
+        </Pressable>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => setStep(projectedSlots ? "spells" : "summary")}
+        >
+          <Text style={styles.primaryButtonText}>Continue</Text>
+        </Pressable>
       </StepCard>
     );
   }
@@ -263,6 +430,12 @@ export function MulticlassModalForm({
         {choices.spellSlotUpdates ? (
           <Text style={styles.featureText}>Spell slots updated.</Text>
         ) : null}
+        {choices.homebrewFeatures?.map((f, idx) => (
+          <Text key={`${f.name}-${idx}`} style={styles.featureText}>
+            New: {f.name}
+            {f.description ? ` -- ${f.description}` : ""}
+          </Text>
+        ))}
       </View>
       <Pressable
         style={styles.primaryButton}
@@ -384,7 +557,9 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontSize: 15,
+      marginBottom: 10,
     },
+    multilineInput: { minHeight: 70, textAlignVertical: "top" },
     chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
     chip: {
       backgroundColor: theme.colors.surfaceAlt,
@@ -412,5 +587,17 @@ function createStyles(theme: Theme) {
       marginBottom: 2,
     },
     featureText: { color: theme.colors.textMuted, fontSize: 13, lineHeight: 18 },
+    traitRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: 10,
+    },
+    traitInfo: { flex: 1, paddingRight: 8 },
+    traitRemove: { color: theme.colors.accent, fontSize: 16, paddingHorizontal: 4 },
   });
 }
