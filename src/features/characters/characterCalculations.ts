@@ -46,23 +46,28 @@ export function proficiencyBonusForLevel(level: number): number {
 export function calculateMaxHp(
   hitDie: number,
   level: number,
-  conModifier: number
+  conModifier: number,
+  racialBonusPerLevel = 0
 ): number {
   const perLevelAverage = Math.floor(hitDie / 2) + 1;
   const firstLevel = hitDie + conModifier;
   const laterLevels = (level - 1) * (perLevelAverage + conModifier);
-  return Math.max(level, firstLevel + laterLevels);
+  return Math.max(level, firstLevel + laterLevels) + racialBonusPerLevel * level;
 }
 
 /** HP gained for one level: average (`floor(hitDie/2)+1`) + CON mod, minimum 1. */
-export function averageHpGain(hitDie: number, conModifier: number): number {
-  return Math.max(1, Math.floor(hitDie / 2) + 1 + conModifier);
+export function averageHpGain(hitDie: number, conModifier: number, racialBonus = 0): number {
+  return Math.max(1, Math.floor(hitDie / 2) + 1 + conModifier) + racialBonus;
 }
 
 /** HP gained for one level by rolling the class's hit die, + CON mod, minimum 1. */
-export function rollHpGain(hitDie: number, conModifier: number): { roll: number; total: number } {
+export function rollHpGain(
+  hitDie: number,
+  conModifier: number,
+  racialBonus = 0
+): { roll: number; total: number } {
   const roll = rollDie(hitDie);
-  return { roll, total: Math.max(1, roll + conModifier) };
+  return { roll, total: Math.max(1, roll + conModifier) + racialBonus };
 }
 
 export function armorClassBaseline(dexterityScore: number): number {
@@ -566,9 +571,9 @@ export function hasCondition(character: Character, conditionId: string): boolean
 export function getRaceDefinition(ruleset: string, raceNameOrId: string): RaceDefinition {
   const catalog = getRulesetCatalog(ruleset);
   const needle = raceNameOrId.trim().toLowerCase();
-  const match = catalog.races.find(
-    (r) => r.name.toLowerCase() === needle || r.id.toLowerCase() === needle
-  );
+  const match =
+    catalog.races.find((r) => r.name.toLowerCase() === needle || r.id.toLowerCase() === needle) ??
+    catalog.races.find((r) => r.aliases?.some((a) => a.toLowerCase() === needle));
   if (match) return match;
   return { ...CUSTOM_RACE_FALLBACK, name: raceNameOrId || CUSTOM_RACE_FALLBACK.name };
 }
@@ -676,4 +681,11 @@ export function serializeLanguages(languageIds: string[]): string {
 
 export function knowsLanguage(character: Character, languageId: string): boolean {
   return parseLanguages(character).includes(languageId);
+}
+
+/** Flat max-HP bonus a race grants every character level (Dwarven Toughness: +1 per level), or 0. */
+export function racialHpBonusPerLevel(
+  character: Pick<Character, "ruleset" | "race"> & CustomRaceOverlay
+): number {
+  return getRaceDefinitionForCharacter(character).hitPointBonusPerLevel ?? 0;
 }

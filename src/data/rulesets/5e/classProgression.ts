@@ -321,6 +321,12 @@ You learn two additional spells from any class at 14th level and again at 18th l
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "cleric-divine-intervention",
+        name: "Divine Intervention",
+        // A successful intervention locks the feature for 7 days; this tracker only models the once-per-rest use, so long-rest recharge is approximate.
+        usesByLevel: { 10: 1 },
+      },
+      {
         id: "cleric-channel-divinity",
         name: "Channel Divinity",
         usesByLevel: { 2: 1, 6: 2, 18: 3 },
@@ -424,6 +430,23 @@ At 20th level, your call for intervention succeeds automatically, no roll requir
         features: [
           {
             level: 1,
+            name: "Life Domain Spells",
+            description: `Each domain has a list of spells -- its domain spells -- that you gain at the cleric levels noted in the description. Once you gain a domain spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day.
+
+If you have a domain spell that doesn't appear on the cleric spell list, the spell is nonetheless a cleric spell for you.
+
+**Life Domain Spells (table)**
+
+| Cleric Level | Spells |
+|---|---|
+| 1st | bless, cure wounds |
+| 3rd | lesser restoration, spiritual weapon |
+| 5th | beacon of hope, revivify |
+| 7th | death ward, guardian of faith |
+| 9th | mass cure wounds, raise dead |`,
+          },
+          {
+            level: 1,
             name: "Bonus Proficiency",
             description: `When you choose this domain at 1st level, you gain proficiency with heavy armor.`,
           },
@@ -516,7 +539,23 @@ You prepare the list of druid spells that are available for you to cast, choosin
  
 For example, if you are a 3rd-level druid, you have four 1st-level and two 2nd-level spell slots. With a Wisdom of 16, your list of prepared spells can include six spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell *cure wounds,* you can cast it using a 1st-level or 2nd-level slot. Casting the spell doesn't remove it from your list of prepared spells. 
  
-You can also change your list of prepared spells when you finish a long rest. Preparing a new list of druid spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.`,
+You can also change your list of prepared spells when you finish a long rest. Preparing a new list of druid spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.
+
+#### Spellcasting Ability
+
+Wisdom is your spellcasting ability for your druid spells, since your magic draws upon your devotion and attunement to nature. You use your Wisdom whenever a spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a druid spell you cast and when making an attack roll with one.
+
+**Spell save DC** = 8 + your proficiency bonus + your Wisdom modifier
+
+**Spell attack modifier** = your proficiency bonus + your Wisdom modifier
+
+#### Ritual Casting
+
+You can cast a druid spell as a ritual if that spell has the ritual tag and you have the spell prepared.
+
+#### Spellcasting Focus
+
+You can use a druidic focus (see chapter 5, "Equipment") as a spellcasting focus for your druid spells.`,
       },
       {
         level: 2,
@@ -1136,35 +1175,7 @@ You can use a holy symbol as a spellcasting focus for your paladin spells.`,
       {
         level: 3,
         name: "Divine Health",
-        description: `By 3rd level, the divine magic flowing through you makes you immune to disease.
-
- ### Sacred Oath 
-
-When you reach 3rd level, you swear the oath that binds you as a paladin forever. Up to this time you have been in a preparatory stage, committed to the path but not yet sworn to it. Now you choose the Oath of Devotion, the Oath of the Ancients, or the Oath of Vengeance, all detailed at the end of the class description. 
- 
-Your choice grants you features at 3rd level and again at 7th, 15th, and 20th level. Those features include oath spells and the Channel Divinity feature. 
- 
-#### Oath Spells 
- 
-Each oath has a list of associated spells. You gain access to these spells at the levels specified in the oath description. Once you gain access to an oath spell, you always have it prepared. Oath spells don't count against the number of spells you can prepare each day. 
- 
-If you gain an oath spell that doesn't appear on the paladin spell list, the spell is nonetheless a paladin spell for you. 
- 
-#### Channel Divinity 
- 
-Your oath allows you to channel divine energy to fuel magical effects. Each Channel Divinity option provided by your oath explains how to use it. 
- 
-When you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again. 
- 
-Some Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your paladin spell save DC.
-
->### Breaking Your Oath 
->
-> A paladin tries to hold to the highest standards of conduct, but even the most virtuous paladin is fallible. Sometimes the right path proves too demanding, sometimes a situation calls for the lesser of two evils, and sometimes the heat of emotion causes a paladin to transgress his or her oath. 
-> 
-> A paladin who has broken a vow typically seeks absolution from a cleric who shares his or her faith or from another paladin of the same order. The paladin might spend an all- night vigil in prayer as a sign of penitence, or undertake a fast or similar act of self-denial. After a rite of confession and forgiveness, the paladin starts fresh. 
-> 
-> If a paladin willfully violates his or her oath and shows no sign of repentance, the consequences can be more serious. At the GM's discretion, an impenitent paladin might be forced to abandon this class and adopt another.`,
+        description: `By 3rd level, the divine magic flowing through you makes you immune to disease.`,
       },
       {
         level: 4,
@@ -1859,6 +1870,11 @@ You can't manifest your wings while wearing armor unless the armor is made to ac
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "warlock-eldritch-master",
+        name: "Eldritch Master",
+        usesByLevel: { 20: 1 },
+      },
+      {
         id: "warlock-arcanum-6",
         name: "Mystic Arcanum (6th level)",
         usesByLevel: { 11: 1 },
@@ -2222,6 +2238,12 @@ Once you use this feature, you can't use it again until you finish a long rest.`
     subclassLabel: "Arcane Tradition",
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
+      {
+        id: "wizard-signature-spells",
+        name: "Signature Spells",
+        usesByLevel: { 20: 2 },
+        shortRestRegain: "all",
+      },
       {
         id: "wizard-arcane-recovery",
         name: "Arcane Recovery",

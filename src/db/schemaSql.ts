@@ -137,6 +137,16 @@ export const CREATE_TABLES_SQL = `
     equipped INTEGER NOT NULL DEFAULT 0,
     is_magic INTEGER NOT NULL DEFAULT 0,
     magic_bonus INTEGER NOT NULL DEFAULT 0,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS character_gear_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    description TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -264,7 +274,23 @@ export const CREATE_TABLES_SQL = `
     max_hp INTEGER NOT NULL DEFAULT 0,
     armor_class INTEGER NOT NULL DEFAULT 10,
     notes TEXT NOT NULL DEFAULT '',
+    dexterity INTEGER NOT NULL DEFAULT 10,
+    initiative INTEGER,
+    conditions TEXT NOT NULL DEFAULT '',
+    used_abilities TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS dm_party_initiative (
+    character_id INTEGER PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
+    initiative INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS dm_encounters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    creatures TEXT NOT NULL DEFAULT '[]',
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -273,6 +299,33 @@ export const CREATE_TABLES_SQL = `
     character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     resource_id TEXT NOT NULL,
     uses_remaining INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS character_custom_resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    max_mode TEXT NOT NULL DEFAULT 'fixed',
+    fixed_max INTEGER NOT NULL DEFAULT 1,
+    uses_by_level TEXT NOT NULL DEFAULT '{}',
+    ability TEXT NOT NULL DEFAULT 'charisma',
+    ability_bonus INTEGER NOT NULL DEFAULT 0,
+    ability_minimum INTEGER NOT NULL DEFAULT 1,
+    recharge_on TEXT NOT NULL DEFAULT 'long',
+    is_point_pool INTEGER NOT NULL DEFAULT 0,
+    icon TEXT NOT NULL DEFAULT '',
+    roll_formula TEXT NOT NULL DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS character_resource_overrides (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    resource_id TEXT NOT NULL,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    max_override INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS dice_roll_history (

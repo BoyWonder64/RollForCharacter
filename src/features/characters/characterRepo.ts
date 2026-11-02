@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
-import { characters } from "../../db/schema";
+import { characterClasses, characters } from "../../db/schema";
 import type { AbilityScoreKey, Character } from "../../types/models";
 import {
   ABILITY_LABELS,
@@ -21,6 +21,7 @@ import {
   serializeCustomRaceTraits,
   serializeLanguages,
   serializeSkillProficiencies,
+  racialHpBonusPerLevel,
   type FeatureGrant,
   type ResolvedFeatPick,
 } from "./characterCalculations";
@@ -55,6 +56,8 @@ export type OnboardingCharacterInput = {
   ruleset: string;
   race: string;
   className: string;
+  /** Subclass id (catalog) or typed name, when the starting level already reaches the class's subclass-choice level. */
+  subclass?: string;
   background: string;
   alignment?: string;
   personalityTraits?: string;
@@ -101,6 +104,7 @@ export async function createCharacterFromOnboarding(
       ruleset: input.ruleset,
       race: input.race,
       className: input.className,
+      subclass: input.subclass ?? "",
       background: input.background,
       alignment: input.alignment ?? "",
       personalityTraits: input.personalityTraits ?? "",
@@ -341,8 +345,11 @@ export async function levelUp(
     choices.hpMethod === "manual"
       ? { roll: undefined, total: 0 }
       : choices.hpMethod === "roll"
-        ? rollHpGain(classDef.hitDie, conModifier)
-        : { roll: undefined, total: averageHpGain(classDef.hitDie, conModifier) };
+        ? rollHpGain(classDef.hitDie, conModifier, racialHpBonusPerLevel(character))
+        : {
+            roll: undefined,
+            total: averageHpGain(classDef.hitDie, conModifier, racialHpBonusPerLevel(character)),
+          };
 
   const proficiencyBonus = proficiencyBonusForLevel(newLevel);
 
@@ -556,6 +563,15 @@ export async function shortRest(id: number): Promise<void> {
   const character = await getCharacter(id);
   if (!character) return;
   await applyShortRestRecharge(character);
+  // Pact Magic slots return on a short rest. Slots are one pool, so only do
+  // this when Warlock is the character's sole spellcasting class -- otherwise
+  // it would also refill a multiclass partner's long-rest slots.
+  if (
+    getClassDefinitionForCharacter(character).casterType === "pact" &&
+    (await db.select().from(characterClasses).where(eq(characterClasses.characterId, id))).length <= 1
+  ) {
+    await resetSpellSlotUsage(id);
+  }
 }
 
 export type LongRestOutcome = {

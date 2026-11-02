@@ -25,10 +25,8 @@ import {
   type ResolvedFeatPick,
 } from "../features/characters/characterCalculations";
 import {
-  combinedCasterLevel,
   isMulticlassed,
-  multiclassSpellSlots,
-  warlockPactMagicRow,
+  totalMulticlassSlots,
 } from "../features/characters/multiclass";
 import type { AsiOrFeatChoice, HpGainMethod, LevelUpChoices } from "../features/characters/characterRepo";
 import type { AbilityScoreKey, Character, CharacterClass } from "../types/models";
@@ -203,10 +201,7 @@ function LevelUpModalForm({
     const hypotheticalRows = classRows.map((row) =>
       row.id === targetRow.id ? { ...row, level: newLevel } : row
     );
-    if (targetClassDef.casterType === "pact") {
-      return warlockPactMagicRow(hypotheticalRows, character.ruleset);
-    }
-    const slots = multiclassSpellSlots(combinedCasterLevel(hypotheticalRows, character.ruleset), character.ruleset);
+    const slots = totalMulticlassSlots(hypotheticalRows, character.ruleset);
     return slots ? { level: newLevel, slots } : undefined;
   })();
 
@@ -416,11 +411,12 @@ function LevelUpModalForm({
               </Pressable>
             ))}
           </View>
-        ) : (
-          <>
+        ) : null}
+        <>
             <Text style={styles.hint}>
-              We don&apos;t have detailed data for this ruleset&apos;s subclasses yet — type the name of
-              the one you picked.
+              {subclasses.length > 0
+                ? "Not listed? Type the name of yours instead."
+                : "We don't have detailed data for this ruleset's subclasses yet — type the name of the one you picked."}
             </Text>
             <TextInput
               style={styles.input}
@@ -431,6 +427,7 @@ function LevelUpModalForm({
             />
             <Pressable
               style={styles.primaryButton}
+              disabled={customSubclassName.trim().length === 0}
               onPress={() => {
                 const name = customSubclassName.trim();
                 setSubclassId(name);
@@ -439,8 +436,7 @@ function LevelUpModalForm({
             >
               <Text style={styles.primaryButtonText}>Continue</Text>
             </Pressable>
-          </>
-        )}
+        </>
       </StepCard>
     );
   }

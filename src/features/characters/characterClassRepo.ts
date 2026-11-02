@@ -12,6 +12,7 @@ import {
   getClassDefinitionForCharacter,
   getClassProgression,
   proficiencyBonusForLevel,
+  racialHpBonusPerLevel,
   rollHpGain,
   serializeCustomClassSavingThrows,
   serializeCustomProficiencyList,
@@ -58,6 +59,16 @@ export async function listCharacterClasses(characterId: number): Promise<Charact
     .from(characterClasses)
     .where(eq(characterClasses.characterId, characterId))
     .orderBy(asc(characterClasses.sortOrder));
+}
+
+/**
+ * Sets one class row's subclass (the edit screen's way to change it after
+ * Level Up). Writes only the row -- the caller mirrors the primary row's
+ * value onto `characters.subclass`, since the edit save already writes the
+ * rest of that record and a full mirror sync would overwrite its level.
+ */
+export async function setClassRowSubclass(classRowId: number, subclass: string): Promise<void> {
+  await db.update(characterClasses).set({ subclass }).where(eq(characterClasses.id, classRowId));
 }
 
 /**
@@ -184,15 +195,19 @@ export async function addClass(
     choices.hpMethod === "manual"
       ? { roll: undefined, total: 0 }
       : choices.hpMethod === "roll"
-        ? rollHpGain(classDef.hitDie, conModifier)
-        : { roll: undefined, total: averageHpGain(classDef.hitDie, conModifier) };
+        ? rollHpGain(classDef.hitDie, conModifier, racialHpBonusPerLevel(character))
+        : {
+            roll: undefined,
+            total: averageHpGain(classDef.hitDie, conModifier, racialHpBonusPerLevel(character)),
+          };
 
   await db.insert(characterClasses).values({
     characterId,
     classId,
     className: className || classDef.name,
     level: 1,
-    subclass: "",
+    // Cleric, Sorcerer and Warlock (2014) pick a subclass at level 1, which is exactly when a multiclass adds them.
+    subclass: choices.subclassId ?? "",
     sortOrder: existingRows.length,
   });
 
@@ -230,7 +245,7 @@ export async function addClass(
   const featuresGained = isCustomClass
     ? (choices.homebrewFeatures ?? []).map((f) => ({ ...f, level: 1, source: "class" as const }))
     : progression
-      ? featuresGainedAtLevel(progression, 1, "")
+      ? featuresGainedAtLevel(progression, 1, choices.subclassId ?? "")
       : [];
 
   return {
@@ -272,8 +287,11 @@ export async function levelUpClass(
     choices.hpMethod === "manual"
       ? { roll: undefined, total: 0 }
       : choices.hpMethod === "roll"
-        ? rollHpGain(classDef.hitDie, conModifier)
-        : { roll: undefined, total: averageHpGain(classDef.hitDie, conModifier) };
+        ? rollHpGain(classDef.hitDie, conModifier, racialHpBonusPerLevel(character))
+        : {
+            roll: undefined,
+            total: averageHpGain(classDef.hitDie, conModifier, racialHpBonusPerLevel(character)),
+          };
 
   await db
     .update(characterClasses)

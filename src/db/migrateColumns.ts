@@ -15,6 +15,10 @@ type ColumnMigration = {
 // `ALTER TABLE ... ADD COLUMN ...`, which is safe to re-run: an "already
 // exists" failure is expected and swallowed, anything else is rethrown.
 const COLUMN_MIGRATIONS: ColumnMigration[] = [
+  { table: "dm_creatures", column: "dexterity", definition: "INTEGER NOT NULL DEFAULT 10" },
+  { table: "dm_creatures", column: "initiative", definition: "INTEGER" },
+  { table: "dm_creatures", column: "conditions", definition: "TEXT NOT NULL DEFAULT ''" },
+  { table: "dm_creatures", column: "used_abilities", definition: "TEXT NOT NULL DEFAULT ''" },
   { table: "characters", column: "ruleset", definition: "TEXT NOT NULL DEFAULT '5e'" },
   { table: "characters", column: "background", definition: "TEXT NOT NULL DEFAULT ''" },
   {
@@ -142,6 +146,10 @@ const COLUMN_MIGRATIONS: ColumnMigration[] = [
   { table: "character_weapons", column: "magic_bonus", definition: "INTEGER NOT NULL DEFAULT 0" },
   { table: "character_armor", column: "is_magic", definition: "INTEGER NOT NULL DEFAULT 0" },
   { table: "character_armor", column: "magic_bonus", definition: "INTEGER NOT NULL DEFAULT 0" },
+  { table: "character_weapons", column: "quantity", definition: "INTEGER NOT NULL DEFAULT 1" },
+  // character_custom_resources shipped first without icon/roll_formula.
+  { table: "character_custom_resources", column: "icon", definition: "TEXT NOT NULL DEFAULT ''" },
+  { table: "character_custom_resources", column: "roll_formula", definition: "TEXT NOT NULL DEFAULT ''" },
 ];
 
 // The `equipment_item_id` entry in COLUMN_MIGRATIONS above only ever ADDED

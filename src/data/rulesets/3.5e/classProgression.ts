@@ -159,6 +159,76 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         name: "Mighty Rage (Ex)",
         description: "At 20th level, a barbarian's bonuses to Strength and Constitution during his rage each increase to +8, and his morale bonus on Will saves increases to +4. The penalty to AC remains at -2.",
       },
+      {
+        level: 4,
+        name: "Rage (2/day)",
+        description: "A barbarian can rage 2 times per day (per the Table: The Barbarian).",
+      },
+      {
+        level: 6,
+        name: "Trap Sense +2 (Ex)",
+        description: "Your trap sense bonus rises to +2: a +2 bonus on Reflex saves made to avoid traps and a +2 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 8,
+        name: "Rage (3/day)",
+        description: "A barbarian can rage 3 times per day (per the Table: The Barbarian).",
+      },
+      {
+        level: 9,
+        name: "Trap Sense +3 (Ex)",
+        description: "Your trap sense bonus rises to +3: a +3 bonus on Reflex saves made to avoid traps and a +3 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 10,
+        name: "Damage Reduction 2/— (Ex)",
+        description: "The barbarian’s damage reduction rises to 2/—: subtract 2 from the damage the barbarian takes each time he is dealt damage from a weapon or a natural attack. Damage reduction can reduce damage to 0 but not below 0.",
+      },
+      {
+        level: 12,
+        name: "Rage (4/day)",
+        description: "A barbarian can rage 4 times per day (per the Table: The Barbarian).",
+      },
+      {
+        level: 12,
+        name: "Trap Sense +4 (Ex)",
+        description: "Your trap sense bonus rises to +4: a +4 bonus on Reflex saves made to avoid traps and a +4 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 13,
+        name: "Damage Reduction 3/— (Ex)",
+        description: "The barbarian’s damage reduction rises to 3/—: subtract 3 from the damage the barbarian takes each time he is dealt damage from a weapon or a natural attack. Damage reduction can reduce damage to 0 but not below 0.",
+      },
+      {
+        level: 15,
+        name: "Trap Sense +5 (Ex)",
+        description: "Your trap sense bonus rises to +5: a +5 bonus on Reflex saves made to avoid traps and a +5 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 16,
+        name: "Rage (5/day)",
+        description: "A barbarian can rage 5 times per day (per the Table: The Barbarian).",
+      },
+      {
+        level: 16,
+        name: "Damage Reduction 4/— (Ex)",
+        description: "The barbarian’s damage reduction rises to 4/—: subtract 4 from the damage the barbarian takes each time he is dealt damage from a weapon or a natural attack. Damage reduction can reduce damage to 0 but not below 0.",
+      },
+      {
+        level: 18,
+        name: "Trap Sense +6 (Ex)",
+        description: "Your trap sense bonus rises to +6: a +6 bonus on Reflex saves made to avoid traps and a +6 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 19,
+        name: "Damage Reduction 5/— (Ex)",
+        description: "The barbarian’s damage reduction rises to 5/—: subtract 5 from the damage the barbarian takes each time he is dealt damage from a weapon or a natural attack. Damage reduction can reduce damage to 0 but not below 0.",
+      },
+      {
+        level: 20,
+        name: "Rage (6/day)",
+        description: "A barbarian can rage 6 times per day (per the Table: The Barbarian).",
+      },
     ],
   },
   {
@@ -234,6 +304,21 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         level: 18,
         name: "Mass Suggestion (Sp)",
         description: "This ability functions like suggestion, above, except that a bard of 18th level or higher with 21 or more ranks in a Perform skill can make the suggestion simultaneously to any number of creatures that he has already fascinated. Mass suggestion is an enchantment (compulsion), mind-affecting, language-dependent ability.",
+      },
+      {
+        level: 8,
+        name: "Inspire Courage +2 (Su)",
+        description: "The morale bonus granted by inspire courage increases to +2 on saving throws against charm and fear effects and on attack and weapon damage rolls.",
+      },
+      {
+        level: 14,
+        name: "Inspire Courage +3 (Su)",
+        description: "The morale bonus granted by inspire courage increases to +3 on saving throws against charm and fear effects and on attack and weapon damage rolls.",
+      },
+      {
+        level: 20,
+        name: "Inspire Courage +4 (Su)",
+        description: "The morale bonus granted by inspire courage increases to +4 on saving throws against charm and fear effects and on attack and weapon damage rolls.",
       },
     ],
     spellProgression: [
@@ -694,6 +779,66 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         name: "Timeless Body (Ex)",
         description: "After attaining 15th level, a druid no longer takes ability score penalties for aging and cannot be magically aged. Any penalties she may have already incurred, however, remain in place.\n\nBonuses still accrue, and the druid still dies of old age when her time is up.",
       },
+      {
+        level: 6,
+        name: "Wild Shape (2/day)",
+        description: "A druid can use wild shape 2 times per day (per the Table: The Druid).",
+      },
+      {
+        level: 7,
+        name: "Wild Shape (3/day)",
+        description: "A druid can use wild shape 3 times per day (per the Table: The Druid).",
+      },
+      {
+        level: 8,
+        name: "Wild Shape (Large)",
+        description: "A druid gains the ability to take the shape of a Large animal.",
+      },
+      {
+        level: 10,
+        name: "Wild Shape (4/day)",
+        description: "A druid can use wild shape 4 times per day (per the Table: The Druid).",
+      },
+      {
+        level: 11,
+        name: "Wild Shape (Tiny)",
+        description: "A druid gains the ability to take the shape of a Tiny animal.",
+      },
+      {
+        level: 12,
+        name: "Wild Shape (plant)",
+        description: "A druid becomes able to use wild shape to change into a plant creature with the same size restrictions as for animal forms. (A druid can’t use this ability to take the form of a plant that isn’t a creature.)",
+      },
+      {
+        level: 14,
+        name: "Wild Shape (5/day)",
+        description: "A druid can use wild shape 5 times per day (per the Table: The Druid).",
+      },
+      {
+        level: 15,
+        name: "Wild Shape (Huge)",
+        description: "A druid gains the ability to take the shape of a Huge animal.",
+      },
+      {
+        level: 16,
+        name: "Wild Shape (elemental, 1/day)",
+        description: "A druid becomes able to use wild shape to change into a Small, Medium, or Large elemental (air, earth, fire, or water) once per day. These elemental forms are in addition to her normal wild shape usage. In addition to the normal effects of wild shape, the druid gains all the elemental’s extraordinary, supernatural, and spell-like abilities. She also gains the elemental’s feats for as long as she maintains the wild shape, but she retains her own creature type.",
+      },
+      {
+        level: 18,
+        name: "Wild Shape (6/day)",
+        description: "A druid can use wild shape 6 times per day (per the Table: The Druid).",
+      },
+      {
+        level: 18,
+        name: "Wild Shape (elemental, 2/day)",
+        description: "A druid becomes able to assume elemental form twice per day.",
+      },
+      {
+        level: 20,
+        name: "Wild Shape (elemental, 3/day; Huge elemental)",
+        description: "A druid can assume elemental form three times per day, and may use this wild shape ability to change into a Huge elemental.",
+      },
     ],
     spellProgression: [
       { level: 1, slots: [1, 0, 0, 0, 0, 0, 0, 0, 0] },
@@ -727,6 +872,56 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         level: 1,
         name: "Bonus Feats",
         description: "At 1st level, a fighter gets a bonus combat-oriented feat in addition to the feat that any 1st-level character gets and the bonus feat granted to a human character. The fighter gains an additional bonus feat at 2nd level and every two fighter levels thereafter (4th, 6th, 8th, 10th, 12th, 14th, 16th, 18th, and 20th). These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.\n\nThese bonus feats are in addition to the feat that a character of any class gets from advancing levels. A fighter is not limited to the list of fighter bonus feats when choosing these feats.",
+      },
+      {
+        level: 2,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 4,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 6,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 8,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 10,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 12,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 14,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 16,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 18,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
+      },
+      {
+        level: 20,
+        name: "Bonus Feat",
+        description: "The fighter gains an additional bonus feat. These bonus feats must be drawn from the feats noted as fighter bonus feats. A fighter must still meet all prerequisites for a bonus feat, including ability score and base attack bonus minimums.",
       },
     ],
   },
@@ -849,6 +1044,71 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         name: "Perfect Self",
         description: "At 20th level, a monk becomes a magical creature. She is forevermore treated as an outsider rather than as a humanoid (or whatever the monk's creature type was) for the purpose of spells and magical effects. Additionally, the monk gains damage reduction 10/magic, which allows her to ignore the first 10 points of damage from any attack made by a nonmagical weapon or by any natural attack made by a creature that doesn't have similar damage reduction. Unlike other outsiders, the monk can still be brought back from the dead as if she were a member of her previous creature type.",
       },
+      {
+        level: 2,
+        name: "Bonus Feat",
+        description: "At 2nd level, a monk may select either Combat Reflexes or Deflect Arrows as a bonus feat. A monk need not have any of the prerequisites normally required for these feats to select them.",
+      },
+      {
+        level: 6,
+        name: "Bonus Feat",
+        description: "At 6th level, a monk may select either Improved Disarm or Improved Trip as a bonus feat. A monk need not have any of the prerequisites normally required for these feats to select them.",
+      },
+      {
+        level: 6,
+        name: "Slow Fall 30 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 30 ft. shorter than it actually is.",
+      },
+      {
+        level: 8,
+        name: "Slow Fall 40 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 40 ft. shorter than it actually is.",
+      },
+      {
+        level: 10,
+        name: "Slow Fall 50 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 50 ft. shorter than it actually is.",
+      },
+      {
+        level: 10,
+        name: "Ki Strike (lawful) (Su)",
+        description: "At 10th level, the monk’s unarmed attacks are also treated as lawful weapons for the purpose of dealing damage to creatures with damage reduction.",
+      },
+      {
+        level: 11,
+        name: "Greater Flurry (Ex)",
+        description: "At 11th level, a monk’s flurry of blows ability improves. In addition to the standard single extra attack she gets from flurry of blows, she gets a second extra attack at her full base attack bonus.",
+      },
+      {
+        level: 12,
+        name: "Slow Fall 60 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 60 ft. shorter than it actually is.",
+      },
+      {
+        level: 14,
+        name: "Slow Fall 70 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 70 ft. shorter than it actually is.",
+      },
+      {
+        level: 16,
+        name: "Slow Fall 80 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 80 ft. shorter than it actually is.",
+      },
+      {
+        level: 16,
+        name: "Ki Strike (adamantine) (Su)",
+        description: "At 16th level, the monk’s unarmed attacks are treated as adamantine weapons for the purpose of dealing damage to creatures with damage reduction and bypassing hardness.",
+      },
+      {
+        level: 18,
+        name: "Slow Fall 90 ft. (Ex)",
+        description: "When using a nearby wall to slow her descent, a monk takes damage as if the fall were 90 ft. shorter than it actually is.",
+      },
+      {
+        level: 20,
+        name: "Slow Fall any distance (Ex)",
+        description: "A monk can use a nearby wall to slow her descent and fall any distance without harm.",
+      },
     ],
   },
   {
@@ -856,6 +1116,12 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
     abilityScoreIncreaseLevels: [4, 8, 12, 16, 20],
     featLevels: [1, 3, 6, 9, 12, 15, 18],
     resources: [
+      {
+        id: "paladin-remove-disease",
+        name: "Remove Disease",
+        // Per WEEK in the SRD (once at 6th, +1 every three levels after); a rest-based tracker is the closest this model gets, so reset it by hand between weeks.
+        usesByLevel: { 6: 1, 9: 2, 12: 3, 15: 4, 18: 5 },
+      },
       {
         id: "paladin-smite-evil",
         name: "Smite Evil",
@@ -941,6 +1207,46 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         level: 6,
         name: "Remove Disease (Sp)",
         description: "At 6th level, a paladin can produce a remove disease effect, as the spell, once per week. She can use this ability one additional time per week for every three levels after 6th (twice per week at 9th, three times at 12th, and so forth).",
+      },
+      {
+        level: 5,
+        name: "Smite Evil 2/day (Su)",
+        description: "The paladin may smite evil 2 times per day (per the Table: The Paladin).",
+      },
+      {
+        level: 9,
+        name: "Remove Disease (twice per week) (Sp)",
+        description: "A paladin can produce a remove disease effect, as the spell, twice per week.",
+      },
+      {
+        level: 10,
+        name: "Smite Evil 3/day (Su)",
+        description: "The paladin may smite evil 3 times per day (per the Table: The Paladin).",
+      },
+      {
+        level: 12,
+        name: "Remove Disease (three times per week) (Sp)",
+        description: "A paladin can produce a remove disease effect, as the spell, three times per week.",
+      },
+      {
+        level: 15,
+        name: "Smite Evil 4/day (Su)",
+        description: "The paladin may smite evil 4 times per day (per the Table: The Paladin).",
+      },
+      {
+        level: 15,
+        name: "Remove Disease (four times per week) (Sp)",
+        description: "A paladin can produce a remove disease effect, as the spell, four times per week.",
+      },
+      {
+        level: 18,
+        name: "Remove Disease (five times per week) (Sp)",
+        description: "A paladin can produce a remove disease effect, as the spell, five times per week.",
+      },
+      {
+        level: 20,
+        name: "Smite Evil 5/day (Su)",
+        description: "The paladin may smite evil 5 times per day (per the Table: The Paladin).",
       },
     ],
     spellProgression: [
@@ -1038,6 +1344,26 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         name: "Hide in Plain Sight (Ex)",
         description: "While in any sort of natural terrain, a ranger of 17th level or higher can use the Hide skill even while being observed.",
       },
+      {
+        level: 5,
+        name: "2nd Favored Enemy (Ex)",
+        description: "The ranger may select an additional favored enemy from those given on the Ranger Favored Enemies table. In addition, the bonus against any one favored enemy (including the one just selected, if so desired) increases by 2.",
+      },
+      {
+        level: 10,
+        name: "3rd Favored Enemy (Ex)",
+        description: "The ranger may select an additional favored enemy from those given on the Ranger Favored Enemies table. In addition, the bonus against any one favored enemy (including the one just selected, if so desired) increases by 2.",
+      },
+      {
+        level: 15,
+        name: "4th Favored Enemy (Ex)",
+        description: "The ranger may select an additional favored enemy from those given on the Ranger Favored Enemies table. In addition, the bonus against any one favored enemy (including the one just selected, if so desired) increases by 2.",
+      },
+      {
+        level: 20,
+        name: "5th Favored Enemy (Ex)",
+        description: "The ranger may select an additional favored enemy from those given on the Ranger Favored Enemies table. In addition, the bonus against any one favored enemy (including the one just selected, if so desired) increases by 2.",
+      },
     ],
     spellProgression: [
       { level: 4, slots: [0, 0, 0, 0] },
@@ -1098,6 +1424,91 @@ export const CLASS_PROGRESSIONS_35E: ClassProgression[] = [
         level: 10,
         name: "Special Abilities",
         description: "On attaining 10th level, and at every three levels thereafter (13th, 16th, and 19th), a rogue gains a special ability of her choice from among the following options.\n\n#### Crippling Strike ( Ex )\n\nA rogue with this ability can sneak attack opponents with such precision that her blows weaken and hamper them. An opponent damaged by one of her sneak attacks also takes 2 points of Strength damage. Ability points lost to damage return on their own at the rate of 1 point per day for each damaged ability.\n\n#### Defensive Roll ( Ex )\n\nThe rogue can roll with a potentially lethal blow to take less damage from it than she otherwise would. Once per day, when she would be reduced to 0 or fewer hit points by damage in combat (from a weapon or other blow, not a spell or special ability), the rogue can attempt to roll with the damage. To use this ability, the rogue must attempt a Reflex saving throw (DC = damage dealt). If the save succeeds, she takes only half damage from the blow; if it fails, she takes full damage. She must be aware of the attack and able to react to it in order to execute her defensive roll-if she is denied her Dexterity bonus to AC, she can't use this ability. Since this effect would not normally allow a character to make a Reflex save for half damage, the rogue's evasion ability does not apply to the defensive roll.\n\n#### Improved Evasion ( Ex )\n\nThis ability works like evasion, except that while the rogue still takes no damage on a successful Reflex saving throw against attacks henceforth she takes only half damage on a failed save. A helpless rogue does not gain the benefit of improved evasion.\n\n#### Opportunist ( Ex )\n\nOnce per round, the rogue can make an attack of opportunity against an opponent who has just been struck for damage in melee by another character. This attack counts as the rogue's attack of opportunity for that round. Even a rogue with the Combat Reflexes feat can't use the opportunist ability more than once per round.\n\n#### Skill Mastery\n\nThe rogue becomes so certain in the use of certain skills that she can use them reliably even under adverse conditions.\n\nUpon gaining this ability, she selects a number of skills equal to 3 + her Intelligence modifier. When making a skill check with one of these skills, she may take 10 even if stress and distractions would normally prevent her from doing so. A rogue may gain this special ability multiple times, selecting additional skills for it to apply to each time.\n\n#### Slippery Mind ( Ex )\n\nThis ability represents the rogue's ability to wriggle free from magical effects that would otherwise control or compel her. If a rogue with slippery mind is affected by an enchantment spell or effect and fails her saving throw, she can attempt it again 1 round later at the same DC. She gets only this one extra chance to succeed on her saving throw.\n\n#### Feat\n\nA rogue may gain a bonus feat in place of a special ability.",
+      },
+      {
+        level: 3,
+        name: "Sneak Attack +2d6",
+        description: "Sneak attack extra damage increases to 2d6.",
+      },
+      {
+        level: 5,
+        name: "Sneak Attack +3d6",
+        description: "Sneak attack extra damage increases to 3d6.",
+      },
+      {
+        level: 6,
+        name: "Trap Sense +2 (Ex)",
+        description: "Your trap sense bonus rises to +2: a +2 bonus on Reflex saves made to avoid traps and a +2 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 7,
+        name: "Sneak Attack +4d6",
+        description: "Sneak attack extra damage increases to 4d6.",
+      },
+      {
+        level: 9,
+        name: "Sneak Attack +5d6",
+        description: "Sneak attack extra damage increases to 5d6.",
+      },
+      {
+        level: 9,
+        name: "Trap Sense +3 (Ex)",
+        description: "Your trap sense bonus rises to +3: a +3 bonus on Reflex saves made to avoid traps and a +3 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 11,
+        name: "Sneak Attack +6d6",
+        description: "Sneak attack extra damage increases to 6d6.",
+      },
+      {
+        level: 12,
+        name: "Trap Sense +4 (Ex)",
+        description: "Your trap sense bonus rises to +4: a +4 bonus on Reflex saves made to avoid traps and a +4 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 13,
+        name: "Sneak Attack +7d6",
+        description: "Sneak attack extra damage increases to 7d6.",
+      },
+      {
+        level: 13,
+        name: "Special Abilities",
+        description: "A rogue gains a special ability of her choice from among the options listed under the 10th-level Special Abilities entry.",
+      },
+      {
+        level: 15,
+        name: "Sneak Attack +8d6",
+        description: "Sneak attack extra damage increases to 8d6.",
+      },
+      {
+        level: 15,
+        name: "Trap Sense +5 (Ex)",
+        description: "Your trap sense bonus rises to +5: a +5 bonus on Reflex saves made to avoid traps and a +5 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 16,
+        name: "Special Abilities",
+        description: "A rogue gains a special ability of her choice from among the options listed under the 10th-level Special Abilities entry.",
+      },
+      {
+        level: 17,
+        name: "Sneak Attack +9d6",
+        description: "Sneak attack extra damage increases to 9d6.",
+      },
+      {
+        level: 18,
+        name: "Trap Sense +6 (Ex)",
+        description: "Your trap sense bonus rises to +6: a +6 bonus on Reflex saves made to avoid traps and a +6 dodge bonus to AC against attacks made by traps. Trap sense bonuses gained from multiple classes stack.",
+      },
+      {
+        level: 19,
+        name: "Sneak Attack +10d6",
+        description: "Sneak attack extra damage increases to 10d6.",
+      },
+      {
+        level: 19,
+        name: "Special Abilities",
+        description: "A rogue gains a special ability of her choice from among the options listed under the 10th-level Special Abilities entry.",
       },
     ],
   },

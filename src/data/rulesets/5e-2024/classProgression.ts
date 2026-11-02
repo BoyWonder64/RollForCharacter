@@ -55,6 +55,11 @@ export const CLASS_PROGRESSIONS_5E_2024: ClassProgression[] = [
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "barbarian-persistent-rage",
+        name: "Persistent Rage (regain Rage uses)",
+        usesByLevel: { 15: 1 },
+      },
+      {
         id: "barbarian-rage",
         name: "Rage",
         // 20th-level Barbarians rage an unlimited number of times -- approximated as a very large number since usesByLevel has no "unlimited" concept.
@@ -198,6 +203,13 @@ In addition, your Rage is so fierce that it now lasts for 10 minutes without you
         name: "Path of the Berserker",
         summary: `Barbarians who walk the Path of the Berserker direct their Rage primarily toward violence. Their path is one of untrammeled fury, and they thrill in the chaos of battle as they allow their Rage to seize and empower them.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "barbarian-intimidating-presence",
+            name: "Intimidating Presence",
+            usesByLevel: { 14: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -391,6 +403,11 @@ You always have the chosen spells prepared, and whenever you gain a Bard level, 
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "cleric-divine-intervention",
+        name: "Divine Intervention",
+        usesByLevel: { 10: 1 },
+      },
+      {
         id: "cleric-channel-divinity",
         name: "Channel Divinity",
         usesByLevel: { 2: 2, 6: 3, 18: 4 },
@@ -567,6 +584,11 @@ Table: Life Domain Spells
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "druid-wild-resurgence",
+        name: "Wild Resurgence (Wild Shape to slot)",
+        usesByLevel: { 5: 1 },
+      },
+      {
         id: "druid-wild-shape",
         name: "Wild Shape",
         usesByLevel: { 2: 2, 6: 3, 17: 4 },
@@ -710,6 +732,11 @@ In addition, you can expend one use of Wild Shape (no action required) to give y
         summary: `The Circle of the Land comprises mystics and sages who safeguard ancient knowledge and rites. These Druids meet within sacred circles of trees or standing stones to whisper primal secrets in Druidic. The circle's wisest members preside as the chief priests of their communities.`,
         srdLicensed: true,
         resources: [
+          {
+            id: "druid-natures-sanctuary",
+            name: "Nature's Sanctuary (free Circle Spell)",
+            usesByLevel: { 14: 1 },
+          },
           {
             id: "druid-natural-recovery-spell",
             name: "Natural Recovery (free Circle Spell)",
@@ -972,6 +999,11 @@ Once you use this feature, you can't do so again until you finish a Short or Lon
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "monk-uncanny-metabolism",
+        name: "Uncanny Metabolism",
+        usesByLevel: { 2: 1 },
+      },
+      {
         id: "monk-focus",
         name: "Focus Points",
         usesByLevel: pointsEqualToLevel(2, 20),
@@ -1179,6 +1211,16 @@ You can have only one creature under the effect of this feature at a time. You c
     subclassLabel: "Paladin Subclass",
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
+      {
+        id: "paladin-paladins-smite",
+        name: "Paladin's Smite (free Divine Smite)",
+        usesByLevel: { 2: 1 },
+      },
+      {
+        id: "paladin-faithful-steed",
+        name: "Faithful Steed (free Find Steed)",
+        usesByLevel: { 5: 1 },
+      },
       {
         id: "paladin-channel-divinity",
         name: "Channel Divinity",
@@ -1407,6 +1449,16 @@ You can end this effect early (no action required). This effect also ends if you
     subclassLabel: "Ranger Subclass",
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
+      {
+        id: "ranger-tireless",
+        name: "Tireless (Temporary Hit Points)",
+        usesFromAbilityModifier: { ability: "wisdom", grantedAtLevel: 10, minimum: 1 },
+      },
+      {
+        id: "ranger-natures-veil",
+        name: "Nature's Veil",
+        usesFromAbilityModifier: { ability: "wisdom", grantedAtLevel: 14, minimum: 1 },
+      },
       {
         id: "ranger-favored-enemy",
         name: "Favored Enemy",
@@ -1775,6 +1827,16 @@ Once you use this feature, you can't use it again until you finish a Short or Lo
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
       {
+        id: "sorcerer-innate-sorcery",
+        name: "Innate Sorcery",
+        usesByLevel: { 1: 2 },
+      },
+      {
+        id: "sorcerer-sorcerous-restoration",
+        name: "Sorcerous Restoration",
+        usesByLevel: { 5: 1 },
+      },
+      {
         id: "sorcerer-sorcery-points",
         name: "Sorcery Points",
         usesByLevel: pointsEqualToLevel(2, 20),
@@ -1945,6 +2007,18 @@ In addition, while your Innate Sorcery feature is active, you can use up to two 
         name: "Draconic Sorcery",
         summary: `Your innate magic comes from the gift of a dragon. Perhaps an ancient dragon facing death bequeathed some of its magical power to you or your ancestor. You might have absorbed magic from a site infused with dragons' power. Or perhaps you handled a treasure taken from a dragon's hoard that was steeped in draconic power. Or you might have a dragon for an ancestor.`,
         srdLicensed: true,
+        resources: [
+          {
+            id: "sorcerer-dragon-wings",
+            name: "Dragon Wings",
+            usesByLevel: { 14: 1 },
+          },
+          {
+            id: "sorcerer-dragon-companion",
+            name: "Dragon Companion (free Summon Dragon)",
+            usesByLevel: { 19: 1 },
+          },
+        ],
         features: [
           {
             level: 3,
@@ -2394,6 +2468,12 @@ Once you use this feature, you can't use it again until you finish a Long Rest u
     subclassLabel: "Wizard Subclass",
     asiLevels: [4, 8, 12, 16, 19],
     resources: [
+      {
+        id: "wizard-signature-spells",
+        name: "Signature Spells",
+        usesByLevel: { 20: 2 },
+        shortRestRegain: "all",
+      },
       {
         id: "wizard-arcane-recovery",
         name: "Arcane Recovery",

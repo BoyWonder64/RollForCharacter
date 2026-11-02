@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
-import { characterArmor, characterWeapons } from "../../db/schema";
+import { characterArmor, characterGearItems, characterWeapons } from "../../db/schema";
 import { getRulesetCatalog } from "../../data/rulesets";
 import type { ArmorDefinition, WeaponDefinition } from "../../data/rulesets";
 import { abilityModifier, type FeatEffectBundle } from "./characterCalculations";
@@ -36,6 +36,7 @@ export async function listCharacterArmor(characterId: number) {
 
 export type CustomWeaponInput = {
   name: string;
+  quantity?: number;
   category?: string;
   cost?: string;
   damageDice?: string;
@@ -47,15 +48,20 @@ export type CustomWeaponInput = {
   magicBonus?: number;
 };
 
+export type AddGearOptions = { equipped?: boolean; quantity?: number };
+
 export async function addWeaponFromCatalog(
   characterId: number,
   ruleset: string,
-  catalogId: string
+  catalogId: string,
+  options: AddGearOptions = {}
 ): Promise<void> {
   const definition = listWeaponCatalog(ruleset).find((w) => w.id === catalogId);
   if (!definition) return;
   await db.insert(characterWeapons).values({
     characterId,
+    equipped: options.equipped ?? false,
+    quantity: Math.max(1, options.quantity ?? 1),
     catalogId: definition.id,
     name: definition.name,
     category: definition.category,
@@ -74,6 +80,7 @@ export async function addCustomWeapon(
 ): Promise<void> {
   await db.insert(characterWeapons).values({
     characterId,
+    quantity: Math.max(1, input.quantity ?? 1),
     catalogId: null,
     name: input.name,
     category: input.category ?? "",
@@ -113,12 +120,14 @@ export type CustomArmorInput = {
 export async function addArmorFromCatalog(
   characterId: number,
   ruleset: string,
-  catalogId: string
+  catalogId: string,
+  options: AddGearOptions = {}
 ): Promise<void> {
   const definition = listArmorCatalog(ruleset).find((a) => a.id === catalogId);
   if (!definition) return;
   await db.insert(characterArmor).values({
     characterId,
+    equipped: options.equipped ?? false,
     catalogId: definition.id,
     name: definition.name,
     category: definition.category,
@@ -151,6 +160,51 @@ export async function addCustomArmor(
     isMagic: input.isMagic ?? false,
     magicBonus: input.magicBonus ?? 0,
   });
+}
+
+export async function listGearItems(characterId: number) {
+  return db
+    .select()
+    .from(characterGearItems)
+    .where(eq(characterGearItems.characterId, characterId))
+    .orderBy(characterGearItems.createdAt, characterGearItems.id);
+}
+
+/** Adds a pack, focus, tool, ammunition, etc. Adding a name the character already has (case-insensitive) stacks onto that row instead of duplicating it. */
+export async function addGearItem(
+  characterId: number,
+  input: { name: string; quantity?: number; description?: string }
+): Promise<void> {
+  const name = input.name.trim();
+  if (!name) return;
+  const quantity = Math.max(1, Math.floor(input.quantity ?? 1));
+  const existing = (await listGearItems(characterId)).find((row) => row.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    await db
+      .update(characterGearItems)
+      .set({ quantity: existing.quantity + quantity })
+      .where(eq(characterGearItems.id, existing.id));
+    return;
+  }
+  await db.insert(characterGearItems).values({
+    characterId,
+    name,
+    quantity,
+    description: input.description?.trim() ?? "",
+  });
+}
+
+/** Sets a gear item's quantity; 0 or less removes it. */
+export async function setGearItemQuantity(itemId: number, quantity: number): Promise<void> {
+  if (quantity <= 0) {
+    await db.delete(characterGearItems).where(eq(characterGearItems.id, itemId));
+    return;
+  }
+  await db.update(characterGearItems).set({ quantity: Math.floor(quantity) }).where(eq(characterGearItems.id, itemId));
+}
+
+export async function removeGearItem(itemId: number): Promise<void> {
+  await db.delete(characterGearItems).where(eq(characterGearItems.id, itemId));
 }
 
 export async function removeCharacterArmor(armorId: number): Promise<void> {
@@ -187,16 +241,22 @@ export function describeArmorAc(armor: {
  * "Longswords", "Hand crossbows").
  */
 export function isProficientWithWeapon(
-  weapon: { name: string; category: string },
+  weapon: { name: string; category: string; properties?: string | string[] },
   weaponProficiencies: string[] | undefined
 ): boolean {
   if (!weaponProficiencies || weaponProficiencies.length === 0) return false;
   const category = weapon.category.toLowerCase();
   const name = weapon.name.toLowerCase();
+  const properties = (Array.isArray(weapon.properties) ? weapon.properties.join(",") : weapon.properties ?? "").toLowerCase();
   return weaponProficiencies.some((proficiency) => {
     const text = proficiency.toLowerCase();
     if (text === "simple weapons" && category.startsWith("simple")) return true;
     if (text === "martial weapons" && category.startsWith("martial")) return true;
+    // e.g. 2024 Rogue: "Martial weapons with the Finesse or Light property".
+    const qualified = text.match(/^martial weapons with the (.+) property$/);
+    if (qualified && category.startsWith("martial")) {
+      return qualified[1].split(/\s+or\s+/).some((property) => properties.includes(property.trim()));
+    }
     return text === name || text === `${name}s`;
   });
 }

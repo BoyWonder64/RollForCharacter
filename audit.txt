@@ -1,0 +1,174 @@
+
+=== 5e wizard  hitDie=6 saves=intelligence,wisdom spellAbility=intelligence subLvl=2 label=Arcane Tradition asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses,spellProgression
+resources: [{"id":"wizard-signature-spells","name":"Signature Spells","usesByLevel":{"20":2},"shortRestRegain":"all"},{"id":"wizard-arcane-recovery","name":"Arcane Recovery","usesByLevel":{"1":1}}]
+subclasses: School of Evocation[SRD:5f+1r]; School of Abjuration[x:0f]; School of Conjuration[x:0f]; School of Divination[x:0f]; School of Enchantment[x:0f]; School of Illusion[x:0f]; School of Necromancy[x:0f]; School of Transmutation[x:0f]; War Magic[x:0f]; Bladesinging[x:0f]; Order of Scribes[x:0f]
+features: 1:Arcane Recovery | 1:Spellcasting | 4:Ability Score Improvement | 18:Spell Mastery | 20:Signature Spells
+spells:
+L1 slots=[2,0,0,0,0,0,0,0,0] c=3 k=  
+L2 slots=[3,0,0,0,0,0,0,0,0] c=3 k=  
+L3 slots=[4,2,0,0,0,0,0,0,0] c=3 k=  
+L4 slots=[4,3,0,0,0,0,0,0,0] c=4 k=  
+L5 slots=[4,3,2,0,0,0,0,0,0] c=4 k=  
+L6 slots=[4,3,3,0,0,0,0,0,0] c=4 k=  
+L7 slots=[4,3,3,1,0,0,0,0,0] c=4 k=  
+L8 slots=[4,3,3,2,0,0,0,0,0] c=4 k=  
+L9 slots=[4,3,3,3,1,0,0,0,0] c=4 k=  
+L10 slots=[4,3,3,3,2,0,0,0,0] c=5 k=  
+L11 slots=[4,3,3,3,2,1,0,0,0] c=5 k=  
+L12 slots=[4,3,3,3,2,1,0,0,0] c=5 k=  
+L13 slots=[4,3,3,3,2,1,1,0,0] c=5 k=  
+L14 slots=[4,3,3,3,2,1,1,0,0] c=5 k=  
+L15 slots=[4,3,3,3,2,1,1,1,0] c=5 k=  
+L16 slots=[4,3,3,3,2,1,1,1,0] c=5 k=  
+L17 slots=[4,3,3,3,2,1,1,1,1] c=5 k=  
+L18 slots=[4,3,3,3,3,1,1,1,1] c=5 k=  
+L19 slots=[4,3,3,3,3,2,1,1,1] c=5 k=  
+L20 slots=[4,3,3,3,3,2,2,1,1] c=5 k=  
+
+=== 5e sorcerer  hitDie=6 saves=constitution,charisma spellAbility=charisma subLvl=1 label=Sorcerous Origin asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses,spellProgression
+resources: [{"id":"sorcerer-sorcery-points","name":"Sorcery Points","usesByLevel":{"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20},"isPointPool":true}]
+subclasses: Draconic Bloodline[SRD:5f]; Wild Magic[x:0f]; Divine Soul[x:0f]; Shadow Magic[x:0f]; Storm Sorcery[x:0f]; Aberrant Mind[x:0f]; Clockwork Soul[x:0f]
+features: 1:Spellcasting | 2:Font of Magic | 3:Metamagic | 4:Ability Score Improvement | 20:Sorcerous Restoration
+spells:
+L1 slots=[2,0,0,0,0,0,0,0,0] c=4 k=2  
+L2 slots=[3,0,0,0,0,0,0,0,0] c=4 k=3  
+L3 slots=[4,2,0,0,0,0,0,0,0] c=4 k=4  
+L4 slots=[4,3,0,0,0,0,0,0,0] c=5 k=5  
+L5 slots=[4,3,2,0,0,0,0,0,0] c=5 k=6  
+L6 slots=[4,3,3,0,0,0,0,0,0] c=5 k=7  
+L7 slots=[4,3,3,1,0,0,0,0,0] c=5 k=8  
+L8 slots=[4,3,3,2,0,0,0,0,0] c=5 k=9  
+L9 slots=[4,3,3,3,1,0,0,0,0] c=5 k=10  
+L10 slots=[4,3,3,3,2,0,0,0,0] c=6 k=11  
+L11 slots=[4,3,3,3,2,1,0,0,0] c=6 k=12  
+L12 slots=[4,3,3,3,2,1,0,0,0] c=6 k=12  
+L13 slots=[4,3,3,3,2,1,1,0,0] c=6 k=13  
+L14 slots=[4,3,3,3,2,1,1,0,0] c=6 k=13  
+L15 slots=[4,3,3,3,2,1,1,1,0] c=6 k=14  
+L16 slots=[4,3,3,3,2,1,1,1,0] c=6 k=14  
+L17 slots=[4,3,3,3,2,1,1,1,1] c=6 k=15  
+L18 slots=[4,3,3,3,3,1,1,1,1] c=6 k=15  
+L19 slots=[4,3,3,3,3,2,1,1,1] c=6 k=15  
+L20 slots=[4,3,3,3,3,2,2,1,1] c=6 k=15  
+
+=== 5e warlock  hitDie=8 saves=wisdom,charisma spellAbility=charisma subLvl=1 label=Otherworldly Patron asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses
+resources: [{"id":"warlock-eldritch-master","name":"Eldritch Master","usesByLevel":{"20":1}},{"id":"warlock-arcanum-6","name":"Mystic Arcanum (6th level)","usesByLevel":{"11":1}},{"id":"warlock-arcanum-7","name":"Mystic Arcanum (7th level)","usesByLevel":{"13":1}},{"id":"warlock-arcanum-8","name":"Mystic Arcanum (8th level)","usesByLevel":{"15":1}},{"id":"warlock-arcanum-9","name":"Mystic Arcanum (9th level)","usesByLevel":{"17":1}}]
+subclasses: The Fiend[SRD:5f+2r]; The Archfey[x:0f]; The Great Old One[x:0f]; The Celestial[x:0f]; The Hexblade[x:0f]; The Fathomless[x:0f]; The Genie[x:0f]; The Undead[x:0f]
+features: 1:Pact Magic | 2:Eldritch Invocations | 3:Pact Boon | 4:Ability Score Improvement | 11:Mystic Arcanum | 20:Eldritch Master
+
+=== 5e cleric  hitDie=8 saves=wisdom,charisma spellAbility=wisdom subLvl=1 label=Divine Domain asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses,spellProgression
+resources: [{"id":"cleric-divine-intervention","name":"Divine Intervention","usesByLevel":{"10":1}},{"id":"cleric-channel-divinity","name":"Channel Divinity","usesByLevel":{"2":1,"6":2,"18":3},"shortRestRegain":"all"}]
+subclasses: Life Domain[SRD:7f]; Knowledge Domain[x:0f]; Light Domain[x:0f]; Nature Domain[x:0f]; Tempest Domain[x:0f]; Trickery Domain[x:0f]; War Domain[x:0f]; Arcana Domain[x:0f]; Forge Domain[x:0f]; Grave Domain[x:0f]; Order Domain[x:0f]; Peace Domain[x:0f]; Twilight Domain[x:0f]
+features: 1:Spellcasting | 2:Channel Divinity | 4:Ability Score Improvement | 5:Destroy Undead | 10:Divine Intervention
+spells:
+L1 slots=[2,0,0,0,0,0,0,0,0] c=3 k=  
+L2 slots=[3,0,0,0,0,0,0,0,0] c=3 k=  
+L3 slots=[4,2,0,0,0,0,0,0,0] c=3 k=  
+L4 slots=[4,3,0,0,0,0,0,0,0] c=4 k=  
+L5 slots=[4,3,2,0,0,0,0,0,0] c=4 k=  
+L6 slots=[4,3,3,0,0,0,0,0,0] c=4 k=  
+L7 slots=[4,3,3,1,0,0,0,0,0] c=4 k=  
+L8 slots=[4,3,3,2,0,0,0,0,0] c=4 k=  
+L9 slots=[4,3,3,3,1,0,0,0,0] c=4 k=  
+L10 slots=[4,3,3,3,2,0,0,0,0] c=5 k=  
+L11 slots=[4,3,3,3,2,1,0,0,0] c=5 k=  
+L12 slots=[4,3,3,3,2,1,0,0,0] c=5 k=  
+L13 slots=[4,3,3,3,2,1,1,0,0] c=5 k=  
+L14 slots=[4,3,3,3,2,1,1,0,0] c=5 k=  
+L15 slots=[4,3,3,3,2,1,1,1,0] c=5 k=  
+L16 slots=[4,3,3,3,2,1,1,1,0] c=5 k=  
+L17 slots=[4,3,3,3,2,1,1,1,1] c=5 k=  
+L18 slots=[4,3,3,3,3,1,1,1,1] c=5 k=  
+L19 slots=[4,3,3,3,3,2,1,1,1] c=5 k=  
+L20 slots=[4,3,3,3,3,2,2,1,1] c=5 k=  
+
+=== 5e-2024 wizard  hitDie=6 saves=intelligence,wisdom spellAbility=intelligence subLvl=3 label=Wizard Subclass asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses,spellProgression
+resources: [{"id":"wizard-signature-spells","name":"Signature Spells","usesByLevel":{"20":2},"shortRestRegain":"all"},{"id":"wizard-arcane-recovery","name":"Arcane Recovery","usesByLevel":{"1":1}}]
+subclasses: Evoker[SRD:5f+1r]; Abjurer[x:5f+1r]; Diviner[x:5f+2r]; Illusionist[x:5f+2r]
+features: 1:Arcane Recovery | 1:Ritual Adept | 1:Spellcasting | 2:Scholar | 4:Ability Score Improvement | 5:Memorize Spell | 18:Spell Mastery | 19:Epic Boon | 20:Signature Spells
+spells:
+L1 slots=[2,0,0,0,0,0,0,0,0] c=3 k=4  
+L2 slots=[3,0,0,0,0,0,0,0,0] c=3 k=5  
+L3 slots=[4,2,0,0,0,0,0,0,0] c=3 k=6  
+L4 slots=[4,3,0,0,0,0,0,0,0] c=4 k=7  
+L5 slots=[4,3,2,0,0,0,0,0,0] c=4 k=9  
+L6 slots=[4,3,3,0,0,0,0,0,0] c=4 k=10  
+L7 slots=[4,3,3,1,0,0,0,0,0] c=4 k=11  
+L8 slots=[4,3,3,2,0,0,0,0,0] c=4 k=12  
+L9 slots=[4,3,3,3,1,0,0,0,0] c=4 k=14  
+L10 slots=[4,3,3,3,2,0,0,0,0] c=5 k=15  
+L11 slots=[4,3,3,3,2,1,0,0,0] c=5 k=16  
+L12 slots=[4,3,3,3,2,1,0,0,0] c=5 k=16  
+L13 slots=[4,3,3,3,2,1,1,0,0] c=5 k=17  
+L14 slots=[4,3,3,3,2,1,1,0,0] c=5 k=18  
+L15 slots=[4,3,3,3,2,1,1,1,0] c=5 k=19  
+L16 slots=[4,3,3,3,2,1,1,1,0] c=5 k=21  
+L17 slots=[4,3,3,3,2,1,1,1,1] c=5 k=22  
+L18 slots=[4,3,3,3,3,1,1,1,1] c=5 k=23  
+L19 slots=[4,3,3,3,3,2,1,1,1] c=5 k=24  
+L20 slots=[4,3,3,3,3,2,2,1,1] c=5 k=25  
+
+=== 5e-2024 sorcerer  hitDie=6 saves=constitution,charisma spellAbility=charisma subLvl=3 label=Sorcerer Subclass asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses,spellProgression
+resources: [{"id":"sorcerer-innate-sorcery","name":"Innate Sorcery","usesByLevel":{"1":2}},{"id":"sorcerer-sorcerous-restoration","name":"Sorcerous Restoration","usesByLevel":{"5":1}},{"id":"sorcerer-sorcery-points","name":"Sorcery Points","usesByLevel":{"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20},"isPointPool":true}]
+subclasses: Draconic Sorcery[SRD:5f+2r]; Aberrant Sorcery[x:6f+1r]; Clockwork Sorcery[x:5f+3r]; Wild Magic Sorcery[x:5f+2r]
+features: 1:Innate Sorcery | 1:Spellcasting | 2:Font of Magic | 2:Metamagic | 4:Ability Score Improvement | 5:Sorcerous Restoration | 7:Sorcery Incarnate | 19:Epic Boon | 20:Arcane Apotheosis
+spells:
+L1 slots=[2,0,0,0,0,0,0,0,0] c=4 k=2  
+L2 slots=[3,0,0,0,0,0,0,0,0] c=4 k=4  
+L3 slots=[4,2,0,0,0,0,0,0,0] c=4 k=6  
+L4 slots=[4,3,0,0,0,0,0,0,0] c=5 k=7  
+L5 slots=[4,3,2,0,0,0,0,0,0] c=5 k=9  
+L6 slots=[4,3,3,0,0,0,0,0,0] c=5 k=10  
+L7 slots=[4,3,3,1,0,0,0,0,0] c=5 k=11  
+L8 slots=[4,3,3,2,0,0,0,0,0] c=5 k=12  
+L9 slots=[4,3,3,3,1,0,0,0,0] c=5 k=14  
+L10 slots=[4,3,3,3,2,0,0,0,0] c=6 k=15  
+L11 slots=[4,3,3,3,2,1,0,0,0] c=6 k=16  
+L12 slots=[4,3,3,3,2,1,0,0,0] c=6 k=16  
+L13 slots=[4,3,3,3,2,1,1,0,0] c=6 k=17  
+L14 slots=[4,3,3,3,2,1,1,0,0] c=6 k=17  
+L15 slots=[4,3,3,3,2,1,1,1,0] c=6 k=18  
+L16 slots=[4,3,3,3,2,1,1,1,0] c=6 k=18  
+L17 slots=[4,3,3,3,2,1,1,1,1] c=6 k=19  
+L18 slots=[4,3,3,3,3,1,1,1,1] c=6 k=20  
+L19 slots=[4,3,3,3,3,2,1,1,1] c=6 k=21  
+L20 slots=[4,3,3,3,3,2,2,1,1] c=6 k=22  
+
+=== 5e-2024 warlock  hitDie=8 saves=wisdom,charisma spellAbility=charisma subLvl=3 label=Warlock Subclass asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses
+resources: [{"id":"warlock-magic-cunning","name":"Magic Cunning","usesByLevel":{"2":1}},{"id":"warlock-contact-patron","name":"Contact Patron","usesByLevel":{"9":1}},{"id":"warlock-arcanum-6","name":"Mystic Arcanum (6th level)","usesByLevel":{"11":1}},{"id":"warlock-arcanum-7","name":"Mystic Arcanum (7th level)","usesByLevel":{"13":1}},{"id":"warlock-arcanum-8","name":"Mystic Arcanum (8th level)","usesByLevel":{"15":1}},{"id":"warlock-arcanum-9","name":"Mystic Arcanum (9th level)","usesByLevel":{"17":1}}]
+subclasses: Fiend Patron[SRD:5f+2r]; Archfey Patron[x:5f+2r]; Celestial Patron[x:5f+2r]; Great Old One Patron[x:7f+1r]
+features: 1:Eldritch Invocations | 1:Pact Magic | 2:Magic Cunning | 4:Ability Score Improvement | 9:Contact Patron | 11:Mystic Arcanum | 19:Epic Boon | 20:Eldritch Master
+
+=== 5e-2024 cleric  hitDie=8 saves=wisdom,charisma spellAbility=wisdom subLvl=3 label=Cleric Subclass asi=4,8,12,16,19
+keys: classId,subclassLevel,subclassLabel,asiLevels,resources,features,subclasses,spellProgression
+resources: [{"id":"cleric-divine-intervention","name":"Divine Intervention","usesByLevel":{"10":1}},{"id":"cleric-channel-divinity","name":"Channel Divinity","usesByLevel":{"2":2,"6":3,"18":4},"shortRestRegain":1}]
+subclasses: Life Domain[SRD:5f]; Light Domain[x:5f+2r]; Trickery Domain[x:5f]; War Domain[x:6f+1r]
+features: 1:Divine Order | 1:Spellcasting | 2:Channel Divinity | 4:Ability Score Improvement | 5:Sear Undead | 7:Blessed Strikes | 10:Divine Intervention | 14:Improved Blessed Strikes | 19:Epic Boon | 20:Greater Divine Intervention
+spells:
+L1 slots=[2,0,0,0,0,0,0,0,0] c=3 k=4  
+L2 slots=[3,0,0,0,0,0,0,0,0] c=3 k=5  
+L3 slots=[4,2,0,0,0,0,0,0,0] c=3 k=6  
+L4 slots=[4,3,0,0,0,0,0,0,0] c=4 k=7  
+L5 slots=[4,3,2,0,0,0,0,0,0] c=4 k=9  
+L6 slots=[4,3,3,0,0,0,0,0,0] c=4 k=10  
+L7 slots=[4,3,3,1,0,0,0,0,0] c=4 k=11  
+L8 slots=[4,3,3,2,0,0,0,0,0] c=4 k=12  
+L9 slots=[4,3,3,3,1,0,0,0,0] c=4 k=14  
+L10 slots=[4,3,3,3,2,0,0,0,0] c=5 k=15  
+L11 slots=[4,3,3,3,2,1,0,0,0] c=5 k=16  
+L12 slots=[4,3,3,3,2,1,0,0,0] c=5 k=16  
+L13 slots=[4,3,3,3,2,1,1,0,0] c=5 k=17  
+L14 slots=[4,3,3,3,2,1,1,0,0] c=5 k=17  
+L15 slots=[4,3,3,3,2,1,1,1,0] c=5 k=18  
+L16 slots=[4,3,3,3,2,1,1,1,0] c=5 k=18  
+L17 slots=[4,3,3,3,2,1,1,1,1] c=5 k=19  
+L18 slots=[4,3,3,3,3,1,1,1,1] c=5 k=20  
+L19 slots=[4,3,3,3,3,2,1,1,1] c=5 k=21  
+L20 slots=[4,3,3,3,3,2,2,1,1] c=5 k=22  

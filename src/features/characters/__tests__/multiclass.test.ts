@@ -3,6 +3,7 @@ import {
   formatMulticlassLabel,
   isMulticlassed,
   multiclassSpellSlots,
+  totalMulticlassSlots,
   warlockPactMagicRow,
   type ClassLevelEntry,
 } from "../multiclass";
@@ -79,13 +80,33 @@ describe("warlockPactMagicRow", () => {
     expect(warlockPactMagicRow(rows, "5e")).toBeUndefined();
   });
 
-  // Note: Warlock's own Pact Magic table isn't populated in the ruleset
-  // data yet (same gap exists for single-class Warlock characters, not
-  // introduced by multiclassing) -- this documents the current graceful
-  // "no data" behavior rather than a real slot value.
-  it("returns undefined for a Warlock row until Pact Magic data exists", () => {
-    const rows: ClassLevelEntry[] = [{ classId: "warlock", className: "Warlock", level: 5 }];
-    expect(warlockPactMagicRow(rows, "5e")).toBeUndefined();
+  it.each(["5e", "5e-2024"])("returns the Pact Magic slots at the Warlock's own level (%s)", (ruleset) => {
+    const rows: ClassLevelEntry[] = [
+      { classId: "wizard", className: "Wizard", level: 4 },
+      { classId: "warlock", className: "Warlock", level: 5 },
+    ];
+    // Warlock 5: two 3rd-level slots.
+    expect(warlockPactMagicRow(rows, ruleset)?.slots).toEqual([0, 0, 2, 0, 0, 0, 0, 0, 0]);
+  });
+});
+
+describe("totalMulticlassSlots", () => {
+  it("adds Pact Magic slots to the shared pool instead of replacing it", () => {
+    const rows: ClassLevelEntry[] = [
+      { classId: "wizard", className: "Wizard", level: 4 },
+      { classId: "warlock", className: "Warlock", level: 2 },
+    ];
+    // Shared pool is a level-4 caster ([4,3,0...]); Warlock 2 adds two 1st-level slots.
+    expect(totalMulticlassSlots(rows, "5e")).toEqual([6, 3, 0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it("is just the Pact slots for a Warlock-only character", () => {
+    const rows: ClassLevelEntry[] = [{ classId: "warlock", className: "Warlock", level: 11 }];
+    expect(totalMulticlassSlots(rows, "5e")).toEqual([0, 0, 0, 0, 3, 0, 0, 0, 0]);
+  });
+
+  it("is undefined with no spellcasting classes", () => {
+    expect(totalMulticlassSlots([{ classId: "fighter", className: "Fighter", level: 5 }], "5e")).toBeUndefined();
   });
 });
 

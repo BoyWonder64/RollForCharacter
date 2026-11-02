@@ -246,9 +246,9 @@ export default function SettingsScreen() {
         />
       </View>
       <Text style={styles.toggleHint}>
-        Lets the Dice Roller switch between any character (for rolling on behalf of the
-        party or NPCs). Off by default — normally the Dice Roller just rolls for your own
-        character.
+        Adds an Encounter tab: roll initiative, saves and checks for the whole party at
+        once, build encounters from the SRD bestiary, and roll anything on a monster's stat
+        block. The Dice Roller can also switch between any character. Off by default.
       </Text>
 
       <View style={[styles.toggleRow, styles.toggleRowSpaced]}>

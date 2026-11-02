@@ -3,11 +3,13 @@ import { Tabs } from "expo-router";
 import { useTheme } from "../../theme/ThemeContext";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
+import { useDmMode } from "../../features/settings/DmModeContext";
 
 function TabIcon({ tabName, focused }: { tabName: string; focused: boolean }) {
   const { iconsEnabled, iconStyle } = useIconSettings();
   if (!iconsEnabled) return null;
-  const icon = getTabIcon(iconStyle, tabName);
+  // The Encounter tab has no icon of its own yet, so it borrows the dice one.
+  const icon = getTabIcon(iconStyle, tabName === "encounter" ? "dice-roller" : tabName);
   if (!icon) return null;
   return (
     <Image
@@ -21,6 +23,7 @@ function TabIcon({ tabName, focused }: { tabName: string; focused: boolean }) {
 export default function TabLayout() {
   const theme = useTheme();
   const { iconsEnabled } = useIconSettings();
+  const { dmMode } = useDmMode();
 
   return (
     <Tabs
@@ -64,6 +67,15 @@ export default function TabLayout() {
         options={{
           title: "Dice Roller",
           tabBarIcon: ({ focused }) => <TabIcon tabName="dice-roller" focused={focused} />,
+        }}
+      />
+      {/* DM mode's encounter screen: `href: null` hides the tab while DM mode is off. */}
+      <Tabs.Screen
+        name="encounter"
+        options={{
+          title: "Encounter",
+          href: dmMode ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon tabName="encounter" focused={focused} />,
         }}
       />
       {/* Settings keeps the system font so its own picker stays readable

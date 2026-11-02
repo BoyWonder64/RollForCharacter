@@ -1,5 +1,5 @@
 import { createCharacterFromOnboarding, getCharacter, type OnboardingCharacterInput } from "../characterRepo";
-import { addClass, levelUpClass, listCharacterClasses } from "../characterClassRepo";
+import { addClass, levelUpClass, listCharacterClasses, setClassRowSubclass } from "../characterClassRepo";
 import { listCharacterFeats } from "../featRepo";
 
 jest.mock("../../../db/client");
@@ -165,5 +165,40 @@ describe("levelUpClass", () => {
 
     const feats = await listCharacterFeats(character);
     expect(feats).toMatchObject([{ name: "Grappler", enabled: true }]);
+  });
+});
+
+describe("multiclassing into a class that picks its subclass at level 1", () => {
+  it("stores the chosen domain and grants its level 1 features", async () => {
+    const character = await makeFighter();
+
+    const outcome = await addClass(character.id, "cleric", "Cleric", {
+      hpMethod: "average",
+      subclassId: "knowledge-domain",
+    });
+
+    const rows = await listCharacterClasses(character.id);
+    expect(rows[1]).toMatchObject({ classId: "cleric", subclass: "knowledge-domain" });
+    expect(outcome?.featuresGained.map((f) => f.name)).toEqual(
+      expect.arrayContaining(["Spellcasting", "Blessings of Knowledge"])
+    );
+  });
+});
+
+describe("subclass at onboarding and edit", () => {
+  it("stores a subclass chosen during onboarding", async () => {
+    const character = await makeFighter({ subclass: "champion" });
+    expect((await getCharacter(character.id))?.subclass).toBe("champion");
+  });
+
+  it("changes a multiclass row's subclass without touching the other rows", async () => {
+    const character = await makeFighter({ subclass: "champion" });
+    await addClass(character.id, "wizard", "Wizard", { hpMethod: "average" });
+    const [fighterRow, wizardRow] = await listCharacterClasses(character.id);
+
+    await setClassRowSubclass(wizardRow.id, "Bladesinging");
+
+    const rows = await listCharacterClasses(character.id);
+    expect(rows.map((r) => r.subclass)).toEqual([fighterRow.subclass, "Bladesinging"]);
   });
 });

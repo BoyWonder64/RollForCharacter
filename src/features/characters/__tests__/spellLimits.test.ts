@@ -41,4 +41,29 @@ describe("getSpellLimits", () => {
   it("clamps level above 20 to the level-20 row", () => {
     expect(getSpellLimits("bard", 25, 5)).toEqual(getSpellLimits("bard", 20, 5));
   });
+
+  it("gives a Warlock its 4th cantrip at level 10", () => {
+    expect(getSpellLimits("warlock", 9, 3)?.cantrips).toBe(3);
+    expect(getSpellLimits("warlock", 10, 3)?.cantrips).toBe(4);
+  });
+
+  describe("2024 rules", () => {
+    it("uses the 2024 prepared-spell table for a Sorcerer", () => {
+      // 2014 Sorcerer knows 5 spells at level 4; the 2024 table prepares 7.
+      expect(getSpellLimits("sorcerer", 4, 3, "5e")?.spells).toBe(5);
+      expect(getSpellLimits("sorcerer", 4, 3, "5e-2024")).toEqual({ cantrips: 5, spells: 7, mode: "known" });
+    });
+
+    it("prepares a fixed table count for a Cleric instead of modifier + level", () => {
+      expect(getSpellLimits("cleric", 1, 3, "5e-2024")).toEqual({ cantrips: 3, spells: 4, mode: "prepared" });
+    });
+
+    it("keeps the Wizard spellbook at 6 + 2 per level", () => {
+      expect(getSpellLimits("wizard", 3, 3, "5e-2024")).toEqual({ cantrips: 3, spells: 10, mode: "known" });
+    });
+
+    it("gives a Warlock Pact Magic spell counts", () => {
+      expect(getSpellLimits("warlock", 5, 3, "5e-2024")).toEqual({ cantrips: 3, spells: 6, mode: "known" });
+    });
+  });
 });

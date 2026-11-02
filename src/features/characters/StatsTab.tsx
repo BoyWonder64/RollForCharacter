@@ -547,7 +547,8 @@ export function StatsTab({
               <Text key={`w-${weapon.id}`} style={styles.flavorLine}>
                 <Text style={styles.flavorLabel}>
                   {weapon.isMagic ? "✨ " : ""}
-                  {weapon.name}:{" "}
+                  {weapon.name}
+                  {weapon.quantity > 1 ? ` ×${weapon.quantity}` : ""}:{" "}
                 </Text>
                 Attack {describeAttackBonus(attackBonus)}
                 {` · ${describeWeaponDamage(weapon)}`}

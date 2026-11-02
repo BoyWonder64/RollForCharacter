@@ -1,3 +1,4 @@
+import { SubclassPicker } from "./SubclassPicker";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { CUSTOM_OPTION_ID, getRulesetCatalog } from "../data/rulesets";
@@ -10,8 +11,7 @@ import {
   getClassProgression,
 } from "../features/characters/characterCalculations";
 import {
-  combinedCasterLevel,
-  multiclassSpellSlots,
+  totalMulticlassSlots,
   type ClassLevelEntry,
 } from "../features/characters/multiclass";
 import type { HpGainMethod, LevelUpChoices } from "../features/characters/characterRepo";
@@ -27,7 +27,7 @@ type MulticlassModalFormProps = {
   onConfirm: (classId: string, className: string, choices: LevelUpChoices) => void;
 };
 
-type Step = "choose-class" | "hp-method" | "homebrew-features" | "features" | "spells" | "summary";
+type Step = "choose-class" | "hp-method" | "subclass" | "homebrew-features" | "features" | "spells" | "summary";
 
 export function MulticlassModalForm({
   character,
@@ -51,6 +51,7 @@ export function MulticlassModalForm({
   const [chosenClass, setChosenClass] = useState<ClassDefinition | null>(null);
   const [hpMethod, setHpMethod] = useState<HpGainMethod>("average");
   const [customClassName, setCustomClassName] = useState("");
+  const [subclassId, setSubclassId] = useState("");
   const [customHitDie, setCustomHitDie] = useState<ClassDefinition["hitDie"]>(8);
   const [customSavingThrows, setCustomSavingThrows] = useState<AbilityScoreKey[]>([]);
   const [customArmorProficiencies, setCustomArmorProficiencies] = useState("");
@@ -66,10 +67,13 @@ export function MulticlassModalForm({
   // features from -- the player's own `homebrewFeatures` (entered on the
   // "homebrew-features" step below) stand in for it instead, same spirit as
   // the Level Up workflow's own "homebrew-level" step.
+  // Classes that choose their subclass at 1st level (Cleric, Sorcerer, Warlock in 2014) need that choice right now.
+  const needsSubclass =
+    !isCustomClass && progression?.subclassLevel === 1 && (progression.subclasses?.length ?? 0) > 0;
   const gainedFeatures = isCustomClass
     ? homebrewFeatures.map((f) => ({ ...f, level: 1, source: "class" as const }))
     : progression
-      ? featuresGainedAtLevel(progression, 1, "")
+      ? featuresGainedAtLevel(progression, 1, subclassId.trim())
       : [];
 
   // Gaining this class's first level only ever matters for spell slots if
@@ -89,18 +93,16 @@ export function MulticlassModalForm({
           },
         ];
   const projectedSlots =
-    chosenClass?.spellcastingAbility && chosenClass.casterType !== "pact"
-      ? multiclassSpellSlots(
-          combinedCasterLevel(
-            [...existingClassEntries, { classId: chosenClass.id, className: chosenClass.name, level: 1 }],
-            character.ruleset
-          ),
+    chosenClass?.spellcastingAbility
+      ? totalMulticlassSlots(
+          [...existingClassEntries, { classId: chosenClass.id, className: chosenClass.name, level: 1 }],
           character.ruleset
         )
       : undefined;
 
   function buildChoices(): LevelUpChoices {
     const choices: LevelUpChoices = { hpMethod };
+    if (needsSubclass && subclassId.trim()) choices.subclassId = subclassId.trim();
     if (projectedSlots) {
       choices.spellSlotUpdates = projectedSlots.map((total, idx) => ({ spellLevel: idx + 1, total }));
     }
@@ -127,6 +129,14 @@ export function MulticlassModalForm({
       setStep("homebrew-features");
       return;
     }
+    if (needsSubclass) {
+      setStep("subclass");
+      return;
+    }
+    afterSubclass();
+  }
+
+  function afterSubclass() {
     setStep(gainedFeatures.length > 0 ? "features" : projectedSlots ? "spells" : "summary");
   }
 
@@ -301,6 +311,23 @@ export function MulticlassModalForm({
             <Text style={styles.optionButtonSub}>Could be higher, could be lower</Text>
           </Pressable>
         </View>
+      </StepCard>
+    );
+  }
+
+  if (step === "subclass" && progression) {
+    return (
+      <StepCard
+        title={progression.subclassLabel ? `Choose Your ${progression.subclassLabel}` : "Choose Your Subclass"}
+        hint={`${chosenClass.name} picks this at 1st level. You can skip it and set it later from Edit.`}
+        onBack={() => setStep("hp-method")}
+        styles={styles}
+        scroll
+      >
+        <SubclassPicker progression={progression} value={subclassId} onChange={setSubclassId} />
+        <Pressable style={styles.primaryButton} onPress={afterSubclass}>
+          <Text style={styles.primaryButtonText}>Continue</Text>
+        </Pressable>
       </StepCard>
     );
   }

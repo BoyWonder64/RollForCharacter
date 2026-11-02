@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
@@ -10,6 +10,7 @@ import {
   addArmorFromCatalog,
   addCustomArmor,
   addCustomWeapon,
+  addGearItem,
   addWeaponFromCatalog,
   describeArmorAc,
   describeAttackBonus,
@@ -18,11 +19,13 @@ import {
   listArmorCatalog,
   listCharacterArmor,
   listCharacterWeapons,
+  listGearItems,
   listWeaponCatalog,
   parseWeaponProperties,
   removeCharacterArmor,
   removeCharacterWeapon,
   setArmorEquipped,
+  setGearItemQuantity,
   setWeaponEquipped,
   weaponAttackBonus,
   weaponFeatAttackBonus,
@@ -47,6 +50,7 @@ import {
 type WeaponRow = Awaited<ReturnType<typeof listCharacterWeapons>>[number];
 type ArmorRow = Awaited<ReturnType<typeof listCharacterArmor>>[number];
 type MagicItemRow = Awaited<ReturnType<typeof listCharacterMagicItems>>[number];
+type GearItemRow = Awaited<ReturnType<typeof listGearItems>>[number];
 
 export function EquipmentTab({ character }: { character: Character }) {
   const characterId = character.id;
@@ -64,6 +68,8 @@ export function EquipmentTab({ character }: { character: Character }) {
   const [weapons, setWeapons] = useState<WeaponRow[]>([]);
   const [armor, setArmor] = useState<ArmorRow[]>([]);
   const [magicItems, setMagicItems] = useState<MagicItemRow[]>([]);
+  const [gearItems, setGearItems] = useState<GearItemRow[]>([]);
+  const [newGearName, setNewGearName] = useState("");
   const [addWeaponOpen, setAddWeaponOpen] = useState(false);
   const [addArmorOpen, setAddArmorOpen] = useState(false);
   const [addMagicItemOpen, setAddMagicItemOpen] = useState(false);
@@ -93,14 +99,31 @@ export function EquipmentTab({ character }: { character: Character }) {
     listCharacterFeats(character).then(setFeats);
   }, [character]);
 
+  const refreshGear = useCallback(() => {
+    listGearItems(characterId).then(setGearItems);
+  }, [characterId]);
+
   useFocusEffect(
     useCallback(() => {
       refreshWeapons();
       refreshArmor();
       refreshMagicItems();
+      refreshGear();
       refreshFeats();
-    }, [refreshWeapons, refreshArmor, refreshMagicItems, refreshFeats])
+    }, [refreshWeapons, refreshArmor, refreshMagicItems, refreshGear, refreshFeats])
   );
+
+  async function handleAddGear() {
+    if (!newGearName.trim()) return;
+    await addGearItem(characterId, { name: newGearName });
+    setNewGearName("");
+    refreshGear();
+  }
+
+  async function handleGearQuantity(item: GearItemRow, delta: number) {
+    await setGearItemQuantity(item.id, item.quantity + delta);
+    refreshGear();
+  }
 
   async function handlePickWeapon(catalogId: string) {
     await addWeaponFromCatalog(characterId, character.ruleset, catalogId);
@@ -238,6 +261,7 @@ export function EquipmentTab({ character }: { character: Character }) {
                 <Text style={styles.itemName}>
                   {weapon.isMagic ? "✨ " : ""}
                   {weapon.name}
+                  {weapon.quantity > 1 ? ` ×${weapon.quantity}` : ""}
                   {weapon.isMagic && weapon.magicBonus ? ` (+${weapon.magicBonus})` : ""}
                   {weapon.equipped ? " (Equipped)" : ""}
                 </Text>
@@ -327,6 +351,55 @@ export function EquipmentTab({ character }: { character: Character }) {
         onPickCatalog={handlePickArmor}
         onAddCustom={handleAddCustomArmor}
       />
+
+      <View style={styles.sectionHeaderRow}>
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionTitle}>Gear & Supplies</Text>
+        </View>
+      </View>
+
+      {gearItems.length === 0 ? (
+        <Text style={styles.empty}>No packs, tools, or supplies yet.</Text>
+      ) : (
+        gearItems.map((item) => (
+          <View key={item.id} style={styles.itemRow}>
+            <View style={styles.itemInfo}>
+              <Text style={styles.itemName}>
+                {item.name}
+                {item.quantity > 1 ? ` ×${item.quantity}` : ""}
+              </Text>
+              {item.description ? <Text style={styles.itemFlavor}>{item.description}</Text> : null}
+            </View>
+            <View style={styles.itemActions}>
+              <View style={styles.qtyRow}>
+                <Pressable onPress={() => handleGearQuantity(item, -1)} hitSlop={8}>
+                  <Text style={styles.attuneLink}>−</Text>
+                </Pressable>
+                <Pressable onPress={() => handleGearQuantity(item, 1)} hitSlop={8}>
+                  <Text style={styles.attuneLink}>+</Text>
+                </Pressable>
+              </View>
+              <Pressable onPress={() => handleGearQuantity(item, -item.quantity)}>
+                <Text style={styles.removeLink}>Remove</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))
+      )}
+      <View style={styles.addGearRow}>
+        <TextInput
+          style={styles.addGearInput}
+          value={newGearName}
+          onChangeText={setNewGearName}
+          placeholder="Add an item (rope, rations, torch…)"
+          placeholderTextColor={theme.colors.textMuted}
+          onSubmitEditing={handleAddGear}
+          returnKeyType="done"
+        />
+        <Pressable style={styles.actionLink} onPress={handleAddGear}>
+          <Text style={styles.actionLinkText}>Add</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
@@ -447,6 +520,19 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     itemActions: { alignItems: "flex-end", gap: 8 },
+    qtyRow: { flexDirection: "row", gap: 18 },
+    addGearRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 20 },
+    addGearInput: {
+      flex: 1,
+      backgroundColor: theme.colors.surfaceAlt,
+      color: theme.colors.text,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      fontFamily: theme.displayFontFamily,
+    },
     attuneLink: {
       color: theme.colors.accent,
       fontSize: 12,

@@ -41,3 +41,7 @@ yarn-error.*
 /android
 
 *.md
+!README.md
+!TODO.md
+!docs/
+!docs/*.md

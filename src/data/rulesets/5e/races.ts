@@ -1,6 +1,10 @@
 import type { RaceDefinition } from "../types";
 
-// Core races from the 5e SRD 5.1 (base races only -- no subraces yet).
+// Core races from the 5e SRD 5.1. The SRD's four subraces (Hill Dwarf, High
+// Elf, Lightfoot Halfling, Rock Gnome) are their own selectable entries
+// here -- each folds the base race's traits and ability bonuses together with
+// its subrace's, and keeps the old base-race name as an `aliases` entry so
+// characters saved before the split (race "Dwarf", etc.) still resolve.
 // `traits` and `languages` are sourced verbatim from the real document via
 // the open5e v2 API (`document__key=srd-2014`, publisher Wizards of the
 // Coast, CC BY 4.0 / OGL 1.0a) -- curled directly, not paraphrased from
@@ -40,14 +44,20 @@ export const RACES_5E: RaceDefinition[] = [
     ],
   },
   {
-    id: "dwarf",
-    name: "Dwarf",
+    id: "hill-dwarf",
+    name: "Hill Dwarf",
+    aliases: ["dwarf"],
     speed: 25,
     size: "Medium",
-    abilityBonuses: { constitution: 2 },
-    summary: "Sturdy and resilient, with resistance to poison and stonecunning.",
+    abilityBonuses: { constitution: 2, wisdom: 1 },
+    hitPointBonusPerLevel: 1,
+    summary: "Sturdy and resilient, with resistance to poison, stonecunning, and extra hit points every level.",
     languages: { granted: ["common", "dwarvish"] },
     traits: [
+      {
+        name: "Speed",
+        description: "Your base walking speed is 25 feet. Your speed is not reduced by wearing heavy armor.",
+      },
       {
         name: "Darkvision",
         description:
@@ -72,16 +82,21 @@ export const RACES_5E: RaceDefinition[] = [
         description:
           "Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in the History skill and add double your proficiency bonus to the check, instead of your normal proficiency bonus.",
       },
+      {
+        name: "Dwarven Toughness",
+        description: "Your hit point maximum increases by 1, and it increases by 1 every time you gain a level.",
+      },
     ],
   },
   {
-    id: "elf",
-    name: "Elf",
+    id: "high-elf",
+    name: "High Elf",
+    aliases: ["elf"],
     speed: 30,
     size: "Medium",
-    abilityBonuses: { dexterity: 2 },
-    summary: "Keen senses, fey ancestry, and trance instead of sleep.",
-    languages: { granted: ["common", "elvish"] },
+    abilityBonuses: { dexterity: 2, intelligence: 1 },
+    summary: "Keen senses, fey ancestry, trance instead of sleep, elven weapon training, and a wizard cantrip.",
+    languages: { granted: ["common", "elvish"], choice: { count: 1 } },
     traits: [
       {
         name: "Darkvision",
@@ -99,15 +114,29 @@ export const RACES_5E: RaceDefinition[] = [
         description:
           "Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day. After resting in this way, you gain the same benefit that a human does from 8 hours of sleep.",
       },
+      {
+        name: "Elf Weapon Training",
+        description: "You have proficiency with the longsword, shortsword, shortbow, and longbow.",
+      },
+      {
+        name: "Cantrip",
+        description:
+          "You know one cantrip of your choice from the wizard spell list. Intelligence is your spellcasting ability for it.",
+      },
+      {
+        name: "Extra Language",
+        description: "You can speak, read, and write one extra language of your choice.",
+      },
     ],
   },
   {
-    id: "gnome",
-    name: "Gnome",
+    id: "rock-gnome",
+    name: "Rock Gnome",
+    aliases: ["gnome"],
     speed: 25,
     size: "Small",
-    abilityBonuses: { intelligence: 2 },
-    summary: "Advantage on Intelligence, Wisdom, and Charisma saves against magic.",
+    abilityBonuses: { intelligence: 2, constitution: 1 },
+    summary: "Advantage on Intelligence, Wisdom, and Charisma saves against magic, plus a tinker's knack for clockwork devices.",
     languages: { granted: ["common", "gnomish"] },
     traits: [
       {
@@ -118,6 +147,16 @@ export const RACES_5E: RaceDefinition[] = [
       {
         name: "Gnome Cunning",
         description: "You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic.",
+      },
+      {
+        name: "Artificer's Lore",
+        description:
+          "Whenever you make an Intelligence (History) check related to magic items, alchemical objects, or technological devices, you can add twice your proficiency bonus, instead of any proficiency bonus you normally apply.",
+      },
+      {
+        name: "Tinker",
+        description:
+          "You have proficiency with artisan's tools (tinker's tools). Using those tools, you can spend 1 hour and 10 gp worth of materials to construct a Tiny clockwork device (AC 5, 1 hp). The device ceases to function after 24 hours (unless you spend 1 hour repairing it to keep the device functioning), or when you use your action to dismantle it; at that time, you can reclaim the materials used to create it. You can have up to three such devices active at a time.\n\nWhen you create a device, choose one of the following options:\n\nClockwork Toy. This toy is a clockwork animal, monster, or person, such as a frog, mouse, bird, dragon, or soldier. When placed on the ground, the toy moves 5 feet across the ground on each of your turns in a random direction. It makes noises as appropriate to the creature it represents.\n\nFire Starter. The device produces a miniature flame, which you can use to light a candle, torch, or campfire. Using the device requires your action.\n\nMusic Box. When opened, this music box plays a single song at a moderate volume. The box stops playing when it reaches the song's end or when it is closed.",
       },
     ],
   },
@@ -179,12 +218,13 @@ export const RACES_5E: RaceDefinition[] = [
     ],
   },
   {
-    id: "halfling",
-    name: "Halfling",
+    id: "lightfoot-halfling",
+    name: "Lightfoot Halfling",
+    aliases: ["halfling"],
     speed: 25,
     size: "Small",
-    abilityBonuses: { dexterity: 2 },
-    summary: "Lucky and brave, small enough to slip through larger creatures' spaces.",
+    abilityBonuses: { dexterity: 2, charisma: 1 },
+    summary: "Lucky and brave, small enough to slip through larger creatures' spaces, and naturally stealthy.",
     languages: { granted: ["common", "halfling"] },
     traits: [
       {
@@ -196,6 +236,11 @@ export const RACES_5E: RaceDefinition[] = [
       {
         name: "Halfling Nimbleness",
         description: "You can move through the space of any creature that is of a size larger than yours.",
+      },
+      {
+        name: "Naturally Stealthy",
+        description:
+          "You can attempt to hide even when you are obscured only by a creature that is at least one size larger than you.",
       },
     ],
   },
@@ -214,6 +259,17 @@ export const RACES_5E: RaceDefinition[] = [
     },
     summary: "Versatile and ambitious, with a well-rounded set of abilities.",
     languages: { granted: ["common"], choice: { count: 1 } },
+    traits: [
+      {
+        name: "Ability Score Increase",
+        description: "Your ability scores each increase by 1.",
+      },
+      {
+        name: "Languages",
+        description:
+          "You can speak, read, and write Common and one extra language of your choice. Humans typically learn the languages of other peoples they deal with, including obscure dialects. They are fond of sprinkling their speech with words borrowed from other tongues: Orc curses, Elvish musical expressions, Dwarvish military phrases, and so on.",
+      },
+    ],
   },
   {
     id: "tiefling",

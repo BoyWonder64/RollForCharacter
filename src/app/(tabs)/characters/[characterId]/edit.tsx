@@ -20,6 +20,7 @@ import {
 } from "../../../../features/characters/characterRepo";
 import {
   getClassDefinition,
+  getClassProgression,
   getClassDefinitionForCharacter,
   getRaceDefinition,
   parseCustomClassTraits,
@@ -37,6 +38,11 @@ import {
   serializeSavingThrowProficiencies,
   serializeSkillProficiencies,
 } from "../../../../features/characters/characterCalculations";
+import { SubclassPicker } from "../../../../components/SubclassPicker";
+import {
+  listCharacterClasses,
+  setClassRowSubclass,
+} from "../../../../features/characters/characterClassRepo";
 import { deletePortrait, persistPortrait } from "../../../../features/characters/portraitStorage";
 import {
   ALIGNMENTS,
@@ -45,7 +51,7 @@ import {
   type ClassTrait,
   type RaceTrait,
 } from "../../../../data/rulesets";
-import type { AbilityScoreKey, Character } from "../../../../types/models";
+import type { AbilityScoreKey, Character, CharacterClass } from "../../../../types/models";
 import { useTheme } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../../../theme/colors";
@@ -77,6 +83,7 @@ type FormState = {
   name: string;
   race: string;
   className: string;
+  subclass: string;
   level: string;
   maxHp: string;
   armorClass: string;
@@ -109,6 +116,7 @@ function toFormState(character: Character): FormState {
     name: character.name,
     race: character.race,
     className: character.className,
+    subclass: character.subclass,
     level: String(character.level),
     maxHp: String(character.maxHp),
     armorClass: String(character.armorClass),
@@ -194,6 +202,9 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [form, setForm] = useState<FormState | null>(null);
+  // Multiclassed characters have one row per class, each with its own subclass; single-class characters have none and use form.subclass.
+  const [classRows, setClassRows] = useState<CharacterClass[]>([]);
+  const [rowSubclasses, setRowSubclasses] = useState<Record<number, string>>({});
   const [currentHp, setCurrentHp] = useState(0);
   const [ruleset, setRuleset] = useState("5e");
   const [skillIds, setSkillIds] = useState<Set<string>>(new Set());
@@ -205,6 +216,10 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
       getCharacter(characterId).then((character) => {
         if (character) {
           setForm(toFormState(character));
+          listCharacterClasses(characterId).then((rows) => {
+            setClassRows(rows);
+            setRowSubclasses(Object.fromEntries(rows.map((r) => [r.id, r.subclass])));
+          });
           setCurrentHp(character.currentHp);
           setRuleset(character.ruleset);
           setSkillIds(new Set(parseSkillProficiencies(character)));
@@ -227,6 +242,15 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
       }
       return next;
     });
+  }
+
+  const singleClassProgression =
+    classRows.length === 0 && !isCustomClassName(form?.className ?? "")
+      ? getClassProgression(ruleset, getClassDefinition(ruleset, form?.className ?? "").id)
+      : undefined;
+
+  function isCustomClassName(className: string): boolean {
+    return getClassDefinition(ruleset, className).id === CUSTOM_OPTION_ID;
   }
 
   const isCustomRace = getRaceDefinition(ruleset, form?.race ?? "").id === CUSTOM_OPTION_ID;
@@ -303,10 +327,17 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
   async function handleSave() {
     if (!form) return;
     const maxHp = toInt(form.maxHp, 0);
+    for (const row of classRows) {
+      const next = (rowSubclasses[row.id] ?? "").trim();
+      if (next !== row.subclass) await setClassRowSubclass(row.id, next);
+    }
+    const primaryRow = classRows[0];
+    const subclass = primaryRow ? (rowSubclasses[primaryRow.id] ?? "").trim() : form.subclass.trim();
     await updateCharacter(characterId, {
       name: form.name.trim() || "Unnamed Character",
       race: form.race.trim(),
       className: form.className.trim(),
+      subclass,
       level: Math.max(1, toInt(form.level, 1)),
       maxHp,
       currentHp: Math.min(currentHp, maxHp),
@@ -409,10 +440,54 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         <Field
           label="Class"
           value={form.className}
-          onChangeText={(v) => updateField("className", v)}
+          onChangeText={(v) =>
+            setForm((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    className: v,
+                    // A subclass belongs to its class -- drop it if the class changes to a different one.
+                    subclass:
+                      classRows.length === 0 &&
+                      getClassDefinition(ruleset, v).id !== getClassDefinition(ruleset, prev.className).id
+                        ? ""
+                        : prev.subclass,
+                  }
+                : prev
+            )
+          }
           style={styles.half}
         />
       </View>
+
+      {singleClassProgression?.subclassLevel !== undefined && (
+        <View style={styles.subclassSection}>
+          <Text style={styles.sectionTitle}>
+            {singleClassProgression.subclassLabel ?? "Subclass"}
+          </Text>
+          <SubclassPicker
+            progression={singleClassProgression}
+            value={form.subclass}
+            onChange={(v) => updateField("subclass", v)}
+          />
+        </View>
+      )}
+      {classRows.map((row) => {
+        const progression = getClassProgression(ruleset, row.classId);
+        if (progression?.subclassLevel === undefined) return null;
+        return (
+          <View key={row.id} style={styles.subclassSection}>
+            <Text style={styles.sectionTitle}>
+              {row.className} — {progression.subclassLabel ?? "Subclass"}
+            </Text>
+            <SubclassPicker
+              progression={progression}
+              value={rowSubclasses[row.id] ?? ""}
+              onChange={(v) => setRowSubclasses((prev) => ({ ...prev, [row.id]: v }))}
+            />
+          </View>
+        );
+      })}
 
       {isCustomRace && (
         <View style={styles.homebrewSection}>
@@ -1008,6 +1083,7 @@ function createStyles(theme: Theme) {
     },
     skillChipTextActive: { color: theme.colors.primaryText },
     homebrewSection: { marginBottom: 14 },
+    subclassSection: { marginBottom: 14 },
     traitRow: {
       flexDirection: "row",
       alignItems: "flex-start",

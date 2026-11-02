@@ -62,6 +62,24 @@ export function warlockPactMagicRow(
   );
 }
 
+/**
+ * Every spell slot a multiclass character has: the shared full/half-caster
+ * table plus any Warlock Pact Magic slots, added together per slot level.
+ * Spell slots are stored one total per level, so Pact slots can't be kept
+ * apart from the shared pool -- summing is the closest fit, and it means a
+ * Warlock level-up never wipes a Wizard's slots. Undefined when the character
+ * has neither kind.
+ */
+export function totalMulticlassSlots(
+  rows: ClassLevelEntry[],
+  ruleset: string
+): SpellSlotRow["slots"] | undefined {
+  const shared = multiclassSpellSlots(combinedCasterLevel(rows, ruleset), ruleset);
+  const pact = warlockPactMagicRow(rows, ruleset)?.slots;
+  if (!shared && !pact) return undefined;
+  return Array.from({ length: 9 }, (_, i) => (shared?.[i] ?? 0) + (pact?.[i] ?? 0));
+}
+
 export function isMulticlassed(rows: unknown[]): boolean {
   return rows.length > 1;
 }

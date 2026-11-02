@@ -44,6 +44,12 @@ export type RaceDefinition = {
     excluding?: AbilityScoreKey[];
   };
   summary: string;
+  /** Other names this race was stored under before it was split into subraces (e.g. 2014 "Dwarf" -> "Hill Dwarf"), so existing characters still resolve. */
+  aliases?: string[];
+  /** Races that let the player pick their size (2024 Human/Tiefling: Medium or Small). `size` is the default/first option. */
+  sizeOptions?: Array<"Small" | "Medium">;
+  /** Flat max HP added at every character level (Dwarven Toughness: 1). */
+  hitPointBonusPerLevel?: number;
   /** Named mechanical traits (Darkvision, Trance, Breath Weapon, etc), shown read-only on the sheet. Undefined for editions/races not yet populated with structured trait data. */
   traits?: RaceTrait[];
   /** This race's fixed language grant. See `RaceLanguageGrant` -- undefined when language choice is universal for the ruleset (2024 5e) or not modeled yet (3.5e). */
@@ -81,7 +87,9 @@ export type EquipmentGrant =
   | { kind: "weaponChoice"; category: WeaponProficiencyCategory; quantity?: number }
   | { kind: "armor"; armorId: string }
   /** A generic item with no catalog stats (a pack, a holy symbol, ammunition, etc). */
-  | { kind: "item"; name: string; quantity?: number; description?: string };
+  | { kind: "item"; name: string; quantity?: number; description?: string }
+  /** Starting money (gold pieces) -- either the "+ 7 GP" that comes with a kit, or a whole "take gold instead" option. */
+  | { kind: "gold"; amount: number };
 
 /** One alternative within a startingEquipment line -- every grant in it is received together if this option is the one chosen. */
 export type EquipmentOption = EquipmentGrant[];
@@ -200,6 +208,8 @@ export type ClassResourceDefinition = {
    * rendered as a numeric stepper instead of a pip row.
    */
   isPointPool?: boolean;
+  /** Player-created resources only: never recharged by any rest, not even a long rest -- only the +/- controls change it. */
+  manualRecharge?: boolean;
 };
 
 export type SpellSlotRow = {

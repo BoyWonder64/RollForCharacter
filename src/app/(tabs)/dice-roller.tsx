@@ -47,7 +47,6 @@ import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
-import { DmCreatureTracker } from "../../components/DmCreatureTracker";
 
 function inferDieType(expr: string): DieType | null {
   try {
@@ -550,8 +549,6 @@ export default function DiceRollerScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {dmMode && <DmCreatureTracker />}
-
         {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Character</Text>

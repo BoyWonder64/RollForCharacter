@@ -18,30 +18,26 @@ import {
   CUSTOM_CLASS_FALLBACK,
   CUSTOM_OPTION_ID,
   CUSTOM_RACE_FALLBACK,
-  DEFAULT_RULESET,
   RULESETS,
   getRulesetCatalog,
-  type ArmorDefinition,
   type ClassDefinition,
   type ClassTrait,
-  type EquipmentGrant,
-  type EquipmentLine,
-  type EquipmentOption,
   type RaceDefinition,
   type RaceTrait,
-  type WeaponDefinition,
-  type WeaponProficiencyCategory,
 } from "../../../data/rulesets";
 import {
-  addArmorFromCatalog,
-  addCustomWeapon,
-  addWeaponFromCatalog,
-  describeArmorAc,
-} from "../../../features/characters/gearRepo";
+  EMPTY_SELECTION,
+  computeArmorClass,
+  describeOption,
+  resolveStartingGear,
+  type StartingEquipmentSelection,
+} from "../../../features/characters/startingEquipment";
+import { applyStartingGear } from "../../../features/characters/startingGearRepo";
+import { StartingEquipmentStep } from "../../../components/StartingEquipmentStep";
 import {
   applyRaceAbilityBonuses,
-  armorClassBaseline,
   calculateMaxHp,
+  getClassProgression,
   languageGrantForRace,
   proficiencyBonusForLevel,
   roll4d6DropLowest,
@@ -54,9 +50,11 @@ import {
 } from "../../../features/characters/characterRepo";
 import {
   addCatalogSpellToCharacter,
+  setSpellSlot,
   listSpellCatalog,
 } from "../../../features/spells/spellRepo";
 import { getSpellLimits } from "../../../features/characters/spellLimits";
+import { SubclassPicker } from "../../../components/SubclassPicker";
 import { xpThresholdForLevel } from "../../../features/characters/xpTable";
 import type { AbilityScoreKey } from "../../../types/models";
 import { useTheme } from "../../../theme/ThemeContext";
@@ -70,15 +68,18 @@ const ALL_STEPS = [
   "race",
   "languages",
   "class",
-  "equipment",
   "background",
   "alignment",
   "personality",
   "proficiencies",
   "level",
+  "subclass",
   "experience",
   "abilities",
   "skills",
+  // After abilities and subclass so the Armor Class preview uses real scores
+  // and any subclass proficiencies are already known.
+  "equipment",
   "spells",
   "review",
 ] as const;
@@ -145,10 +146,11 @@ export default function NewCharacterScreen() {
   const { iconsEnabled, iconStyle } = useIconSettings();
   const [stepIndex, setStepIndex] = useState(0);
 
-  const [ruleset, setRuleset] = useState(DEFAULT_RULESET);
+  const [ruleset, setRuleset] = useState("5e-2024");
   const catalog = useMemo(() => getRulesetCatalog(ruleset), [ruleset]);
 
   const [name, setName] = useState("");
+  const [subclass, setSubclass] = useState("");
 
   const [raceId, setRaceId] = useState<string | null>(null);
   const [customRaceName, setCustomRaceName] = useState("");
@@ -208,17 +210,10 @@ export default function NewCharacterScreen() {
 
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set());
 
-  // Index within each startingEquipment line's "A or B" split -- defaults
-  // to the first option until the player picks differently.
-  const [equipmentChoiceIndex, setEquipmentChoiceIndex] = useState<Record<number, number>>({});
-  // Which catalog weapon the player picked for a "weaponChoice" grant (e.g.
-  // "any martial weapon"), keyed by "<lineIndex>:<optionIndex>:<grantIndex>"
-  // -- defaults to the first matching weapon until the player picks
-  // differently. A value of `CUSTOM_OPTION_ID` means "typed in their own
-  // weapon instead" -- the typed name lives in `customWeaponNames` below,
-  // same free-text-fallback spirit as the race/class pickers.
-  const [equipmentWeaponPick, setEquipmentWeaponPick] = useState<Record<string, string>>({});
-  const [customWeaponNames, setCustomWeaponNames] = useState<Record<string, string>>({});
+  // The player's starting-equipment choices: which package per line, and any
+  // weapon/armor swapped for another. See startingEquipment.ts.
+  const [equipmentSelection, setEquipmentSelection] =
+    useState<StartingEquipmentSelection>(EMPTY_SELECTION);
 
   const [selectedSpellIds, setSelectedSpellIds] = useState<Set<number>>(new Set());
   const [spellSearch, setSpellSearch] = useState("");
@@ -317,6 +312,18 @@ export default function NewCharacterScreen() {
 
   const levelNum = clampLevel(level);
 
+  // Cleric/Sorcerer/Warlock pick a subclass at 1st level, others at 2nd or
+  // 3rd -- only ask once the starting level actually reaches it (later
+  // levels get the same choice through Level Up).
+  const subclassProgression =
+    classId !== null && classId !== CUSTOM_OPTION_ID && selectedClass
+      ? getClassProgression(ruleset, selectedClass.id)
+      : undefined;
+  const offersSubclass =
+    !!subclassProgression?.subclassLevel &&
+    (subclassProgression.subclasses?.length ?? 0) > 0 &&
+    levelNum >= subclassProgression.subclassLevel;
+
   // Paladins and Rangers are 5e half-casters -- they get no spells at all
   // until character level 2 (first-level spell slots), unlike full casters
   // who get cantrips/spells starting at level 1.
@@ -336,6 +343,7 @@ export default function NewCharacterScreen() {
   const steps: Step[] = ALL_STEPS.filter((s) => {
     if (s === "spells") return isSpellcaster;
     if (s === "equipment") return hasEquipmentChoices;
+    if (s === "subclass") return offersSubclass;
     // 3.5e has no language catalog yet -- its languages still live in the
     // freetext "Other Proficiencies" field on the proficiencies step.
     if (s === "languages") return !!catalog.languages;
@@ -393,196 +401,21 @@ export default function NewCharacterScreen() {
 
   function selectClass(id: string) {
     setClassId(id);
+    setSubclass("");
     setSelectedSkillIds(new Set());
-    setEquipmentChoiceIndex({});
-    setEquipmentWeaponPick({});
+    setEquipmentSelection(EMPTY_SELECTION);
   }
 
-  function selectEquipmentOption(lineIndex: number, optionIndex: number) {
-    setEquipmentChoiceIndex((prev) => ({ ...prev, [lineIndex]: optionIndex }));
+  /** One-line kit summary for a class, with the given choices applied (default = each line's first option). */
+  function describeKit(klass: ClassDefinition, selection: StartingEquipmentSelection): string {
+    return (klass.startingEquipment ?? [])
+      .map((line, i) => {
+        const optionIndex = selection.optionIndex[i] ?? 0;
+        return describeOption(line[optionIndex] ?? line[0] ?? [], i, optionIndex, selection, catalog, klass);
+      })
+      .join("; ");
   }
 
-  function selectEquipmentWeapon(grantKey: string, weaponId: string) {
-    setEquipmentWeaponPick((prev) => ({ ...prev, [grantKey]: weaponId }));
-  }
-
-  /** Every catalog weapon matching a "weaponChoice" grant's category -- what the player picks a specific weapon from. */
-  function weaponsForCategory(category: WeaponProficiencyCategory): WeaponDefinition[] {
-    const weapons = catalog.weapons ?? [];
-    if (category === "Simple") return weapons.filter((w) => w.category.startsWith("Simple"));
-    if (category === "Martial") return weapons.filter((w) => w.category.startsWith("Martial"));
-    return weapons.filter((w) => w.category === category);
-  }
-
-  function resolvedWeaponIdFor(grantKey: string, category: WeaponProficiencyCategory): string | undefined {
-    return equipmentWeaponPick[grantKey] ?? weaponsForCategory(category)[0]?.id;
-  }
-
-  function isCustomWeaponPick(grantKey: string): boolean {
-    return equipmentWeaponPick[grantKey] === CUSTOM_OPTION_ID;
-  }
-
-  function customWeaponNameFor(grantKey: string): string {
-    return customWeaponNames[grantKey] ?? "";
-  }
-
-  function weaponStatsText(def: WeaponDefinition): string {
-    const parts = [def.damageDice ? `${def.damageDice} ${def.damageType}` : "No damage", def.category];
-    if (def.properties.length > 0) parts.push(def.properties.join(", "));
-    parts.push(`${def.weight} lb`, def.cost);
-    return parts.join(" · ");
-  }
-
-  function armorStatsText(def: ArmorDefinition): string {
-    const parts = [`AC ${describeArmorAc(def)}`, def.category];
-    if (def.strengthRequirement) parts.push(`Str ${def.strengthRequirement}`);
-    if (def.stealthDisadvantage) parts.push("Stealth disadvantage");
-    parts.push(`${def.weight} lb`, def.cost);
-    return parts.join(" · ");
-  }
-
-  function grantLabel(grant: EquipmentGrant, grantKey: string): string {
-    const qty = grant.kind !== "armor" && grant.quantity && grant.quantity > 1 ? `${grant.quantity} ` : "";
-    switch (grant.kind) {
-      case "weapon": {
-        const def = catalog.weapons?.find((w) => w.id === grant.weaponId);
-        return `${qty}${def?.name ?? grant.weaponId}`;
-      }
-      case "weaponChoice": {
-        if (isCustomWeaponPick(grantKey)) {
-          return `${qty}${customWeaponNameFor(grantKey).trim() || "Custom weapon"}`;
-        }
-        const def = catalog.weapons?.find((w) => w.id === resolvedWeaponIdFor(grantKey, grant.category));
-        return `${qty}${def?.name ?? `any ${grant.category.toLowerCase()} weapon`}`;
-      }
-      case "armor": {
-        const def = catalog.armor?.find((a) => a.id === grant.armorId);
-        return def?.name ?? grant.armorId;
-      }
-      case "item":
-        return `${qty}${grant.name}`;
-    }
-  }
-
-  function grantStatsText(grant: EquipmentGrant, grantKey: string): string | undefined {
-    if (grant.kind === "weapon") {
-      const def = catalog.weapons?.find((w) => w.id === grant.weaponId);
-      return def ? weaponStatsText(def) : undefined;
-    }
-    if (grant.kind === "weaponChoice") {
-      if (isCustomWeaponPick(grantKey)) return undefined;
-      const def = catalog.weapons?.find((w) => w.id === resolvedWeaponIdFor(grantKey, grant.category));
-      return def ? weaponStatsText(def) : undefined;
-    }
-    if (grant.kind === "armor") {
-      const def = catalog.armor?.find((a) => a.id === grant.armorId);
-      return def ? armorStatsText(def) : undefined;
-    }
-    return undefined;
-  }
-
-  function grantDescriptionText(grant: EquipmentGrant, grantKey: string): string | undefined {
-    if (grant.kind === "weapon") return catalog.weapons?.find((w) => w.id === grant.weaponId)?.description;
-    if (grant.kind === "weaponChoice") {
-      if (isCustomWeaponPick(grantKey)) return undefined;
-      return catalog.weapons?.find((w) => w.id === resolvedWeaponIdFor(grantKey, grant.category))?.description;
-    }
-    if (grant.kind === "armor") return catalog.armor?.find((a) => a.id === grant.armorId)?.description;
-    return grant.description;
-  }
-
-  function describeEquipmentLine(line: EquipmentLine, lineIndex: number): string {
-    const optionIndex = equipmentChoiceIndex[lineIndex] ?? 0;
-    const option = line[optionIndex] ?? line[0] ?? [];
-    return option
-      .map((grant, grantIndex) => grantLabel(grant, `${lineIndex}:${optionIndex}:${grantIndex}`))
-      .join(", ");
-  }
-
-  function renderEquipmentOption(
-    option: EquipmentOption,
-    lineIndex: number,
-    optionIndex: number,
-    onActivate?: () => void,
-    expanded: boolean = true
-  ) {
-    return option.map((grant, grantIndex) => {
-      const grantKey = `${lineIndex}:${optionIndex}:${grantIndex}`;
-      const stats = grantStatsText(grant, grantKey);
-      const description = grantDescriptionText(grant, grantKey);
-      return (
-        <View key={grantIndex} style={styles.equipmentGrant}>
-          <Text style={styles.equipmentGrantLabel}>{grantLabel(grant, grantKey)}</Text>
-          {stats && <Text style={styles.equipmentGrantStats}>{stats}</Text>}
-          {description && <Text style={styles.equipmentGrantFlavor}>{description}</Text>}
-          {grant.kind === "weaponChoice" && !expanded && (
-            <Text style={styles.equipmentGrantHint}>Tap to pick exactly which one</Text>
-          )}
-          {grant.kind === "weaponChoice" && expanded && (
-            <View style={styles.equipmentWeaponPicker}>
-              <Text style={styles.equipmentGrantHint}>Pick exactly which one:</Text>
-              {weaponsForCategory(grant.category).map((w) => {
-                const active = !isCustomWeaponPick(grantKey) && resolvedWeaponIdFor(grantKey, grant.category) === w.id;
-                return (
-                  <Pressable
-                    key={w.id}
-                    style={[styles.equipmentWeaponRow, active && styles.equipmentWeaponRowActive]}
-                    onPress={() => {
-                      onActivate?.();
-                      selectEquipmentWeapon(grantKey, w.id);
-                    }}
-                  >
-                    <Text
-                      style={[styles.equipmentWeaponName, active && styles.equipmentWeaponNameActive]}
-                    >
-                      {w.name}
-                    </Text>
-                    <Text style={styles.equipmentWeaponStats}>{weaponStatsText(w)}</Text>
-                  </Pressable>
-                );
-              })}
-              <Pressable
-                style={[
-                  styles.equipmentWeaponRow,
-                  isCustomWeaponPick(grantKey) && styles.equipmentWeaponRowActive,
-                ]}
-                onPress={() => {
-                  onActivate?.();
-                  selectEquipmentWeapon(grantKey, CUSTOM_OPTION_ID);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.equipmentWeaponName,
-                    isCustomWeaponPick(grantKey) && styles.equipmentWeaponNameActive,
-                  ]}
-                >
-                  Custom…
-                </Text>
-                <Text style={styles.equipmentWeaponStats}>Type your own weapon</Text>
-              </Pressable>
-              {isCustomWeaponPick(grantKey) && (
-                <TextInput
-                  style={styles.input}
-                  value={customWeaponNameFor(grantKey)}
-                  onChangeText={previewChangeHandler(`weapon:${grantKey}`, (text) =>
-                    setCustomWeaponNames((prev) => ({ ...prev, [grantKey]: text }))
-                  )}
-                  placeholder="Weapon name"
-                  placeholderTextColor={theme.colors.textMuted}
-                  onFocus={(event) => {
-                    scrollFieldIntoView(event);
-                    showPreview(`weapon:${grantKey}`, "Weapon name", customWeaponNameFor(grantKey));
-                  }}
-                  onBlur={previewBlurHandler(`weapon:${grantKey}`)}
-                />
-              )}
-            </View>
-          )}
-        </View>
-      );
-    });
-  }
 
   function toggleSpellSelection(spell: CatalogRow) {
     setSelectedSpellIds((prev) => {
@@ -655,7 +488,8 @@ export default function NewCharacterScreen() {
       ? getSpellLimits(
           selectedClass.id,
           levelNum,
-          abilityModifier(finalAbilityScores[selectedClass.spellcastingAbility])
+          abilityModifier(finalAbilityScores[selectedClass.spellcastingAbility]),
+          ruleset
         )
       : undefined;
 
@@ -663,10 +497,15 @@ export default function NewCharacterScreen() {
     ? calculateMaxHp(
         selectedClass.hitDie,
         levelNum,
-        abilityModifier(finalAbilityScores.constitution)
+        abilityModifier(finalAbilityScores.constitution),
+        selectedRace?.hitPointBonusPerLevel ?? 0
       )
     : 10;
-  const derivedArmorClass = armorClassBaseline(finalAbilityScores.dexterity);
+  // What the starting-equipment step resolved to (empty for a custom class, which has no kit).
+  const resolvedGear = selectedClass
+    ? resolveStartingGear(selectedClass.startingEquipment ?? [], equipmentSelection, catalog, selectedClass)
+    : null;
+  const derivedArmorClass = computeArmorClass(finalAbilityScores.dexterity, resolvedGear?.armor ?? []);
   const derivedSpeed = selectedRace?.speed ?? 30;
   const derivedProficiencyBonus = proficiencyBonusForLevel(levelNum);
 
@@ -706,6 +545,8 @@ export default function NewCharacterScreen() {
         return true;
       case "level":
         return level.trim().length > 0;
+      case "subclass":
+        return true;
       case "experience":
         return usesXp !== null;
       case "abilities": {
@@ -780,38 +621,19 @@ export default function NewCharacterScreen() {
   }
 
   function equipmentSummaryText(): string {
-    const lines = selectedClass?.startingEquipment ?? [];
-    if (lines.length === 0) return "";
-    return `Starting Equipment: ${lines.map((line, i) => describeEquipmentLine(line, i)).join("; ")}`;
+    if (!selectedClass || (selectedClass.startingEquipment ?? []).length === 0) return "";
+    return `Starting Equipment: ${describeKit(selectedClass, equipmentSelection)}`;
   }
 
-  // Turns the chosen startingEquipment grants into real characterWeapons/
-  // characterArmor rows instead of a text summary -- so they show up as
-  // actual gear on the Equipment tab, not a line buried in Notes. Generic
-  // "item" grants (packs, instruments, holy symbols, etc.) have no weapon/
-  // armor catalog entry to attach to, so they're intentionally skipped here.
-  async function addStartingEquipment(characterId: number): Promise<void> {
-    const lines = selectedClass?.startingEquipment ?? [];
-    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-      const optionIndex = equipmentChoiceIndex[lineIndex] ?? 0;
-      const option = lines[lineIndex][optionIndex] ?? lines[lineIndex][0] ?? [];
-      for (let grantIndex = 0; grantIndex < option.length; grantIndex++) {
-        const grant = option[grantIndex];
-        if (grant.kind === "weapon") {
-          await addWeaponFromCatalog(characterId, ruleset, grant.weaponId);
-        } else if (grant.kind === "weaponChoice") {
-          const grantKey = `${lineIndex}:${optionIndex}:${grantIndex}`;
-          if (isCustomWeaponPick(grantKey)) {
-            const customName = customWeaponNameFor(grantKey).trim();
-            if (customName) await addCustomWeapon(characterId, { name: customName });
-          } else {
-            const weaponId = resolvedWeaponIdFor(grantKey, grant.category);
-            if (weaponId) await addWeaponFromCatalog(characterId, ruleset, weaponId);
-          }
-        } else if (grant.kind === "armor") {
-          await addArmorFromCatalog(characterId, ruleset, grant.armorId);
-        }
-      }
+  /** Spell slots are otherwise only set by Level Up, so a character started above level 1 would have none. */
+  async function applyStartingSpellSlots(characterId: number) {
+    if (!selectedClass || classId === CUSTOM_OPTION_ID) return;
+    const row = getClassProgression(ruleset, selectedClass.id)?.spellProgression?.find(
+      (r) => r.level === levelNum
+    );
+    if (!row) return;
+    for (const [index, total] of row.slots.entries()) {
+      if (total > 0) await setSpellSlot(characterId, index + 1, total);
     }
   }
 
@@ -821,6 +643,7 @@ export default function NewCharacterScreen() {
       ruleset,
       race: raceNameValue,
       className: classNameValue,
+      subclass: offersSubclass ? subclass.trim() : "",
       background: background.trim(),
       alignment: alignment ?? "",
       personalityTraits: personalityTraits.trim(),
@@ -871,7 +694,8 @@ export default function NewCharacterScreen() {
           }
         : {}),
     });
-    await addStartingEquipment(created.id);
+    if (resolvedGear) await applyStartingGear(created.id, ruleset, resolvedGear);
+    await applyStartingSpellSlots(created.id);
     for (const spellId of selectedSpellIds) {
       await addCatalogSpellToCharacter(created.id, spellId);
     }
@@ -957,7 +781,7 @@ export default function NewCharacterScreen() {
                     </Text>
                     <Text style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Size: </Text>
-                      {race.size}
+                      {race.sizeOptions ? race.sizeOptions.join(" or ") : race.size}
                     </Text>
                     {Object.keys(race.abilityBonuses).length > 0 && (
                       <Text style={styles.detailRow}>
@@ -970,6 +794,18 @@ export default function NewCharacterScreen() {
                           .join(", ")}
                       </Text>
                     )}
+                    {Object.keys(race.abilityBonuses).length === 0 &&
+                      !race.chooseAbilityBonus &&
+                      catalog.backgroundAbilityBonus && (
+                        <Text style={styles.detailRow}>
+                          <Text style={styles.detailLabel}>Ability Bonuses: </Text>
+                          None from {race.name}. Your ability score increases come from your
+                          background: +{catalog.backgroundAbilityBonus.maxPerAbility} to one score and +
+                          {catalog.backgroundAbilityBonus.totalPoints -
+                            catalog.backgroundAbilityBonus.maxPerAbility}{" "}
+                          to another, or +1 to three scores.
+                        </Text>
+                      )}
                     {race.chooseAbilityBonus && (
                       <Text style={styles.detailRow}>
                         <Text style={styles.detailLabel}>Choice Bonus: </Text>
@@ -1238,9 +1074,7 @@ export default function NewCharacterScreen() {
                     {klass.startingEquipment && (
                       <Text style={styles.detailRow}>
                         <Text style={styles.detailLabel}>Starting Equipment: </Text>
-                        {klass.startingEquipment
-                          .map((line, i) => describeEquipmentLine(line, i))
-                          .join("; ")}
+                        {describeKit(klass, EMPTY_SELECTION)}
                       </Text>
                     )}
                   </View>
@@ -1398,56 +1232,21 @@ export default function NewCharacterScreen() {
         )}
 
         {step === "equipment" && selectedClass && (
-          <View>
-            <Text style={styles.title}>Starting Equipment</Text>
-            <Text style={styles.hint}>
-              This is the gear your {selectedClass.name} starts with, shown with full stats
-              so you know what you&apos;re carrying. Some of it comes with alternatives — tap
-              the one you want wherever you see more than one option. Where the rules just
-              say “any simple weapon” or “any martial weapon,” every matching weapon is
-              listed so you can pick exactly which one. Anything with just one option is
-              included automatically.
-            </Text>
-            {(selectedClass.startingEquipment ?? []).map((line, lineIndex) => {
-              if (line.length === 1) {
-                return (
-                  <View key={lineIndex} style={styles.equipmentGroup}>
-                    <Text style={styles.equipmentGroupLabel}>Included</Text>
-                    <View style={styles.equipmentFixedRow}>
-                      {renderEquipmentOption(line[0], lineIndex, 0)}
-                    </View>
-                  </View>
-                );
-              }
-              const chosenIndex = equipmentChoiceIndex[lineIndex] ?? 0;
-              return (
-                <View key={lineIndex} style={styles.equipmentGroup}>
-                  <Text style={styles.equipmentGroupLabel}>Choose one</Text>
-                  {line.map((option, optionIndex) => {
-                    const active = chosenIndex === optionIndex;
-                    return (
-                      <Pressable
-                        key={optionIndex}
-                        style={[
-                          styles.equipmentOptionCard,
-                          active && styles.equipmentOptionCardActive,
-                        ]}
-                        onPress={() => selectEquipmentOption(lineIndex, optionIndex)}
-                      >
-                        {renderEquipmentOption(
-                          option,
-                          lineIndex,
-                          optionIndex,
-                          () => selectEquipmentOption(lineIndex, optionIndex),
-                          active
-                        )}
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              );
+          <StartingEquipmentStep
+            classDef={selectedClass}
+            catalog={catalog}
+            dexterity={finalAbilityScores.dexterity}
+            selection={equipmentSelection}
+            onChange={setEquipmentSelection}
+            customInputProps={(key, value, setValue) => ({
+              onChangeText: previewChangeHandler(`weapon:${key}`, setValue),
+              onFocus: (event) => {
+                scrollFieldIntoView(event);
+                showPreview(`weapon:${key}`, "Weapon name", value);
+              },
+              onBlur: previewBlurHandler(`weapon:${key}`),
             })}
-          </View>
+          />
         )}
 
         {step === "background" && (
@@ -1647,6 +1446,32 @@ export default function NewCharacterScreen() {
               placeholder="1"
               placeholderTextColor={theme.colors.textMuted}
               onFocus={scrollFieldIntoView}
+            />
+            {subclassProgression?.subclassLevel !== undefined &&
+              (subclassProgression.subclasses?.length ?? 0) > 0 &&
+              levelNum < subclassProgression.subclassLevel && (
+                <Text style={styles.hint}>
+                  A {classNameValue} chooses their {subclassProgression.subclassLabel ?? "subclass"}{" "}
+                  at level {subclassProgression.subclassLevel}, so you won&apos;t be asked for one at
+                  level {levelNum}. Start at level {subclassProgression.subclassLevel} or higher to
+                  pick it now, or choose it when you level up.
+                </Text>
+              )}
+          </View>
+        )}
+
+        {step === "subclass" && subclassProgression && (
+          <View>
+            <Text style={styles.title}>{subclassProgression.subclassLabel ?? "Subclass"}</Text>
+            <Text style={styles.hint}>
+              A level {levelNum} {classNameValue} has already chosen one. Pick yours, type your own,
+              or leave it for later — you can change it any time from Edit.
+            </Text>
+            <SubclassPicker
+              progression={subclassProgression}
+              value={subclass}
+              onChange={setSubclass}
+              onCustomFocus={scrollFieldIntoView}
             />
           </View>
         )}
@@ -2003,6 +1828,9 @@ export default function NewCharacterScreen() {
               {catalog.label} · {raceNameValue} · {classNameValue} · Level {levelNum}
               {background.trim() ? ` · ${background.trim()}` : ""}
               {alignment ? ` · ${alignment}` : ""}
+              {offersSubclass && subclass.trim()
+                ? ` · ${subclassProgression?.subclasses?.find((s) => s.id === subclass)?.name ?? subclass.trim()}`
+                : ""}
               {selectedSpellIds.size > 0 ? ` · ${selectedSpellIds.size} spells` : ""}
             </Text>
             {selectedSkillIds.size > 0 && (
@@ -2341,7 +2169,6 @@ function createStyles(theme: Theme) {
     },
     detailRow: { color: theme.colors.text, fontSize: 13, lineHeight: 18 },
     detailLabel: { fontWeight: "700", color: theme.colors.textMuted },
-    equipmentGroup: { marginBottom: 16 },
     equipmentGroupLabel: {
       color: theme.colors.textMuted,
       fontSize: 11,
@@ -2351,69 +2178,6 @@ function createStyles(theme: Theme) {
       letterSpacing: 0.5,
       marginBottom: 6,
     },
-    equipmentFixedRow: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius,
-      padding: 14,
-      borderWidth: 2,
-      borderColor: theme.colors.primary,
-    },
-    equipmentOptionCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius,
-      padding: 14,
-      marginBottom: 8,
-      borderWidth: 2,
-      borderColor: "transparent",
-    },
-    equipmentOptionCardActive: { borderColor: theme.colors.primary },
-    equipmentGrant: { marginBottom: 8 },
-    equipmentGrantLabel: {
-      color: theme.colors.text,
-      fontSize: 15,
-      fontWeight: "600",
-      fontFamily: theme.displayFontFamily,
-    },
-    equipmentGrantStats: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
-    equipmentGrantFlavor: {
-      color: theme.colors.textMuted,
-      fontSize: 12,
-      fontStyle: "italic",
-      marginTop: 2,
-      lineHeight: 16,
-    },
-    equipmentGrantHint: {
-      color: theme.colors.textMuted,
-      fontSize: 11,
-      fontWeight: "700",
-      marginTop: 8,
-      marginBottom: 4,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-    },
-    equipmentWeaponPicker: { marginTop: 4 },
-    equipmentWeaponRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      backgroundColor: theme.colors.surfaceAlt,
-      borderRadius: theme.radius,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      marginBottom: 4,
-      gap: 8,
-    },
-    equipmentWeaponRowActive: { borderColor: theme.colors.primary, borderWidth: 2 },
-    equipmentWeaponName: {
-      color: theme.colors.text,
-      fontSize: 13,
-      fontWeight: "600",
-      fontFamily: theme.displayFontFamily,
-    },
-    equipmentWeaponNameActive: { color: theme.colors.primary },
-    equipmentWeaponStats: { color: theme.colors.textMuted, fontSize: 11, flexShrink: 1, textAlign: "right" },
     skillGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
     skillCard: {
       width: "31%",

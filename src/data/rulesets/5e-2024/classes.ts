@@ -1,15 +1,5 @@
 import type { ClassDefinition, EquipmentLine } from "../types";
-
-// 5e-2024 has no weapon/armor stat catalog in this app (see the
-// `startingEquipment` note below), so each gear line becomes a plain `item`
-// grant with no resolvable stats -- just the SRD text, split on "or" into
-// pickable alternatives wherever the SRD offers a choice (same helper as
-// `3.5e/classes.ts`).
-function flavorLines(lines: string[]): EquipmentLine[] {
-  return lines.map((line) =>
-    line.split(/\s*,?\s+or\s+/i).map((part) => [{ kind: "item" as const, name: part.trim() }])
-  );
-}
+import { armor, gold, item, weapon } from "../equipmentHelpers";
 
 // ---------------------------------------------------------------------------
 // Legal note (2024 D&D 5th Edition ruleset -- "SRD 5.2")
@@ -48,11 +38,13 @@ function flavorLines(lines: string[]): EquipmentLine[] {
 // (species ability-bonus removal, Dwarf/Gnome speed, Druid/Bard/Wizard
 // weapon-proficiency simplification, Fighter/Wizard skill-list changes).
 //
-// `startingEquipment` is a short representative list (the SRD's "Option
-// A" gear choice for each class), not the full branching "choose A, B,
-// (or C)" equipment packages or the gold-piece alternative -- same
-// simplification the 2014 ruleset file uses, for the same reason (no
-// enforced inventory/currency system yet).
+// `startingEquipment` is the SRD 5.2 "Starting Equipment" row for each
+// class, checked against the open5e v2 text (`document__key=srd-2024`): one
+// line whose options are the SRD's A / B (/ C) packages, including the
+// "gold instead" alternatives. Weapon and armor grants resolve against the
+// shared 2014 weapon/armor catalogs (same stats; 2024 weapon Mastery isn't
+// modeled), and onboarding lets the player swap any of them for another
+// weapon or armor their class is proficient with.
 // ---------------------------------------------------------------------------
 
 // Core classes from the 2024 SRD 5.2: hit die, saving throw proficiencies,
@@ -82,7 +74,9 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     },
     armorProficiencies: ["Light armor", "Medium armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
-    startingEquipment: flavorLines(["A greataxe", "Four handaxes", "An explorer's pack"]),
+    startingEquipment: [
+      [[weapon("greataxe"), weapon("handaxe", 4), item("Explorer's Pack"), gold(15)], [gold(75)]],
+    ] as EquipmentLine[],
     summary: "A fierce warrior who channels primal rage in battle.",
   },
   {
@@ -102,7 +96,12 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     },
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["Simple weapons"],
-    startingEquipment: flavorLines(["Leather armor", "Two daggers", "A musical instrument", "An entertainer's pack"]),
+    startingEquipment: [
+      [
+        [armor("leather"), weapon("dagger", 2), item("Musical Instrument"), item("Entertainer's Pack"), gold(19)],
+        [gold(90)],
+      ],
+    ] as EquipmentLine[],
     summary: "An inspiring magician whose power echoes through music.",
   },
   {
@@ -115,7 +114,12 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     skillChoices: { count: 2, options: ["history", "insight", "medicine", "persuasion", "religion"] },
     armorProficiencies: ["Light armor", "Medium armor", "Shields"],
     weaponProficiencies: ["Simple weapons"],
-    startingEquipment: flavorLines(["A chain shirt", "A shield", "A mace", "A holy symbol"]),
+    startingEquipment: [
+      [
+        [armor("chain-shirt"), armor("shield"), weapon("mace"), item("Holy Symbol"), item("Priest's Pack"), gold(7)],
+        [gold(110)],
+      ],
+    ] as EquipmentLine[],
     summary: "A priestly champion who wields divine magic in service of a deity.",
   },
   {
@@ -131,7 +135,21 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     },
     armorProficiencies: ["Light armor", "Shields"],
     weaponProficiencies: ["Simple weapons"],
-    startingEquipment: flavorLines(["Leather armor", "A shield", "A sickle", "A druidic focus", "An explorer's pack"]),
+    startingEquipment: [
+      [
+        [
+          armor("leather"),
+          armor("shield"),
+          weapon("sickle"),
+          weapon("quarterstaff"),
+          item("Druidic Focus (Quarterstaff)", 1, "Your Quarterstaff doubles as your Druidic Focus for casting druid spells."),
+          item("Explorer's Pack"),
+          item("Herbalism Kit"),
+          gold(9),
+        ],
+        [gold(50)],
+      ],
+    ] as EquipmentLine[],
     summary: "A priest of nature, wielding elemental forces and shifting shape.",
   },
   {
@@ -145,7 +163,22 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     },
     armorProficiencies: ["Light armor", "Medium armor", "Heavy armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
-    startingEquipment: flavorLines(["Chain mail", "A greatsword", "A flail", "Eight javelins", "A dungeoneer's pack"]),
+    startingEquipment: [
+      [
+        [armor("chain-mail"), weapon("greatsword"), weapon("flail"), weapon("javelin", 8), item("Dungeoneer's Pack"), gold(4)],
+        [
+          armor("studded-leather"),
+          weapon("scimitar"),
+          weapon("shortsword"),
+          weapon("longbow"),
+          item("Arrows", 20),
+          item("Quiver"),
+          item("Dungeoneer's Pack"),
+          gold(11),
+        ],
+        [gold(155)],
+      ],
+    ] as EquipmentLine[],
     summary: "A master of martial combat, skilled with a variety of weapons and armor.",
   },
   {
@@ -156,7 +189,18 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     skillChoices: { count: 2, options: ["acrobatics", "athletics", "history", "insight", "religion", "stealth"] },
     armorProficiencies: [],
     weaponProficiencies: ["Simple weapons", "Martial weapons with the Light property"],
-    startingEquipment: flavorLines(["A spear", "Five daggers", "An artisan's tools or musical instrument", "An explorer's pack"]),
+    startingEquipment: [
+      [
+        [
+          weapon("spear"),
+          weapon("dagger", 5),
+          item("Artisan's Tools or Musical Instrument", 1, "The tool or instrument you chose for your Monk tool proficiency."),
+          item("Explorer's Pack"),
+          gold(11),
+        ],
+        [gold(50)],
+      ],
+    ] as EquipmentLine[],
     summary: "A master of martial arts who channels inner energy.",
   },
   {
@@ -169,7 +213,20 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     skillChoices: { count: 2, options: ["athletics", "insight", "intimidation", "medicine", "persuasion", "religion"] },
     armorProficiencies: ["Light armor", "Medium armor", "Heavy armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
-    startingEquipment: flavorLines(["Chain mail", "A shield", "A longsword", "Six javelins", "A holy symbol"]),
+    startingEquipment: [
+      [
+        [
+          armor("chain-mail"),
+          armor("shield"),
+          weapon("longsword"),
+          weapon("javelin", 6),
+          item("Holy Symbol"),
+          item("Priest's Pack"),
+          gold(9),
+        ],
+        [gold(150)],
+      ],
+    ] as EquipmentLine[],
     summary: "A holy warrior bound by an oath to a higher cause.",
   },
   {
@@ -185,7 +242,22 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     },
     armorProficiencies: ["Light armor", "Medium armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
-    startingEquipment: flavorLines(["Studded leather armor", "A scimitar and a shortsword", "A longbow and a quiver of 20 arrows", "A druidic focus"]),
+    startingEquipment: [
+      [
+        [
+          armor("studded-leather"),
+          weapon("scimitar"),
+          weapon("shortsword"),
+          weapon("longbow"),
+          item("Arrows", 20),
+          item("Quiver"),
+          item("Druidic Focus (sprig of mistletoe)", 1, "A sprig of mistletoe used to channel druidic magic."),
+          item("Explorer's Pack"),
+          gold(7),
+        ],
+        [gold(150)],
+      ],
+    ] as EquipmentLine[],
     summary: "A warrior of the wilds, skilled in tracking and survival.",
   },
   {
@@ -202,7 +274,22 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     },
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["Simple weapons", "Martial weapons with the Finesse or Light property"],
-    startingEquipment: flavorLines(["Leather armor", "Two daggers", "A shortsword", "A shortbow and a quiver of arrows", "Thieves' tools", "A burglar's pack"]),
+    startingEquipment: [
+      [
+        [
+          armor("leather"),
+          weapon("dagger", 2),
+          weapon("shortsword"),
+          weapon("shortbow"),
+          item("Arrows", 20),
+          item("Quiver"),
+          item("Thieves' Tools"),
+          item("Burglar's Pack"),
+          gold(8),
+        ],
+        [gold(100)],
+      ],
+    ] as EquipmentLine[],
     summary: "A stealthy and cunning adventurer who relies on skill and precision.",
   },
   {
@@ -215,7 +302,18 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     skillChoices: { count: 2, options: ["arcana", "deception", "insight", "intimidation", "persuasion", "religion"] },
     armorProficiencies: [],
     weaponProficiencies: ["Simple weapons"],
-    startingEquipment: flavorLines(["A spear", "Two daggers", "An arcane focus", "A dungeoneer's pack"]),
+    startingEquipment: [
+      [
+        [
+          weapon("spear"),
+          weapon("dagger", 2),
+          item("Arcane Focus (crystal)", 1, "A crystal used to channel arcane magic."),
+          item("Dungeoneer's Pack"),
+          gold(28),
+        ],
+        [gold(50)],
+      ],
+    ] as EquipmentLine[],
     summary: "A spellcaster who draws on an innate magical bloodline.",
   },
   {
@@ -228,7 +326,20 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     skillChoices: { count: 2, options: ["arcana", "deception", "history", "intimidation", "investigation", "nature", "religion"] },
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["Simple weapons"],
-    startingEquipment: flavorLines(["Leather armor", "A sickle", "Two daggers", "An arcane focus", "A book of occult lore", "A scholar's pack"]),
+    startingEquipment: [
+      [
+        [
+          armor("leather"),
+          weapon("sickle"),
+          weapon("dagger", 2),
+          item("Arcane Focus (orb)", 1, "An orb used to channel arcane magic."),
+          item("Book (occult lore)", 1, "A book of occult lore."),
+          item("Scholar's Pack"),
+          gold(15),
+        ],
+        [gold(100)],
+      ],
+    ] as EquipmentLine[],
     summary: "A wielder of magic granted through a pact with an otherworldly patron.",
   },
   {
@@ -241,7 +352,20 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     skillChoices: { count: 2, options: ["arcana", "history", "insight", "investigation", "medicine", "nature", "religion"] },
     armorProficiencies: [],
     weaponProficiencies: ["Simple weapons"],
-    startingEquipment: flavorLines(["Two daggers", "An arcane focus", "A robe", "A spellbook", "A scholar's pack"]),
+    startingEquipment: [
+      [
+        [
+          weapon("dagger", 2),
+          weapon("quarterstaff"),
+          item("Arcane Focus (Quarterstaff)", 1, "Your Quarterstaff doubles as your Arcane Focus for casting wizard spells."),
+          item("Robe"),
+          item("Spellbook"),
+          item("Scholar's Pack"),
+          gold(5),
+        ],
+        [gold(55)],
+      ],
+    ] as EquipmentLine[],
     summary: "A scholarly magic-user capable of manipulating reality through study.",
   },
 ];

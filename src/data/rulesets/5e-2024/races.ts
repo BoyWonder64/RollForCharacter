@@ -115,7 +115,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
       {
         name: "Elven Lineage",
         description:
-          "You are part of a lineage that grants you supernatural abilities. Choose a lineage from the Elven Lineages table -- Drow, High Elf, or Wood Elf -- and gain its level 1 benefit; you learn a higher-level spell from it at levels 3 and 5.",
+          "You are part of a lineage that grants you supernatural abilities. Choose a lineage from the Elven Lineages table. You gain the level 1 benefit of that lineage.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nDrow — Level 1: The range of your Darkvision increases to 120 feet. You also know the Dancing Lights cantrip.; Level 3: Faerie Fire; Level 5: Darkness\nHigh Elf — Level 1: You know the Prestidigitation cantrip. Whenever you finish a Long Rest, you can replace that cantrip with a different cantrip from the Wizard spell list.; Level 3: Detect Magic; Level 5: Misty Step\nWood Elf — Level 1: Your Speed increases to 35 feet. You also know the Druidcraft cantrip.; Level 3: Longstrider; Level 5: Pass without Trace\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage).",
       },
       {
         name: "Fey Ancestry",
@@ -149,7 +149,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
       {
         name: "Gnomish Lineage",
         description:
-          "You are part of a lineage that grants you supernatural abilities. Choose Forest Gnome (Minor Illusion cantrip plus Speak with Animals) or Rock Gnome (Mending and Prestidigitation cantrips, plus a tiny clockwork device you can craft).",
+          "You are part of a lineage that grants you supernatural abilities. Choose one of the following options; whichever one you choose, Intelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage):\n\nForest Gnome. You know the Minor Illusion cantrip. You also always have the Speak with Animals spell prepared. You can cast it without a spell slot a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest. You can also use any spell slots you have to cast the spell.\n\nRock Gnome. You know the Mending and Prestidigitation cantrips. In addition, you can spend 10 minutes casting Prestidigitation to create a Tiny clockwork device (AC 5, 1 HP), such as a toy, fire starter, or music box. When you create the device, you determine its function by choosing one effect from Prestidigitation; the device produces that effect whenever you or another creature takes a Bonus Action to activate it with a touch. If the chosen effect has options within it, you choose one of those options for the device when you create it. For example, if you choose the spell's ignite-extinguish effect, you determine whether the device ignites or extinguishes fire; the device doesn't do both. You can have three such devices in existence at a time, and each falls apart 8 hours after its creation or when you dismantle it with a touch as a Utilize action.",
       },
     ],
   },
@@ -165,7 +165,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
       {
         name: "Giant Ancestry",
         description:
-          "You are descended from Giants. Choose one benefit -- Cloud's Jaunt, Fire's Burn, Frost's Chill, Hill's Tumble, Stone's Endurance, or Storm's Thunder -- usable a number of times equal to your Proficiency Bonus, regained on a Long Rest.",
+          "You are descended from Giants. Choose one of the following benefits—a supernatural boon from your ancestry; you can use the chosen benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest:\n\n• Cloud's Jaunt (Cloud Giant). As a Bonus Action, you magically teleport up to 30 feet to an unoccupied space you can see.\n• Fire's Burn (Fire Giant). When you hit a target with an attack roll and deal damage to it, you can also deal 1d10 Fire damage to that target.\n• Frost's Chill (Frost Giant). When you hit a target with an attack roll and deal damage to it, you can also deal 1d6 Cold damage to that target and reduce its Speed by 10 feet until the start of your next turn.\n• Hill's Tumble (Hill Giant). When you hit a Large or smaller creature with an attack roll and deal damage to it, you can give that target the Prone condition.\n• Stone's Endurance (Stone Giant). When you take damage, you can take a Reaction to roll 1d12. Add your Constitution modifier to the number rolled and reduce the damage by that total.\n• Storm's Thunder (Storm Giant). When you take damage from a creature within 60 feet of you, you can take a Reaction to deal 1d8 Thunder damage to that creature.",
       },
       {
         name: "Large Form",
@@ -214,6 +214,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
     name: "Human",
     speed: 30,
     size: "Medium",
+    sizeOptions: ["Medium", "Small"],
     abilityBonuses: {},
     summary:
       "Choose Medium or Small size. Gains Heroic Inspiration after every long rest, a bonus skill proficiency, and a free Origin feat.",
@@ -266,6 +267,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
     name: "Tiefling",
     speed: 30,
     size: "Medium",
+    sizeOptions: ["Medium", "Small"],
     abilityBonuses: {},
     summary:
       "Choose Medium or Small size. Darkvision, a chosen fiendish legacy (Abyssal, Chthonic, or Infernal), and the Thaumaturgy cantrip from Otherworldly Presence.",
@@ -274,7 +276,7 @@ export const RACES_5E_2024: RaceDefinition[] = [
       {
         name: "Fiendish Legacy",
         description:
-          "You are the recipient of a legacy that grants you supernatural abilities. Choose Abyssal, Chthonic, or Infernal; you gain its level 1 benefit, and learn a higher-level spell from it at levels 3 and 5.",
+          "You are the recipient of a legacy that grants you supernatural abilities. Choose a legacy from the Fiendish Legacies table. You gain the level 1 benefit of the chosen legacy.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the legacy).\n\nAbyssal — Level 1: You have Resistance to Poison damage. You also know the Poison Spray cantrip.; Level 3: Ray of Sickness; Level 5: Hold Person\nChthonic — Level 1: You have Resistance to Necrotic damage. You also know the Chill Touch cantrip.; Level 3: False Life; Level 5: Ray of Enfeeblement\nInfernal — Level 1: You have Resistance to Fire damage. You also know the Fire Bolt cantrip.; Level 3: Hellish Rebuke; Level 5: Darkness",
       },
       {
         name: "Otherworldly Presence",

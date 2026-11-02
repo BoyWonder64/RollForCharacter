@@ -1,3 +1,5 @@
+import { getClassProgression } from "./characterCalculations";
+
 // 5e SRD/PHB spells-known and cantrips-known progressions, by class and
 // character level (index 0 = level 1). "Prepared" casters (Cleric, Druid,
 // Paladin, Wizard) don't have a fixed known-spells table -- they prepare
@@ -20,7 +22,7 @@ const SORCERER: KnownCasterTable = {
 };
 
 const WARLOCK: KnownCasterTable = {
-  cantrips: [2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+  cantrips: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
   spells: [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15],
 };
 
@@ -56,9 +58,30 @@ const KNOWN_CASTERS: Record<string, KnownCasterTable> = {
 export function getSpellLimits(
   classId: string,
   level: number,
-  spellAbilityModifier: number
+  spellAbilityModifier: number,
+  ruleset: string = "5e"
 ): SpellLimits | undefined {
   const index = Math.min(19, Math.max(0, level - 1));
+
+  // The 2024 rules changed how many spells most classes know/prepare (every
+  // caster now prepares a fixed number from a table), so read the ruleset's
+  // own per-level row instead of the 2014 tables below.
+  if (ruleset !== "5e") {
+    const row = getClassProgression(ruleset, classId)?.spellProgression?.find(
+      (r) => r.level === Math.min(20, Math.max(1, level))
+    );
+    if (row && row.spellsKnown !== undefined) {
+      if (classId === "wizard") {
+        // Spellbook size (6 + 2 per level beyond 1st), not the daily-prepared count.
+        return { cantrips: row.cantripsKnown ?? 0, spells: 6 + (level - 1) * 2, mode: "known" };
+      }
+      return {
+        cantrips: row.cantripsKnown ?? 0,
+        spells: row.spellsKnown,
+        mode: classId === "sorcerer" || classId === "warlock" || classId === "bard" ? "known" : "prepared",
+      };
+    }
+  }
 
   const known = KNOWN_CASTERS[classId];
   if (known) {

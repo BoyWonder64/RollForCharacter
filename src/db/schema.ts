@@ -255,6 +255,24 @@ export const characterWeapons = sqliteTable("character_weapons", {
   // is the flat enchantment bonus applied to attack rolls.
   isMagic: integer("is_magic", { mode: "boolean" }).notNull().default(false),
   magicBonus: integer("magic_bonus").notNull().default(0),
+  // A stack of identical weapons (4 handaxes, 5 daggers) is one row.
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A non-weapon, non-armor item in a character's inventory: packs, holy
+// symbols and other foci, tools, ammunition, ... Mostly granted by a class's
+// starting equipment, but also addable by hand.
+export const characterGearItems = sqliteTable("character_gear_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  description: text("description").notNull().default(""),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -454,7 +472,37 @@ export const dmCreatures = sqliteTable("dm_creatures", {
   maxHp: integer("max_hp").notNull().default(0),
   armorClass: integer("armor_class").notNull().default(10),
   notes: text("notes").notNull().default(""),
+  // Used for initiative on a creature with no catalog stat block (a catalog
+  // creature rolls from its monster row's dexterity instead).
+  dexterity: integer("dexterity").notNull().default(10),
+  // Null until rolled/entered; the encounter tracker orders by this.
+  initiative: integer("initiative"),
+  // Comma-separated condition ids, same format as `characters.conditions`.
+  conditions: text("conditions").notNull().default(""),
+  // JSON map of ability name -> times used, for recharge / per-day / rest
+  // limited abilities. Empty string means nothing spent.
+  usedAbilities: text("used_abilities").notNull().default(""),
   sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A party member's initiative in the current encounter -- kept separate from
+// `characters` so DM mode's tracker never touches the character sheet.
+export const dmPartyInitiative = sqliteTable("dm_party_initiative", {
+  characterId: integer("character_id")
+    .primaryKey()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  initiative: integer("initiative").notNull(),
+});
+
+// A saved encounter: a JSON snapshot of the creature list (name, catalog id,
+// max HP, AC, DEX) so it can be loaded back at full health later.
+export const dmEncounters = sqliteTable("dm_encounters", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  creatures: text("creatures").notNull().default("[]"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -476,7 +524,56 @@ export const characterResourceUses = sqliteTable("character_resource_uses", {
   usesRemaining: integer("uses_remaining").notNull().default(0),
 });
 
-export const diceRollHistory = sqliteTable("dice_roll_history", {
+// A limited-use ability or tracker the player created themselves (their own
+// Action Surge / Second Wind / table-specific counter). Converted to a
+// `ClassResourceDefinition` with id `custom-<id>` by `listCharacterResources`,
+// so spent uses live in `character_resource_uses` like every catalog resource.
+export const characterCustomResources = sqliteTable("character_custom_resources", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  // How max uses is computed: "fixed" (`fixedMax`), "level" (`usesByLevel`
+  // breakpoints), or "ability" (ability modifier + bonus, floored at
+  // `abilityMinimum`). Mirrors ClassResourceDefinition's two shapes.
+  maxMode: text("max_mode").notNull().default("fixed"),
+  fixedMax: integer("fixed_max").notNull().default(1),
+  usesByLevel: text("uses_by_level").notNull().default("{}"), // JSON: Record<level, uses>
+  ability: text("ability").notNull().default("charisma"),
+  abilityBonus: integer("ability_bonus").notNull().default(0),
+  abilityMinimum: integer("ability_minimum").notNull().default(1),
+  // "short": fully recharges on a short or long rest. "long": long rest only.
+  // "manual": never recharges on a rest -- only the +/- controls change it.
+  rechargeOn: text("recharge_on").notNull().default("long"),
+  isPointPool: integer("is_point_pool", { mode: "boolean" }).notNull().default(false),
+  // CampaignItemIconId (src/features/icons/iconAssets.ts), or "" for none.
+  icon: text("icon").notNull().default(""),
+  // Optional dice formula rolled alongside spending a use, e.g. "1d10 + level"
+  // (see src/features/dice/rollFormula.ts). Empty = no roll.
+  rollFormula: text("roll_formula").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A per-character house rule on a BUILT-IN (ruleset catalog) resource: change
+// its max uses, or hide it entirely. No row = the resource behaves as the
+// ruleset defines it. `resourceId` matches a ClassResourceDefinition.id.
+export const characterResourceOverrides = sqliteTable("character_resource_overrides", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  resourceId: text("resource_id").notNull(),
+  hidden: integer("hidden", { mode: "boolean" }).notNull().default(false),
+  // Null = keep the ruleset's max.
+  maxOverride: integer("max_override"),
+});
+
+export const diceRollHistory =sqliteTable("dice_roll_history", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   characterId: integer("character_id").references(() => characters.id, {
     onDelete: "set null",
