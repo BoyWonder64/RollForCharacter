@@ -1,16 +1,6 @@
 import { useMemo, useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import type { AbilityScoreKey } from "../types/models";
@@ -68,12 +58,10 @@ export function CustomResourceModal(props: CustomResourceModalProps) {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>{visible && <CustomResourceForm {...props} />}</View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -123,7 +111,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
 
   return (
     <View style={styles.card}>
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" bottomOffset={60}>
         <Text style={styles.title}>{initial ? "Edit Ability" : "Create Ability"}</Text>
 
         <Text style={styles.fieldLabel}>Name</Text>
@@ -173,12 +161,14 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
         )}
         {maxMode === "ability" && (
           <>
-            <ChipRow
-              options={ABILITIES.map((a) => ({ id: a.key, label: a.label }))}
-              value={ability}
-              onChange={setAbility}
-              styles={styles}
-            />
+            <View style={styles.spacedInput}>
+              <ChipRow
+                options={ABILITIES.map((a) => ({ id: a.key, label: a.label }))}
+                value={ability}
+                onChange={setAbility}
+                styles={styles}
+              />
+            </View>
             <View style={[styles.pairRow, styles.spacedInput]}>
               <View style={styles.pairCell}>
                 <Text style={styles.fieldLabel}>Bonus</Text>
@@ -203,16 +193,6 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
           </>
         )}
 
-        <Text style={styles.fieldLabel}>Recharges on</Text>
-        <ChipRow options={RECHARGES} value={rechargeOn} onChange={setRechargeOn} styles={styles} />
-        <Text style={styles.hint}>
-          {rechargeOn === "short"
-            ? "Fully restored by a short or long rest."
-            : rechargeOn === "long"
-              ? "Fully restored by a long rest."
-              : "Never restored by resting. Use the controls to change it."}
-        </Text>
-
         <Text style={styles.fieldLabel}>Display</Text>
         <ChipRow
           options={[
@@ -227,6 +207,16 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
           {isPointPool
             ? "A number with + and - buttons. Best for big pools, like 20 hit points of healing."
             : "A row of dots, one per use. Tap a dot to spend or restore a use. Best for a few uses, like 2 or 3."}
+        </Text>
+
+        <Text style={styles.fieldLabel}>Recharges on</Text>
+        <ChipRow options={RECHARGES} value={rechargeOn} onChange={setRechargeOn} styles={styles} />
+        <Text style={styles.hint}>
+          {rechargeOn === "short"
+            ? "Fully restored by a short or long rest."
+            : rechargeOn === "long"
+              ? "Fully restored by a long rest."
+              : "Never restored by resting. Use the controls to change it."}
         </Text>
 
         <Text style={styles.fieldLabel}>Roll (optional)</Text>
@@ -263,7 +253,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
             );
           })}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <View style={styles.buttonRow}>
         {onDelete && (

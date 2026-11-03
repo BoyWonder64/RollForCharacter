@@ -1,6 +1,7 @@
 import { SubclassPicker } from "./SubclassPicker";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { CUSTOM_OPTION_ID, getRulesetCatalog } from "../data/rulesets";
 import type { ClassDefinition } from "../data/rulesets/types";
 import {
@@ -149,7 +150,7 @@ export function MulticlassModalForm({
           Pick a new class to take your first level in. This is a permanent character choice --
           see the Player&apos;s Handbook multiclassing rules before committing.
         </Text>
-        <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView style={styles.scroll} showsVerticalScrollIndicator={false} bottomOffset={60}>
           <View style={styles.buttonColumn}>
             {availableClasses.map((c) => (
               <Pressable
@@ -269,7 +270,7 @@ export function MulticlassModalForm({
               </Pressable>
             </>
           )}
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <Pressable style={styles.cancelButton} onPress={onClose}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </Pressable>
@@ -499,11 +500,22 @@ function StepCard({
       {children}
     </>
   );
-  return <View style={styles.card}>{content}{onBack && (
-    <Pressable style={styles.cancelButton} onPress={onBack}>
-      <Text style={styles.cancelButtonText}>Back</Text>
-    </Pressable>
-  )}</View>;
+  return (
+    <View style={styles.card}>
+      {scroll ? (
+        <KeyboardAwareScrollView showsVerticalScrollIndicator={false} bottomOffset={60}>
+          {content}
+        </KeyboardAwareScrollView>
+      ) : (
+        content
+      )}
+      {onBack && (
+        <Pressable style={styles.cancelButton} onPress={onBack}>
+          <Text style={styles.cancelButtonText}>Back</Text>
+        </Pressable>
+      )}
+    </View>
+  );
 }
 
 function createStyles(theme: Theme) {

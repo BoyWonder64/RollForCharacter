@@ -1,16 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
@@ -401,11 +391,8 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
+    <View style={styles.container}>
+      <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bottomOffset={24}>
       <View style={styles.portraitRow}>
         <Pressable onPress={handlePickPortrait}>
           {form.portraitUri ? (
@@ -896,8 +883,9 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
       <Pressable style={styles.deleteButton} onPress={handleDelete}>
         <Text style={styles.deleteButtonText}>Delete Character</Text>
       </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+      <KeyboardToolbar />
+    </View>
   );
 }
 

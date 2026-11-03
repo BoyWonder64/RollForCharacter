@@ -329,7 +329,7 @@ export function StatsTab({
         </Text>
       </Pressable>
 
-      <ClassResourceTracker character={character} />
+      <ClassResourceTracker character={character} onChanged={onChanged} />
 
       <LevelUpModal
         visible={levelUpModalOpen}

@@ -10,6 +10,7 @@ import { Caveat_700Bold } from "@expo-google-fonts/caveat";
 import { SpecialElite_400Regular } from "@expo-google-fonts/special-elite";
 import { Orbitron_700Bold } from "@expo-google-fonts/orbitron";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { setAudioModeAsync } from "expo-audio";
 import { ThemeProvider, useTheme } from "../theme/ThemeContext";
@@ -73,27 +74,29 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <KeepAwakeProvider>
-            <DeveloperModeProvider>
-              <DmModeProvider>
-                <RollHistoryProvider>
-                  <SoundSettingsProvider>
-                    <IconSettingsProvider>
-                      <PartyModeProvider>
-                        <AuthProvider>
-                          <ThemedRoot />
-                        </AuthProvider>
-                      </PartyModeProvider>
-                    </IconSettingsProvider>
-                  </SoundSettingsProvider>
-                </RollHistoryProvider>
-              </DmModeProvider>
-            </DeveloperModeProvider>
-          </KeepAwakeProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <KeepAwakeProvider>
+              <DeveloperModeProvider>
+                <DmModeProvider>
+                  <RollHistoryProvider>
+                    <SoundSettingsProvider>
+                      <IconSettingsProvider>
+                        <PartyModeProvider>
+                          <AuthProvider>
+                            <ThemedRoot />
+                          </AuthProvider>
+                        </PartyModeProvider>
+                      </IconSettingsProvider>
+                    </SoundSettingsProvider>
+                  </RollHistoryProvider>
+                </DmModeProvider>
+              </DeveloperModeProvider>
+            </KeepAwakeProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

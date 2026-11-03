@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import {
@@ -38,16 +29,14 @@ export function AddMagicItemModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && (
             <AddMagicItemModalForm onClose={onClose} onPickCatalog={onPickCatalog} onAddCustom={onAddCustom} />
           )}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -207,7 +196,7 @@ function AddMagicItemModalForm({
           </ScrollView>
         </>
       ) : (
-        <ScrollView style={styles.customForm}>
+        <KeyboardAwareScrollView style={styles.customForm} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Name</Text>
           <TextInput
             style={styles.input}
@@ -255,7 +244,7 @@ function AddMagicItemModalForm({
             placeholderTextColor={theme.colors.textMuted}
             multiline
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
 
       <View style={styles.buttonRow}>

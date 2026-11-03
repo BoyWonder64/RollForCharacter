@@ -549,6 +549,41 @@ export const dmEncounters = sqliteTable("dm_encounters", {
     .default(sql`(current_timestamp)`),
 });
 
+// A DM session-notes journal entry -- same subject+body shape as a
+// character's `campaignNotes`, but global to DM mode (not tied to any one
+// character, same spirit as `dmCreatures`/`dmEncounters`). Replaces the old
+// single freeform AsyncStorage textbox; see `migrateLegacySessionNotesIfNeeded`
+// in dmNotesRepo.ts for the one-time move of whatever was already written
+// there into this table.
+export const dmNotes = sqliteTable("dm_notes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  subject: text("subject").notNull().default(""),
+  body: text("body").notNull().default(""),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A single entry in the DM's running timeline of campaign events -- global
+// to DM mode like `dmNotes` above. `eventDate` is a freeform label (a
+// session number or an in-game calendar date) since campaigns don't share
+// one date format; `sortOrder` is what the timeline actually displays in,
+// set to one past the current max on insert so new events default to the
+// end of the list.
+export const dmTimelineEvents = sqliteTable("dm_timeline_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull().default(""),
+  eventDate: text("event_date").notNull().default(""),
+  body: text("body").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
 // One row per character per limited-use class resource they've spent any
 // uses of (Action Surge, Second Wind, Indomitable, ...) -- see
 // `ClassResourceDefinition` (src/data/rulesets/types.ts). A generic pool

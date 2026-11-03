@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import {
   addCustomDmCreature,
@@ -154,10 +145,7 @@ export function DmCreaturePickerModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Add Creatures</Text>
@@ -194,7 +182,7 @@ export function DmCreaturePickerModal({
             </View>
 
             {tab === "catalog" ? (
-              <>
+              <KeyboardAwareScrollView style={{ maxHeight: 460 }} bottomOffset={60}>
                 <TextInput
                   style={styles.input}
                   value={search}
@@ -254,7 +242,7 @@ export function DmCreaturePickerModal({
                   <Text style={styles.hint}>Roll hit dice for HP (otherwise average)</Text>
                 </View>
 
-                <ScrollView style={{ maxHeight: 340, marginTop: 8 }}>
+                <View style={{ marginTop: 8 }}>
                   {filtered.slice(0, limit).map((m) => (
                     <Pressable
                       key={m.id}
@@ -298,10 +286,10 @@ export function DmCreaturePickerModal({
                       </Text>
                     </Pressable>
                   )}
-                </ScrollView>
-              </>
+                </View>
+              </KeyboardAwareScrollView>
             ) : (
-              <View style={{ gap: 8 }}>
+              <KeyboardAwareScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ gap: 8 }} bottomOffset={60}>
                 <TextInput
                   style={styles.input}
                   value={customName}
@@ -335,7 +323,7 @@ export function DmCreaturePickerModal({
                   Custom creatures roll initiative from their DEX and use freeform dice for
                   everything else.
                 </Text>
-              </View>
+              </KeyboardAwareScrollView>
             )}
 
             {message ? (
@@ -348,7 +336,8 @@ export function DmCreaturePickerModal({
             </Pressable>
           </View>
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }

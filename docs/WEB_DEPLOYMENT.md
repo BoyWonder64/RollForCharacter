@@ -39,7 +39,16 @@ npx expo start --web
 
 Open it in a browser, sign up for an account from Settings → Account, create a character, and confirm a row shows up in Supabase's `characters` table (Table Editor) with a populated `data` column. Sign in from a second browser profile (or incognito) and confirm the character pulls down.
 
-Known gap: the dev server's COOP/COEP headers (from `metro.config.js`) only attach to bundle/asset requests, not the `/` document itself in this Expo CLI version — so `expo-sqlite`'s WASM build may not get a fully cross-origin-isolated page locally. This doesn't affect the production Caddy deploy (step 5), which sets the headers on every response. If local web testing hits a `SharedArrayBuffer is not defined` error, that's this gap, not a regression.
+Known gap: the dev server's COOP/COEP headers (from `metro.config.js`) only attach to bundle/asset requests, not the `/` document itself in this Expo CLI version — so `expo-sqlite`'s WASM build may not get a fully cross-origin-isolated page locally. Symptom: writes made in a tight sequence right after a page load (e.g. onboarding's starting-equipment inserts, right after the character row itself) silently don't persist, even though the first write (the character) appears to work. This doesn't affect the production Caddy deploy (step 5), which sets the headers on every response.
+
+Workaround for local web testing: run the dev-server-in-front-of-a-dev-server proxy in [scripts/web-coi-proxy.js](../scripts/web-coi-proxy.js), which stamps the COOP/COEP headers on every response (document included) and forwards Fast Refresh's WebSocket upgrade too.
+
+```
+npx expo start --web            # note the port it prints, e.g. 8081
+npm run web:coi-proxy           # defaults to proxying :19006 -> :8081; pass proxyPort targetPort to override
+```
+
+Then open `http://localhost:19006` in the browser — not the Metro port directly.
 
 ## 4. Build the production bundle
 

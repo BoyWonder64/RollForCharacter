@@ -1,15 +1,6 @@
 import { useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import {
   ABILITY_LABELS,
   describeFeatEffect,
@@ -84,12 +75,10 @@ function ModalBackdrop({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1 }}>
       <View style={styles.backdrop}>{children}</View>
-    </KeyboardAvoidingView>
+      <KeyboardToolbar />
+    </View>
   );
 }
 
@@ -794,9 +783,9 @@ function StepCard({
   return (
     <View style={styles.card}>
       {scroll ? (
-        <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView style={styles.scroll} showsVerticalScrollIndicator={false} bottomOffset={60}>
           {content}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       ) : (
         content
       )}

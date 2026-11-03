@@ -73,7 +73,7 @@ export const RULESETS: Record<string, RulesetCatalog> = {
   },
 };
 
-export const DEFAULT_RULESET = "5e";
+export const DEFAULT_RULESET = "5e-2024";
 
 export function getRulesetCatalog(ruleset: string): RulesetCatalog {
   return RULESETS[ruleset] ?? RULESETS[DEFAULT_RULESET];

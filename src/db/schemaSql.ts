@@ -302,6 +302,23 @@ export const CREATE_TABLES_SQL = `
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
+  CREATE TABLE IF NOT EXISTS dm_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject TEXT NOT NULL DEFAULT '',
+    body TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (current_timestamp),
+    updated_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS dm_timeline_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL DEFAULT '',
+    event_date TEXT NOT NULL DEFAULT '',
+    body TEXT NOT NULL DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
   CREATE TABLE IF NOT EXISTS character_resource_uses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,

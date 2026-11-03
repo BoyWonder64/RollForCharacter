@@ -4,8 +4,6 @@ import {
   Animated,
   Easing,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +13,7 @@ import {
   type ImageStyle,
   type StyleProp,
 } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button } from "../../components/Button";
@@ -533,10 +532,7 @@ export default function DiceRollerScreen() {
   const spinDeg = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "1080deg"] });
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={styles.container}>
       <View style={styles.titleRow}>
         {diceIcon ? <Image source={diceIcon} style={styles.titleIcon} /> : null}
         <Text style={styles.title}>Dice Roller</Text>
@@ -559,7 +555,7 @@ export default function DiceRollerScreen() {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.scrollContent} bottomOffset={24}>
         {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Character</Text>
@@ -1102,7 +1098,8 @@ export default function DiceRollerScreen() {
         )}
 
         <Text style={styles.realDiceNote}>Rolling real dice at the table is always better.</Text>
-      </ScrollView>
+      </KeyboardAwareScrollView>
+      <KeyboardToolbar />
 
       <Animated.View
         pointerEvents="none"
@@ -1114,7 +1111,7 @@ export default function DiceRollerScreen() {
           },
         ]}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

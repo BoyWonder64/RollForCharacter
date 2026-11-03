@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { listSpellCatalog } from "./spellRepo";
 import { SpellDetailModal, type SpellDetailData } from "./SpellDetailModal";
 import { useTheme } from "../../theme/ThemeContext";
@@ -71,16 +62,13 @@ export function ManageSpellsModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
         {visible && (
           <View style={styles.card}>
             <Text style={styles.title}>Manage Spells</Text>
 
-            <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+            <KeyboardAwareScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} bottomOffset={60}>
               <Text style={styles.sectionLabel}>Known Spells</Text>
               {knownSpells.length === 0 ? (
                 <Text style={styles.empty}>No spells added yet.</Text>
@@ -187,7 +175,7 @@ export function ManageSpellsModal({
                   <Text style={styles.addButtonText}>Add</Text>
                 </Pressable>
               </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             <Pressable style={styles.closeButton} onPress={onClose}>
               <Text style={styles.closeButtonText}>Done</Text>
@@ -195,7 +183,8 @@ export function ManageSpellsModal({
           </View>
         )}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
 
       <SpellDetailModal
         visible={detailSpell !== null}

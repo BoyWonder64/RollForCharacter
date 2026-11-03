@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import type { ArmorCategory, ArmorDefinition } from "../data/rulesets";
@@ -46,10 +45,7 @@ export function AddArmorModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && (
             <AddArmorModalForm
@@ -60,7 +56,8 @@ export function AddArmorModal({
             />
           )}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -185,7 +182,7 @@ function AddArmorModalForm({
           </ScrollView>
         </>
       ) : (
-        <ScrollView style={styles.customForm}>
+        <KeyboardAwareScrollView style={styles.customForm} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Name</Text>
           <TextInput
             style={styles.input}
@@ -312,7 +309,7 @@ function AddArmorModalForm({
               />
             </>
           )}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
 
       <View style={styles.buttonRow}>

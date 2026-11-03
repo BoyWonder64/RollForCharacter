@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { listSpellCatalog } from "./spellRepo";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
@@ -42,15 +33,13 @@ export function LevelUpSpellsModal({ visible, onClose, ...rest }: LevelUpSpellsM
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {/* Only mounted while visible, so search/filter state always starts fresh on open. */}
           {visible && <LevelUpSpellsForm onClose={onClose} {...rest} />}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -83,7 +72,7 @@ function LevelUpSpellsForm({
       <Text style={styles.title}>Level Up</Text>
       <Text style={styles.hint}>Bump your spell slots and add any spells you just learned.</Text>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <KeyboardAwareScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} bottomOffset={60}>
         <Text style={styles.sectionLabel}>Spell Slots</Text>
         {SLOT_LEVELS.map((level) => {
           const total = slotTotals.find((s) => s.level === level)?.total ?? 0;
@@ -157,7 +146,7 @@ function LevelUpSpellsForm({
             Showing {CATALOG_RESULT_LIMIT} of {results.length} — keep typing to narrow.
           </Text>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Pressable style={styles.closeButton} onPress={onClose}>
         <Text style={styles.closeButtonText}>Done</Text>

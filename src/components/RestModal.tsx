@@ -1,13 +1,6 @@
-import { useMemo, useState } from "react";
-import { Alert, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import {
-  longRest,
-  shortRest,
-  spendHitDie,
-  type SpendHitDieOutcome,
-} from "../features/characters/characterRepo";
-import { getClassDefinitionForCharacter } from "../features/characters/characterCalculations";
-import { useSoundEffects } from "../features/sound/useSoundEffects";
+import { useMemo } from "react";
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { longRest, shortRest } from "../features/characters/characterRepo";
 import type { Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
@@ -42,38 +35,15 @@ function RestModalForm({
 }: Omit<RestModalProps, "visible">) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const playSound = useSoundEffects();
-  const [lastRoll, setLastRoll] = useState<SpendHitDieOutcome | null>(null);
-  const [manualEntryOpen, setManualEntryOpen] = useState(false);
-  const [manualValue, setManualValue] = useState("");
-  const hitDie = getClassDefinitionForCharacter(character).hitDie;
-  const atFullHp = character.currentHp >= character.maxHp;
-  const spendDisabled = character.hitDiceRemaining <= 0 || atFullHp;
-  const parsedManualValue = parseInt(manualValue, 10);
-  const manualValueValid =
-    Number.isInteger(parsedManualValue) && parsedManualValue >= 1 && parsedManualValue <= hitDie;
-
-  async function handleSpendHitDie(manualRoll?: number) {
-    const outcome = await spendHitDie(character.id, manualRoll);
-    if (outcome) {
-      setLastRoll(outcome);
-      // Only for an app-rolled die -- manual entry just records a roll made
-      // at the table, so there's nothing here for the app to "land".
-      if (manualRoll === undefined) playSound("diceLand");
-    }
-    onChanged();
-  }
-
-  function handleManualSubmit() {
-    if (!manualValueValid) return;
-    handleSpendHitDie(parsedManualValue);
-    setManualValue("");
-    setManualEntryOpen(false);
-  }
 
   async function handleShortRest() {
     await shortRest(character.id);
     onChanged();
+    onClose();
+    Alert.alert(
+      "Short Rest Complete",
+      "Recharged Action Surge, Second Wind, and any other class feature that regains uses on a short rest."
+    );
   }
 
   function handleLongRest() {
@@ -106,62 +76,13 @@ function RestModalForm({
 
       <Text style={styles.sectionLabel}>Short Rest</Text>
       <Text style={styles.helperText}>
-        Spend a Hit Die to roll d{hitDie} + CON and heal that much -- usable any time you&apos;re
-        not in combat, as many times as you have dice left.
+        Recharges Action Surge, Second Wind, and any other class feature that regains uses on a
+        short rest -- usable any time you&apos;re not in combat. Spend Hit Dice to heal in the
+        Class Resources card.
       </Text>
-      <Text style={styles.hitDiceText}>
-        Hit Dice: {character.hitDiceRemaining}/{character.level} (d{hitDie})
-      </Text>
-      <View style={styles.hitDiceButtonRow}>
-        <Pressable
-          style={[styles.spendButton, spendDisabled && styles.spendButtonDisabled]}
-          disabled={spendDisabled}
-          onPress={() => handleSpendHitDie()}
-        >
-          <Text style={styles.spendButtonText}>Roll For Me</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.spendButton, spendDisabled && styles.spendButtonDisabled]}
-          disabled={spendDisabled}
-          onPress={() => setManualEntryOpen((prev) => !prev)}
-        >
-          <Text style={styles.spendButtonText}>I Rolled My Own</Text>
-        </Pressable>
-      </View>
-      {manualEntryOpen && (
-        <View style={styles.manualEntryRow}>
-          <Text style={styles.manualEntryLabel}>You rolled a d{hitDie} of</Text>
-          <TextInput
-            style={styles.manualInput}
-            keyboardType="number-pad"
-            value={manualValue}
-            onChangeText={setManualValue}
-            placeholder={`1-${hitDie}`}
-            placeholderTextColor={theme.colors.textMuted}
-            maxLength={2}
-          />
-          <Pressable
-            style={[styles.confirmButton, !manualValueValid && styles.spendButtonDisabled]}
-            disabled={!manualValueValid}
-            onPress={handleManualSubmit}
-          >
-            <Text style={styles.spendButtonText}>Apply</Text>
-          </Pressable>
-        </View>
-      )}
-      {lastRoll && (
-        <Text style={styles.lastRollText}>
-          Rolled {lastRoll.roll.total} → healed {lastRoll.healed} HP (now {character.currentHp}/
-          {character.maxHp}).
-        </Text>
-      )}
       <Pressable style={styles.secondaryButton} onPress={handleShortRest}>
         <Text style={styles.secondaryButtonText}>Finish Short Rest</Text>
       </Pressable>
-      <Text style={styles.helperText}>
-        Recharges Action Surge, Second Wind, and any other class feature that regains uses on a
-        short rest.
-      </Text>
 
       <View style={styles.divider} />
 
@@ -213,60 +134,6 @@ function createStyles(theme: Theme) {
       textTransform: "uppercase",
       fontFamily: theme.displayFontFamily,
       marginBottom: 8,
-    },
-    hitDiceText: {
-      color: theme.colors.text,
-      fontSize: 14,
-      fontWeight: "600",
-      fontFamily: theme.displayFontFamily,
-      marginBottom: 8,
-    },
-    hitDiceButtonRow: { flexDirection: "row", gap: 10 },
-    spendButton: {
-      flex: 1,
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.radius,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      alignItems: "center",
-    },
-    spendButtonDisabled: { opacity: 0.5 },
-    spendButtonText: {
-      color: theme.colors.primaryText,
-      fontSize: 13,
-      fontWeight: "700",
-      fontFamily: theme.displayFontFamily,
-    },
-    manualEntryRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
-    manualEntryLabel: {
-      color: theme.colors.textMuted,
-      fontSize: 12,
-      fontFamily: theme.displayFontFamily,
-      flexShrink: 1,
-    },
-    manualInput: {
-      width: 56,
-      backgroundColor: theme.colors.surfaceAlt,
-      color: theme.colors.text,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: theme.radius,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      fontSize: 14,
-      textAlign: "center",
-    },
-    confirmButton: {
-      backgroundColor: theme.colors.accent,
-      borderRadius: theme.radius,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-    },
-    lastRollText: {
-      color: theme.colors.textMuted,
-      fontSize: 12,
-      marginTop: 8,
-      fontFamily: theme.displayFontFamily,
     },
     secondaryButton: {
       backgroundColor: theme.colors.surfaceAlt,

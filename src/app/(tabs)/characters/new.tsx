@@ -1,23 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type ScrollViewInstance,
-  type TextInputFocusEvent,
-} from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { router } from "expo-router";
 import {
   ALIGNMENTS,
   CUSTOM_CLASS_FALLBACK,
   CUSTOM_OPTION_ID,
   CUSTOM_RACE_FALLBACK,
+  DEFAULT_RULESET,
   RULESETS,
   getRulesetCatalog,
   type ClassDefinition,
@@ -97,6 +87,22 @@ const ABILITY_KEYS: AbilityScoreKey[] = [
   "charisma",
 ];
 
+/** PHB-style "Quick Build" suggestion: highest score, then second-highest, by class id. Shared across rulesets since class ids match. */
+const QUICK_BUILD_ABILITIES: Record<string, [AbilityScoreKey, AbilityScoreKey]> = {
+  barbarian: ["strength", "constitution"],
+  bard: ["charisma", "dexterity"],
+  cleric: ["wisdom", "constitution"],
+  druid: ["wisdom", "constitution"],
+  fighter: ["strength", "constitution"],
+  monk: ["dexterity", "wisdom"],
+  paladin: ["strength", "charisma"],
+  ranger: ["dexterity", "wisdom"],
+  rogue: ["dexterity", "intelligence"],
+  sorcerer: ["charisma", "constitution"],
+  warlock: ["charisma", "constitution"],
+  wizard: ["intelligence", "constitution"],
+};
+
 function clampLevel(value: string): number {
   const parsed = parseInt(value, 10);
   if (!Number.isFinite(parsed)) return 1;
@@ -106,21 +112,10 @@ function clampLevel(value: string): number {
 export default function NewCharacterScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const scrollRef = useRef<ScrollViewInstance>(null);
-
-  // Long steps (lists of races/classes, multiple text fields) can leave a
-  // focused field below the keyboard -- ScrollView's built-in "scroll
-  // focused input into view" doesn't reliably fire once KeyboardAvoidingView
-  // is also resizing the layout, so each TextInput triggers this manually,
-  // reusing the same native helper ScrollView uses internally.
-  function scrollFieldIntoView(event: TextInputFocusEvent) {
-    if (event.target === undefined) return;
-    scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard(event.target, 120, true);
-  }
 
   // Custom-text fields ("Type your own race/class/weapon") tend to sit below
-  // a long list of choices, so the keyboard can cover them even once
-  // scrollFieldIntoView runs. Mirroring the live value into a banner fixed
+  // a long list of choices, so the keyboard can still crowd them even with
+  // auto-scroll-into-view. Mirroring the live value into a banner fixed
   // above the ScrollView (so it's never under the keyboard) lets the user
   // see what they're typing regardless of scroll position.
   const [livePreview, setLivePreview] = useState<{
@@ -146,7 +141,7 @@ export default function NewCharacterScreen() {
   const { iconsEnabled, iconStyle } = useIconSettings();
   const [stepIndex, setStepIndex] = useState(0);
 
-  const [ruleset, setRuleset] = useState("5e-2024");
+  const [ruleset, setRuleset] = useState(DEFAULT_RULESET);
   const catalog = useMemo(() => getRulesetCatalog(ruleset), [ruleset]);
 
   const [name, setName] = useState("");
@@ -483,6 +478,14 @@ export default function NewCharacterScreen() {
     return fixed + chosen + background;
   }
 
+  const quickBuildAbilities: [AbilityScoreKey, AbilityScoreKey] | undefined =
+    selectedClass && classId !== CUSTOM_OPTION_ID
+      ? QUICK_BUILD_ABILITIES[selectedClass.id] ??
+        (selectedClass.spellcastingAbility
+          ? [selectedClass.spellcastingAbility, "constitution"]
+          : undefined)
+      : undefined;
+
   const spellLimits =
     selectedClass && selectedClass.spellcastingAbility
       ? getSpellLimits(
@@ -706,10 +709,7 @@ export default function NewCharacterScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={styles.container}>
       <Text style={styles.stepCounter}>
         Step {stepIndex + 1} of {steps.length}
       </Text>
@@ -723,10 +723,10 @@ export default function NewCharacterScreen() {
         </View>
       )}
 
-      <ScrollView
-        ref={scrollRef}
+      <KeyboardAwareScrollView
         style={styles.body}
         contentContainerStyle={styles.bodyContent}
+        bottomOffset={60}
       >
         {step === "ruleset" && (
           <View>
@@ -757,7 +757,6 @@ export default function NewCharacterScreen() {
               placeholder="Character name"
               placeholderTextColor={theme.colors.textMuted}
               autoFocus
-              onFocus={scrollFieldIntoView}
             />
           </View>
         )}
@@ -843,10 +842,7 @@ export default function NewCharacterScreen() {
                 onChangeText={previewChangeHandler("customRace", setCustomRaceName)}
                 placeholder="Race name"
                 placeholderTextColor={theme.colors.textMuted}
-                onFocus={(event) => {
-                  scrollFieldIntoView(event);
-                  showPreview("customRace", "Race name", customRaceName);
-                }}
+                onFocus={() => showPreview("customRace", "Race name", customRaceName)}
                 onBlur={previewBlurHandler("customRace")}
               />
             )}
@@ -917,7 +913,6 @@ export default function NewCharacterScreen() {
                   keyboardType="number-pad"
                   placeholder="30"
                   placeholderTextColor={theme.colors.textMuted}
-                  onFocus={scrollFieldIntoView}
                 />
 
                 <Text style={styles.customBuilderLabel}>Traits</Text>
@@ -944,7 +939,6 @@ export default function NewCharacterScreen() {
                   onChangeText={setNewTraitName}
                   placeholder="Trait name (e.g. Darkvision)"
                   placeholderTextColor={theme.colors.textMuted}
-                  onFocus={scrollFieldIntoView}
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
@@ -953,7 +947,6 @@ export default function NewCharacterScreen() {
                   placeholder="What does it do?"
                   placeholderTextColor={theme.colors.textMuted}
                   multiline
-                  onFocus={scrollFieldIntoView}
                 />
                 <Pressable
                   style={[styles.smallAddButton, !newTraitName.trim() && styles.smallAddButtonDisabled]}
@@ -1094,10 +1087,7 @@ export default function NewCharacterScreen() {
                 onChangeText={previewChangeHandler("customClass", setCustomClassName)}
                 placeholder="Class name"
                 placeholderTextColor={theme.colors.textMuted}
-                onFocus={(event) => {
-                  scrollFieldIntoView(event);
-                  showPreview("customClass", "Class name", customClassName);
-                }}
+                onFocus={() => showPreview("customClass", "Class name", customClassName)}
                 onBlur={previewBlurHandler("customClass")}
               />
             )}
@@ -1161,7 +1151,6 @@ export default function NewCharacterScreen() {
                   onChangeText={setCustomClassArmorProficiencies}
                   placeholder="e.g. Light armor, Shields"
                   placeholderTextColor={theme.colors.textMuted}
-                  onFocus={scrollFieldIntoView}
                 />
 
                 <Text style={styles.customBuilderLabel}>Weapon Proficiencies</Text>
@@ -1171,7 +1160,6 @@ export default function NewCharacterScreen() {
                   onChangeText={setCustomClassWeaponProficiencies}
                   placeholder="e.g. Simple weapons, Shortswords"
                   placeholderTextColor={theme.colors.textMuted}
-                  onFocus={scrollFieldIntoView}
                 />
 
                 <Text style={styles.customBuilderLabel}>Traits</Text>
@@ -1198,7 +1186,6 @@ export default function NewCharacterScreen() {
                   onChangeText={setNewClassTraitName}
                   placeholder="Trait name (e.g. Second Wind)"
                   placeholderTextColor={theme.colors.textMuted}
-                  onFocus={scrollFieldIntoView}
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
@@ -1207,7 +1194,6 @@ export default function NewCharacterScreen() {
                   placeholder="What does it do?"
                   placeholderTextColor={theme.colors.textMuted}
                   multiline
-                  onFocus={scrollFieldIntoView}
                 />
                 <Pressable
                   style={[
@@ -1240,10 +1226,7 @@ export default function NewCharacterScreen() {
             onChange={setEquipmentSelection}
             customInputProps={(key, value, setValue) => ({
               onChangeText: previewChangeHandler(`weapon:${key}`, setValue),
-              onFocus: (event) => {
-                scrollFieldIntoView(event);
-                showPreview(`weapon:${key}`, "Weapon name", value);
-              },
+              onFocus: () => showPreview(`weapon:${key}`, "Weapon name", value),
               onBlur: previewBlurHandler(`weapon:${key}`),
             })}
           />
@@ -1258,7 +1241,6 @@ export default function NewCharacterScreen() {
               onChangeText={setBackground}
               placeholder="e.g. Soldier, Sage, Criminal…"
               placeholderTextColor={theme.colors.textMuted}
-              onFocus={scrollFieldIntoView}
             />
             {catalog.backgroundAbilityBonus && (
               <View style={styles.customBuilderSection}>
@@ -1357,7 +1339,6 @@ export default function NewCharacterScreen() {
               placeholder="How does your character act, speak, or see the world?"
               placeholderTextColor={theme.colors.textMuted}
               multiline
-              onFocus={scrollFieldIntoView}
             />
             <Text style={styles.fieldLabel}>Ideals</Text>
             <TextInput
@@ -1367,7 +1348,6 @@ export default function NewCharacterScreen() {
               placeholder="What principles does your character believe in?"
               placeholderTextColor={theme.colors.textMuted}
               multiline
-              onFocus={scrollFieldIntoView}
             />
             <Text style={styles.fieldLabel}>Bonds</Text>
             <TextInput
@@ -1377,7 +1357,6 @@ export default function NewCharacterScreen() {
               placeholder="Who or what is your character tied to?"
               placeholderTextColor={theme.colors.textMuted}
               multiline
-              onFocus={scrollFieldIntoView}
             />
             <Text style={styles.fieldLabel}>Flaws</Text>
             <TextInput
@@ -1387,7 +1366,6 @@ export default function NewCharacterScreen() {
               placeholder="What weakness or vice might get your character in trouble?"
               placeholderTextColor={theme.colors.textMuted}
               multiline
-              onFocus={scrollFieldIntoView}
             />
           </View>
         )}
@@ -1414,7 +1392,6 @@ export default function NewCharacterScreen() {
               placeholder={catalog.languages ? "e.g. Thieves' tools" : "e.g. Thieves' tools, Common, Elvish…"}
               placeholderTextColor={theme.colors.textMuted}
               multiline
-              onFocus={scrollFieldIntoView}
             />
             <Text style={styles.fieldLabel}>
               {selectedRace?.traits ? "Background Feature & Other Traits" : "Features & Traits"}
@@ -1430,7 +1407,6 @@ export default function NewCharacterScreen() {
               }
               placeholderTextColor={theme.colors.textMuted}
               multiline
-              onFocus={scrollFieldIntoView}
             />
           </View>
         )}
@@ -1445,7 +1421,6 @@ export default function NewCharacterScreen() {
               keyboardType="number-pad"
               placeholder="1"
               placeholderTextColor={theme.colors.textMuted}
-              onFocus={scrollFieldIntoView}
             />
             {subclassProgression?.subclassLevel !== undefined &&
               (subclassProgression.subclasses?.length ?? 0) > 0 &&
@@ -1471,7 +1446,6 @@ export default function NewCharacterScreen() {
               progression={subclassProgression}
               value={subclass}
               onChange={setSubclass}
-              onCustomFocus={scrollFieldIntoView}
             />
           </View>
         )}
@@ -1512,6 +1486,13 @@ export default function NewCharacterScreen() {
         {step === "abilities" && (
           <View>
             <Text style={styles.title}>Assign ability scores</Text>
+            {quickBuildAbilities && (
+              <Text style={[styles.hint, { marginBottom: 8 }]}>
+                In a hurry? Quick build for a {classNameValue}: put your highest score in{" "}
+                {ABILITY_LABELS[quickBuildAbilities[0]]} and your next-highest in{" "}
+                {ABILITY_LABELS[quickBuildAbilities[1]]}, then fill in the rest in any order.
+              </Text>
+            )}
             <View style={styles.advantageRow}>
               {(["standard", "roll"] as const).map((method) => (
                 <Pressable
@@ -1756,7 +1737,6 @@ export default function NewCharacterScreen() {
                 }}
                 placeholder="Search spells…"
                 placeholderTextColor={theme.colors.textMuted}
-                onFocus={scrollFieldIntoView}
                 autoCapitalize="none"
               />
               <Pressable
@@ -1875,7 +1855,7 @@ export default function NewCharacterScreen() {
             </View>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <View style={styles.navRow}>
         <Pressable style={styles.navButtonSecondary} onPress={goBack}>
@@ -1897,7 +1877,8 @@ export default function NewCharacterScreen() {
           </Pressable>
         )}
       </View>
-    </KeyboardAvoidingView>
+      <KeyboardToolbar />
+    </View>
   );
 }
 

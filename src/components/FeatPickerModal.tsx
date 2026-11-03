@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { listFeatCatalog } from "../features/characters/featRepo";
@@ -38,14 +29,12 @@ export function FeatPickerModal({ visible, character, onClose, onPick }: FeatPic
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && <FeatPickerModalForm character={character} onClose={onClose} onPick={onPick} />}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -424,7 +413,7 @@ function FeatPickerModalForm({
           </ScrollView>
         </>
       ) : (
-        <ScrollView style={styles.catalogList}>
+        <KeyboardAwareScrollView style={styles.catalogList} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Feat Name</Text>
           <TextInput
             style={styles.input}
@@ -581,7 +570,7 @@ function FeatPickerModalForm({
           >
             <Text style={styles.addButtonText}>Add</Text>
           </Pressable>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
 
       <Pressable style={styles.secondaryButton} onPress={onClose}>

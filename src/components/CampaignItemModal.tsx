@@ -1,15 +1,6 @@
 import { useMemo, useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
@@ -32,14 +23,12 @@ export function CampaignItemModal({ visible, onClose, onConfirm }: CampaignItemM
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && <CampaignItemModalForm onClose={onClose} onConfirm={onConfirm} />}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -62,46 +51,48 @@ function CampaignItemModalForm({ onClose, onConfirm }: Omit<CampaignItemModalPro
     <View style={styles.card}>
       <Text style={styles.title}>Add Item</Text>
 
-      <Text style={styles.fieldLabel}>Icon</Text>
-      <View style={styles.iconGrid}>
-        {CAMPAIGN_ITEM_ICON_IDS.map((id) => {
-          const active = icon === id;
-          const iconSource = iconsEnabled ? getCampaignItemIcon(iconStyle, id) : undefined;
-          return (
-            <Pressable
-              key={id}
-              onPress={() => setIcon(id)}
-              style={[styles.iconChip, active && styles.iconChipActive]}
-            >
-              {iconSource ? (
-                <Image source={iconSource} style={styles.iconImage} resizeMode="contain" />
-              ) : (
-                <Text style={styles.iconFallback}>{CAMPAIGN_ITEM_ICON_LABELS[id][0]}</Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
+      <KeyboardAwareScrollView bottomOffset={60}>
+        <Text style={styles.fieldLabel}>Icon</Text>
+        <View style={styles.iconGrid}>
+          {CAMPAIGN_ITEM_ICON_IDS.map((id) => {
+            const active = icon === id;
+            const iconSource = iconsEnabled ? getCampaignItemIcon(iconStyle, id) : undefined;
+            return (
+              <Pressable
+                key={id}
+                onPress={() => setIcon(id)}
+                style={[styles.iconChip, active && styles.iconChipActive]}
+              >
+                {iconSource ? (
+                  <Image source={iconSource} style={styles.iconImage} resizeMode="contain" />
+                ) : (
+                  <Text style={styles.iconFallback}>{CAMPAIGN_ITEM_ICON_LABELS[id][0]}</Text>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
 
-      <Text style={styles.fieldLabel}>Name</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g. The Duke's Signet Ring"
-        placeholderTextColor={theme.colors.textMuted}
-        autoFocus
-      />
+        <Text style={styles.fieldLabel}>Name</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. The Duke's Signet Ring"
+          placeholderTextColor={theme.colors.textMuted}
+          autoFocus
+        />
 
-      <Text style={styles.fieldLabel}>Description</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={description}
-        onChangeText={setDescription}
-        placeholder="What is it, where did it come from…"
-        placeholderTextColor={theme.colors.textMuted}
-        multiline
-      />
+        <Text style={styles.fieldLabel}>Description</Text>
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="What is it, where did it come from…"
+          placeholderTextColor={theme.colors.textMuted}
+          multiline
+        />
+      </KeyboardAwareScrollView>
 
       <View style={styles.buttonRow}>
         <Pressable style={styles.secondaryButton} onPress={onClose}>
@@ -127,6 +118,7 @@ function createStyles(theme: Theme) {
     card: {
       width: "100%",
       maxWidth: 360,
+      maxHeight: "90%",
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.border,

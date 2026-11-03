@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import {
@@ -48,11 +49,15 @@ export function HomebrewMagicItemModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{initial ? "Edit Magic Item" : "New Homebrew Magic Item"}</Text>
-            <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 420 }}>
+            <KeyboardAwareScrollView
+              keyboardShouldPersistTaps="handled"
+              style={{ maxHeight: 420 }}
+              bottomOffset={60}
+            >
               <Text style={styles.hint}>Name</Text>
               <TextInput
                 style={styles.input}
@@ -99,7 +104,7 @@ export function HomebrewMagicItemModal({
                 placeholderTextColor={theme.colors.textMuted}
                 multiline
               />
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             <View style={[styles.row, { marginTop: 12 }]}>
               <Pressable style={[styles.secondaryButton, { flex: 1 }]} onPress={onClose}>
@@ -115,7 +120,8 @@ export function HomebrewMagicItemModal({
             </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }

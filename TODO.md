@@ -1,19 +1,21 @@
 # TODO
 
-Last reviewed: 2026-11-02. Items marked "(from code)" are limitations the source comments call out. When a feature is checked on a device and works, move it to **Features** in [README.md](README.md).
+Last reviewed: 2026-11-03. Items marked "(from code)" are limitations the source comments call out. When a feature is checked on a device and works, move it to **Features** in [README.md](README.md).
 
 ## Needs a device check
 Built and covered by Jest, but nobody has run these on a device or the web build yet (there is no render-test library installed). Once each one is confirmed, move it to README Features.
 - [ ] **Custom abilities and trackers**: the Class Resources card's "+ Create" modal (name, description, max uses by fixed / level / ability modifier, recharge, pips or counter, icon), "Use + Roll", and "Adjust" to change or hide a built-in ability. Logic: `resourceRepo.test.ts`, `rollFormula.ts`.
 - [ ] **Starting equipment screen**: 2024 kit packages (A / B / C / gold), swapping weapons and armor by proficiency, Gear & Supplies, auto-equip and the Armor Class preview. Logic: `startingEquipment.test.ts`.
 - [ ] **DM Encounter tab**: party roller, bestiary browser (filters, quantity, roll HP, custom creatures), creature stat-block rolls, initiative tracker and saved encounters. Logic: `monsterRolls.test.ts`, `dmCreatureRepo.test.ts`. The roll buttons come from parsing stat-block text, so look at a few odd monsters as well as common ones.
+- [ ] **Homebrew Library screen** (Settings → Homebrew Library, [homebrew.tsx](src/app/homebrew.tsx)): browse, create, edit and delete library races, classes, subclasses, weapons, armor, magic items, feats, monsters, abilities and spells, plus "Add to Character" to clone a library entry onto a chosen character. Logic: `homebrewRepo.ts`, `gearRepo.ts`, `magicItemRepo.ts`, `featRepo.ts`, `dmCreatureRepo.ts`, `resourceRepo.ts`, `spellRepo.ts`.
 
 ## Top priority: make everything homebrewable
 Goal: anything the app ships as a catalog entry, a player can also create, edit and reuse. Custom abilities and trackers are done (see above). The reusable library's **data layer** is now done too (see below) -- what's left is the UI on top of it.
 
 ### Reusable homebrew library
 - [x] Data layer: races, classes, subclasses, spells, feats, items, monsters and resources can each be stored once in a shared library and cloned onto any character. New `homebrewRepo.ts` (races/classes/subclasses), plus homebrew-aware additions to `featRepo.ts`, `magicItemRepo.ts`, `dmCreatureRepo.ts` (monsters), `gearRepo.ts` (weapons/armor), `resourceRepo.ts`, and `spellRepo.ts`. Picking a library race/class still clones onto the existing `customRace*`/`customClass*` overlay columns -- see the item below, unchanged by this.
-- [ ] UI: a browsable "Homebrew Library" screen (create/edit/delete each type, "add to character" from it), plus wiring the existing add-feat/add-item/add-spell/add-creature/add-resource modals to offer "save to library" and "pick from library". Nothing above is reachable from the app yet.
+- [x] "Add to character" from the Homebrew Library screen: every row except monsters (DM-only, not a PC concept) has an "Add to Character" button that picks a character and clones the entry onto it, via the existing clone functions in each repo. Needs a device check -- see above.
+- [ ] Wire the existing add-item/add-spell modals on the character sheet to offer "pick from library" for weapons and armor (their catalog pickers are static SRD-only data, unlike feats/spells/magic items whose catalog search already surfaces homebrew rows -- verified, no change needed there) and add a "from library" option next to Class Resources' "+ Create". Also offer "save to library" from each custom-add form (Add Weapon/Armor/Magic Item's Custom tab, the feat and spell pickers' Custom tab, Class Resources' "+ Create") so a one-off homebrew item typed on a character can be reused elsewhere.
 - [ ] Custom race and class are still one overlay per character (`customRace*` / `customClass*` columns on `characters`). A second custom class (multiclass) is not modeled (from code).
 - [ ] Custom class progression (per-level features, spell slot table, resources, subclass level) so homebrew classes can use Level Up.
 - [ ] Create UI for custom conditions, skills, languages and backgrounds (spells now have a UI-ready data path -- see above -- these four still don't).
@@ -44,8 +46,15 @@ Goal: anything the app ships as a catalog entry, a player can also create, edit 
 - [ ] Spellcasting entries are shown as text only.
 - [ ] The Encounter tab borrows the dice-roller tab icon; it needs its own.
 
+## Party mode: WiFi/LAN option (pinned, not started)
+Idea: let a DM and players join a party over the same WiFi network instead of through Supabase, so a table with no internet access can still use party sync. Current `partyRepo.ts` is tightly coupled to Supabase (RPCs, `auth.getUser()`, Postgres tables, realtime channels), so this would need a backend-agnostic layer underneath [party.tsx](src/app/(tabs)/party.tsx), [CreatePartyModal.tsx](src/components/CreatePartyModal.tsx) and [JoinPartyModal.tsx](src/components/JoinPartyModal.tsx).
+
+Design decisions made (2026-11-03), not yet built:
+- [ ] LAN mode works fully offline, no Supabase account/sign-in required -- separate from cloud party mode, not a transport swap underneath the same accounts.
+- [ ] Player discovery is automatic via Bonjour/mDNS (DM's party appears in a list, no manual IP entry) rather than manual IP or QR code.
+- [ ] Blocked on: this requires a native TCP/socket module (e.g. `react-native-tcp-socket`) plus an mDNS module (e.g. `react-native-zeroconf`), which means the app can no longer run in Expo Go for this feature and needs a dev-client rebuild (`npx expo run:ios|android` or an EAS dev build). User put a pin in accepting that tradeoff on 2026-11-03 -- revisit before implementing.
+
 ## Known gaps (from code)
-- [ ] The default ruleset is set in two places, and they disagree: `DEFAULT_RULESET` is `"5e"` in `rulesets/index.ts`, but `new.tsx` hard-codes `useState("5e-2024")`, and `RULESETS` was reordered to put 5e-2024 first. Set `DEFAULT_RULESET` to the one you want and use it in `new.tsx`.
 - [ ] Provisions: `tracksProvisions` is stored at onboarding, but no mechanic uses it.
 - [ ] Conditions on characters are a checklist only and don't change derived stats.
 - [ ] Hit dice are tracked as a single pool; check mixed-die pools for multiclass characters.

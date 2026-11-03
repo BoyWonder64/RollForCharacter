@@ -1,15 +1,6 @@
 import { useMemo, useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
@@ -30,16 +21,14 @@ export function CampaignNoteModal({ visible, initial, onClose, onConfirm }: Camp
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && (
             <CampaignNoteModalForm initial={initial} onClose={onClose} onConfirm={onConfirm} />
           )}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -72,25 +61,27 @@ function CampaignNoteModalForm({
         <Text style={styles.title}>{initial ? "Edit Note" : "Add Note"}</Text>
       </View>
 
-      <Text style={styles.fieldLabel}>Subject</Text>
-      <TextInput
-        style={styles.input}
-        value={subject}
-        onChangeText={setSubject}
-        placeholder="e.g. The ambush at Raven's Pass"
-        placeholderTextColor={theme.colors.textMuted}
-        autoFocus
-      />
+      <KeyboardAwareScrollView bottomOffset={60}>
+        <Text style={styles.fieldLabel}>Subject</Text>
+        <TextInput
+          style={styles.input}
+          value={subject}
+          onChangeText={setSubject}
+          placeholder="e.g. The ambush at Raven's Pass"
+          placeholderTextColor={theme.colors.textMuted}
+          autoFocus
+        />
 
-      <Text style={styles.fieldLabel}>Note</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={body}
-        onChangeText={setBody}
-        placeholder="What happened…"
-        placeholderTextColor={theme.colors.textMuted}
-        multiline
-      />
+        <Text style={styles.fieldLabel}>Note</Text>
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          value={body}
+          onChangeText={setBody}
+          placeholder="What happened…"
+          placeholderTextColor={theme.colors.textMuted}
+          multiline
+        />
+      </KeyboardAwareScrollView>
 
       <View style={styles.buttonRow}>
         <Pressable style={styles.secondaryButton} onPress={onClose}>
@@ -116,6 +107,7 @@ function createStyles(theme: Theme) {
     card: {
       width: "100%",
       maxWidth: 360,
+      maxHeight: "90%",
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.border,

@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import type { WeaponCategory, WeaponDefinition } from "../data/rulesets";
@@ -51,10 +50,7 @@ export function AddWeaponModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && (
             <AddWeaponModalForm
@@ -66,7 +62,8 @@ export function AddWeaponModal({
             />
           )}
         </View>
-      </KeyboardAvoidingView>
+        <KeyboardToolbar />
+      </View>
     </Modal>
   );
 }
@@ -202,7 +199,7 @@ function AddWeaponModalForm({
           </ScrollView>
         </>
       ) : (
-        <ScrollView style={styles.customForm}>
+        <KeyboardAwareScrollView style={styles.customForm} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Name</Text>
           <TextInput
             style={styles.input}
@@ -318,7 +315,7 @@ function AddWeaponModalForm({
               />
             </>
           )}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
 
       <View style={styles.buttonRow}>

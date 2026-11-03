@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 import { Button } from "../../components/Button";
 import { useThemeContext, type ThemePreference } from "../../theme/ThemeContext";
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../theme/colors";
@@ -360,6 +361,14 @@ export default function SettingsScreen() {
       </View>
       <Text style={styles.toggleHint}>
         Dice rolling and button sounds. On by default.
+      </Text>
+
+      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Homebrew</Text>
+      <Button title="Homebrew Library" fullWidth onPress={() => router.push("/homebrew")} />
+      <Text style={styles.toggleHint}>
+        Create, edit, and delete your own races, classes, subclasses, weapons, armor, magic
+        items, feats, monsters, abilities, and spells -- once saved here, reuse them on any
+        character.
       </Text>
 
       <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Icons</Text>

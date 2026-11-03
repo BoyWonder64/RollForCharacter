@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import {
   addCustomResource,
@@ -16,6 +16,9 @@ import {
   type CharacterResource,
   type CustomResourceInput,
 } from "../features/characters/resourceRepo";
+import { spendHitDie, type SpendHitDieOutcome } from "../features/characters/characterRepo";
+import { getClassDefinitionForCharacter } from "../features/characters/characterCalculations";
+import { useSoundEffects } from "../features/sound/useSoundEffects";
 import { CustomResourceModal } from "./CustomResourceModal";
 import { ResourceOverrideModal, type ResourceOverrideChange } from "./ResourceOverrideModal";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
@@ -27,23 +30,42 @@ import type { Theme } from "../theme/colors";
 /**
  * Shows every limited-use class resource the character has gained so far
  * (Action Surge, Second Wind, Indomitable, ...) as a pip tracker with a tap
- * to spend a use. Resources recharge via the Rest modal (short/long rest) --
- * see `shortRest`/`longRest` in characterRepo.ts. Renders nothing if the
+ * to spend a use, plus Hit Dice (spent for HP during a short rest). Resources
+ * recharge via the Rest modal (short/long rest) -- see `shortRest`/`longRest`
+ * in characterRepo.ts. The class-resource list renders nothing if the
  * character's class has no resources defined yet, or none are gained at
- * their current level. The card always shows so the player can create their
- * own ability or tracker (stored in `character_custom_resources`), which then
- * behaves exactly like a catalog resource and can be edited or deleted here.
+ * their current level, but the card always shows so the player can create
+ * their own ability or tracker (stored in `character_custom_resources`),
+ * which then behaves exactly like a catalog resource and can be edited or
+ * deleted here.
  */
-export function ClassResourceTracker({ character }: { character: Character }) {
+export function ClassResourceTracker({
+  character,
+  onChanged,
+}: {
+  character: Character;
+  onChanged?: () => void;
+}) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const playSound = useSoundEffects();
   const [resources, setResources] = useState<CharacterResource[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<{ id: number; input: CustomResourceInput } | null>(null);
   const [adjusting, setAdjusting] = useState<CharacterResource | null>(null);
   const [showHidden, setShowHidden] = useState(false);
   const [lastRoll, setLastRoll] = useState<{ resourceId: string; text: string } | null>(null);
+  const [lastHitDieRoll, setLastHitDieRoll] = useState<SpendHitDieOutcome | null>(null);
+  const [hitDiceExpanded, setHitDiceExpanded] = useState(false);
+  const [manualEntryOpen, setManualEntryOpen] = useState(false);
+  const [manualValue, setManualValue] = useState("");
   const { iconsEnabled, iconStyle } = useIconSettings();
+  const hitDie = getClassDefinitionForCharacter(character).hitDie;
+  const atFullHp = character.currentHp >= character.maxHp;
+  const spendHitDieDisabled = character.hitDiceRemaining <= 0 || atFullHp;
+  const parsedManualValue = parseInt(manualValue, 10);
+  const manualValueValid =
+    Number.isInteger(parsedManualValue) && parsedManualValue >= 1 && parsedManualValue <= hitDie;
 
   const refresh = useCallback(() => {
     listCharacterResources(character, { includeHidden: true }).then(setResources);
@@ -129,8 +151,100 @@ export function ClassResourceTracker({ character }: { character: Character }) {
     refresh();
   }
 
+  async function handleSpendHitDie(manualRoll?: number) {
+    const outcome = await spendHitDie(character.id, manualRoll);
+    if (outcome) {
+      setLastHitDieRoll(outcome);
+      // Only for an app-rolled die -- manual entry just records a roll made
+      // at the table, so there's nothing here for the app to "land".
+      if (manualRoll === undefined) playSound("diceLand");
+    }
+    onChanged?.();
+  }
+
+  function handleManualHitDieSubmit() {
+    if (!manualValueValid) return;
+    handleSpendHitDie(parsedManualValue);
+    setManualValue("");
+    setManualEntryOpen(false);
+  }
+
   return (
     <View style={styles.container}>
+      <Pressable
+        style={styles.hitDiceToggleRow}
+        onPress={() => setHitDiceExpanded((prev) => !prev)}
+      >
+        <Text style={styles.title}>Hit Dice</Text>
+        <View style={styles.hitDiceToggleRight}>
+          <Text style={styles.count}>
+            {character.hitDiceRemaining}/{character.level} (d{hitDie})
+          </Text>
+          <Text style={styles.editLink}>{hitDiceExpanded ? "Hide" : "Use"}</Text>
+        </View>
+      </Pressable>
+      {hitDiceExpanded && (
+        <>
+          <Text style={styles.description}>
+            Spend a Hit Die to roll d{hitDie} + CON and heal that much -- usable any time
+            you&apos;re not in combat, as many times as you have dice left.
+          </Text>
+          <View style={styles.hitDiceButtonRow}>
+            <Pressable
+              style={[
+                styles.useButton,
+                styles.useButtonFlex,
+                spendHitDieDisabled && styles.useButtonDisabled,
+              ]}
+              disabled={spendHitDieDisabled}
+              onPress={() => handleSpendHitDie()}
+            >
+              <Text style={styles.useButtonText}>Roll For Me</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.useButton,
+                styles.useButtonFlex,
+                spendHitDieDisabled && styles.useButtonDisabled,
+              ]}
+              disabled={spendHitDieDisabled}
+              onPress={() => setManualEntryOpen((prev) => !prev)}
+            >
+              <Text style={styles.useButtonText}>I Rolled My Own</Text>
+            </Pressable>
+          </View>
+          {manualEntryOpen && (
+            <View style={styles.manualEntryRow}>
+              <Text style={styles.description}>You rolled a d{hitDie} of</Text>
+              <TextInput
+                style={styles.manualInput}
+                keyboardType="number-pad"
+                value={manualValue}
+                onChangeText={setManualValue}
+                placeholder={`1-${hitDie}`}
+                placeholderTextColor={theme.colors.textMuted}
+                maxLength={2}
+              />
+              <Pressable
+                style={[styles.useButton, !manualValueValid && styles.useButtonDisabled]}
+                disabled={!manualValueValid}
+                onPress={handleManualHitDieSubmit}
+              >
+                <Text style={styles.useButtonText}>Apply</Text>
+              </Pressable>
+            </View>
+          )}
+          {lastHitDieRoll && (
+            <Text style={styles.rollResult}>
+              Rolled {lastHitDieRoll.roll.total} → healed {lastHitDieRoll.healed} HP (now{" "}
+              {character.currentHp}/{character.maxHp}).
+            </Text>
+          )}
+        </>
+      )}
+
+      <View style={styles.divider} />
+
       <View style={styles.titleRow}>
         <Text style={styles.title}>Class Resources</Text>
         <Pressable
@@ -286,6 +400,32 @@ function createStyles(theme: Theme) {
       fontSize: 14,
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
+      marginBottom: 4,
+    },
+    hitDiceToggleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    hitDiceToggleRight: { flexDirection: "row", alignItems: "center", gap: 10 },
+    hitDiceButtonRow: { flexDirection: "row", gap: 10, marginTop: 10 },
+    manualEntryRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
+    manualInput: {
+      width: 56,
+      backgroundColor: theme.colors.surfaceAlt,
+      color: theme.colors.text,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      fontSize: 14,
+      textAlign: "center",
+    },
+    divider: {
+      height: 1,
+      backgroundColor: theme.colors.border,
+      marginVertical: 14,
     },
     createButton: {
       backgroundColor: theme.colors.surfaceAlt,
@@ -367,6 +507,7 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 14,
       paddingVertical: 6,
     },
+    useButtonFlex: { flex: 1, alignItems: "center" },
     useButtonDisabled: { opacity: 0.5 },
     useButtonText: {
       color: theme.colors.primaryText,

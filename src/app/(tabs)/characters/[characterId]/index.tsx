@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import {
   Stack,
   router,
@@ -257,7 +258,7 @@ function CharacterSheetBody({
         </View>
 
         <View style={styles.restRow}>
-          <Pressable onPress={() => setRestModalOpen(true)}>
+          <Pressable onPress={() => setActiveTab("stats")}>
             <Text style={styles.hitDiceText}>
               Hit Dice: {character.hitDiceRemaining}/{character.level}
             </Text>
@@ -308,7 +309,11 @@ function CharacterSheetBody({
         ))}
       </View>
 
-      <ScrollView style={styles.tabContent} contentContainerStyle={{ padding: 16 }}>
+      <KeyboardAwareScrollView
+        style={styles.tabContent}
+        contentContainerStyle={{ padding: 16 }}
+        bottomOffset={24}
+      >
         {activeTab === "stats" && <StatsTab character={character} onChanged={refresh} />}
         {activeTab === "spells" && (
           <SpellsTab character={character} onCharacterChanged={refresh} />
@@ -316,7 +321,8 @@ function CharacterSheetBody({
         {activeTab === "equipment" && <EquipmentTab character={character} />}
         {activeTab === "notes" && <NotesTab character={character} />}
         {activeTab === "preview" && <CharacterPreviewTab characterId={characterId} />}
-      </ScrollView>
+      </KeyboardAwareScrollView>
+      <KeyboardToolbar />
     </View>
   );
 }
