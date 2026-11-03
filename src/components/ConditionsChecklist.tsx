@@ -30,7 +30,6 @@ export function ConditionsChecklist({
   const styles = useMemo(() => createStyles(theme), [theme]);
   const active = parseConditions(character);
   const { iconsEnabled, iconStyle } = useIconSettings();
-  const exhaustionIcon = iconsEnabled ? getConditionIcon(iconStyle, "exhaustion") : undefined;
   const [pickerOpen, setPickerOpen] = useState(false);
   const activeConditions = CONDITIONS.filter((condition) => active.includes(condition.id));
 
@@ -76,9 +75,6 @@ export function ConditionsChecklist({
           style={styles.exhaustionLabelRow}
           onPress={() => Alert.alert("Exhaustion", EXHAUSTION_DESCRIPTION)}
         >
-          {exhaustionIcon && (
-            <Image source={exhaustionIcon} style={styles.chipIcon} resizeMode="contain" />
-          )}
           <Text style={styles.exhaustionLabel}>Exhaustion</Text>
         </Pressable>
         <View style={styles.exhaustionControls}>

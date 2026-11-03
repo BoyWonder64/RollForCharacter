@@ -96,6 +96,15 @@ export function DmCreatureCard({
   const down = creature.currentHp <= 0;
   const bonus = toInt(bonusText);
 
+  // Surfaced outside the (collapsed-by-default) Traits list so it's one tap
+  // to spend mid-fight, instead of expanding the card to find it.
+  const legendaryResistance = statBlock?.traits.find(
+    (t) => t.limit?.kind === "perDay" && /legendary resistance/i.test(t.baseName)
+  );
+  const legendaryResistanceLeft = legendaryResistance
+    ? Math.max(0, (legendaryResistance.limit as { kind: "perDay"; uses: number }).uses - (used[legendaryResistance.name] ?? 0))
+    : 0;
+
   async function change(action: () => Promise<void>) {
     await action();
     onChanged();
@@ -362,6 +371,36 @@ export function DmCreatureCard({
         </View>
       </Pressable>
 
+      {legendaryResistance && (
+        <View style={[styles.row, { marginTop: 4 }]}>
+          <Pressable
+            style={[styles.squareButton, legendaryResistanceLeft === 0 && styles.disabled]}
+            disabled={legendaryResistanceLeft === 0}
+            onPress={() => change(() => spend(legendaryResistance))}
+          >
+            <Text style={styles.squareButtonText}>−</Text>
+          </Pressable>
+          <Text style={styles.hint}>
+            Legendary Resistance {legendaryResistanceLeft}/
+            {(legendaryResistance.limit as { kind: "perDay"; uses: number }).uses}
+          </Text>
+          <Pressable
+            style={styles.squareButton}
+            onPress={() =>
+              change(() =>
+                setDmCreatureAbilityUses(
+                  creature.id,
+                  legendaryResistance.name,
+                  Math.max(0, (used[legendaryResistance.name] ?? 0) - 1)
+                )
+              )
+            }
+          >
+            <Text style={styles.squareButtonText}>+</Text>
+          </Pressable>
+        </View>
+      )}
+
       <View style={styles.row}>
         <TextInput
           style={styles.smallInput}
@@ -387,18 +426,32 @@ export function DmCreatureCard({
       </View>
 
       {activeConditions.length > 0 && (
-        <View style={[styles.wrapRow, { marginTop: 8 }]}>
-          {activeConditions.map((id) => (
-            <Pressable
-              key={id}
-              style={[styles.chip, styles.chipActive]}
-              onPress={() => change(() => toggleDmCreatureCondition(creature.id, id))}
-            >
-              <Text style={[styles.chipText, styles.chipTextActive]}>
-                {CONDITIONS.find((c) => c.id === id)?.name ?? id} ✕
+        <View style={{ marginTop: 8 }}>
+          <View style={styles.wrapRow}>
+            {activeConditions.map((id) => {
+              const condition = CONDITIONS.find((c) => c.id === id);
+              const open = openText === `cond:${id}`;
+              return (
+                <View key={id} style={[styles.chip, styles.chipActive, styles.row]}>
+                  <Pressable onPress={() => setOpenText(open ? null : `cond:${id}`)}>
+                    <Text style={[styles.chipText, styles.chipTextActive]}>
+                      {condition?.name ?? id}
+                    </Text>
+                  </Pressable>
+                  <Pressable onPress={() => change(() => toggleDmCreatureCondition(creature.id, id))}>
+                    <Text style={[styles.chipText, styles.chipTextActive]}>{"  ✕"}</Text>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+          {activeConditions
+            .filter((id) => openText === `cond:${id}`)
+            .map((id) => (
+              <Text key={id} style={[styles.hint, { marginTop: 4 }]}>
+                {CONDITIONS.find((c) => c.id === id)?.description}
               </Text>
-            </Pressable>
-          ))}
+            ))}
         </View>
       )}
 
@@ -504,25 +557,7 @@ export function DmCreatureCard({
           {statBlock && statBlock.traits.length > 0 && (
             <>
               <Text style={styles.subTitle}>Traits</Text>
-              {statBlock.traits.map((trait) => (
-                <Pressable
-                  key={trait.name}
-                  style={{ paddingVertical: 4 }}
-                  onPress={() => setOpenText(openText === `t:${trait.name}` ? null : `t:${trait.name}`)}
-                >
-                  <Text style={styles.sectionTitle}>
-                    {trait.baseName}
-                    {trait.save ? (
-                      <Text style={styles.hint}>
-                        {`  DC ${trait.save.dc} ${ABILITY_LABELS[trait.save.ability]}`}
-                      </Text>
-                    ) : null}
-                  </Text>
-                  {openText === `t:${trait.name}` ? (
-                    <Text style={styles.hint}>{trait.description}</Text>
-                  ) : null}
-                </Pressable>
-              ))}
+              {statBlock.traits.map(renderEntry)}
             </>
           )}
 

@@ -193,11 +193,11 @@ export function DmInitiativeTracker({
       <View style={styles.card}>
         <View style={[styles.row, { flexWrap: "wrap" }]}>
           <Pressable
-            style={[styles.secondaryButton, creatures.every((c) => c.initiative !== null) && styles.disabled]}
+            style={[styles.primaryButton, creatures.every((c) => c.initiative !== null) && styles.disabled]}
             disabled={creatures.every((c) => c.initiative !== null)}
             onPress={rollCreatures}
           >
-            <Text style={styles.secondaryButtonText}>Roll creatures</Text>
+            <Text style={styles.primaryButtonText}>Roll creatures</Text>
           </Pressable>
           <Pressable style={[styles.chip, group && styles.chipActive]} onPress={() => setGroup((v) => !v)}>
             <Text style={[styles.chipText, group && styles.chipTextActive]}>
@@ -206,8 +206,8 @@ export function DmInitiativeTracker({
           </Pressable>
         </View>
         <Text style={[styles.hint, { marginTop: 6 }]}>
-          Roll party initiative from the Party roller, or type a value in any row. Ties go to the
-          higher DEX.
+          The party usually rolls their own initiative and reports it — type each value in, or
+          roll it for them further down. Ties go to the higher DEX.
         </Text>
 
         {ordered.length === 0 && waiting.length === 0 ? (

@@ -210,6 +210,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
   const [skillIds, setSkillIds] = useState<Set<string>>(new Set());
   const [extraSavingThrows, setExtraSavingThrows] = useState<Set<AbilityScoreKey>>(new Set());
   const [languageIds, setLanguageIds] = useState<Set<string>>(new Set());
+  const [appearanceExpanded, setAppearanceExpanded] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -804,72 +805,82 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         />
       )}
 
-      <Text style={styles.sectionTitle}>Appearance</Text>
-      <Text style={styles.hint}>
-        Give this character its own theme and font, independent of your device&apos;s
-        default (Settings → Theme/Font).
-      </Text>
-      <Text style={styles.subLabel}>Theme</Text>
       <Pressable
-        style={[styles.familyRow, form.themeFamily === null && styles.familyRowActive]}
-        onPress={() => updateField("themeFamily", null)}
+        style={styles.collapsibleHeader}
+        onPress={() => setAppearanceExpanded((prev) => !prev)}
       >
-        <Text
-          style={[styles.familyLabel, form.themeFamily === null && styles.familyLabelActive]}
-        >
-          Use device default
-        </Text>
+        <Text style={styles.sectionTitle}>Appearance</Text>
+        <Text style={styles.collapsibleChevron}>{appearanceExpanded ? "▾" : "▸"}</Text>
       </Pressable>
-      {FAMILY_ORDER.map((familyId) => {
-        const definition = THEME_FAMILIES[familyId];
-        const active = form.themeFamily === familyId;
-        const swatchColors = theme.mode === "dark" ? definition.dark : definition.light;
-        return (
+      {appearanceExpanded && (
+        <>
+          <Text style={styles.hint}>
+            Give this character its own theme and font, independent of your device&apos;s
+            default (Settings → Theme/Font).
+          </Text>
+          <Text style={styles.subLabel}>Theme</Text>
           <Pressable
-            key={familyId}
-            style={[styles.familyRow, active && styles.familyRowActive]}
-            onPress={() => updateField("themeFamily", familyId)}
-          >
-            <View style={[styles.swatch, { backgroundColor: swatchColors.primary }]} />
-            <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
-              {definition.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-
-      <Text style={styles.subLabel}>Font</Text>
-      <Pressable
-        style={[styles.familyRow, form.fontChoice === null && styles.familyRowActive]}
-        onPress={() => updateField("fontChoice", null)}
-      >
-        <Text
-          style={[styles.familyLabel, form.fontChoice === null && styles.familyLabelActive]}
-        >
-          Use device default
-        </Text>
-      </Pressable>
-      {FONT_CHOICE_ORDER.map((fontId) => {
-        const option = FONT_CHOICES[fontId];
-        const active = form.fontChoice === fontId;
-        return (
-          <Pressable
-            key={fontId}
-            style={[styles.familyRow, active && styles.familyRowActive]}
-            onPress={() => updateField("fontChoice", fontId)}
+            style={[styles.familyRow, form.themeFamily === null && styles.familyRowActive]}
+            onPress={() => updateField("themeFamily", null)}
           >
             <Text
-              style={[
-                styles.familyLabel,
-                active && styles.familyLabelActive,
-                option.fontFamily ? { fontFamily: option.fontFamily } : null,
-              ]}
+              style={[styles.familyLabel, form.themeFamily === null && styles.familyLabelActive]}
             >
-              {option.label}
+              Use device default
             </Text>
           </Pressable>
-        );
-      })}
+          {FAMILY_ORDER.map((familyId) => {
+            const definition = THEME_FAMILIES[familyId];
+            const active = form.themeFamily === familyId;
+            const swatchColors = theme.mode === "dark" ? definition.dark : definition.light;
+            return (
+              <Pressable
+                key={familyId}
+                style={[styles.familyRow, active && styles.familyRowActive]}
+                onPress={() => updateField("themeFamily", familyId)}
+              >
+                <View style={[styles.swatch, { backgroundColor: swatchColors.primary }]} />
+                <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
+                  {definition.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+
+          <Text style={styles.subLabel}>Font</Text>
+          <Pressable
+            style={[styles.familyRow, form.fontChoice === null && styles.familyRowActive]}
+            onPress={() => updateField("fontChoice", null)}
+          >
+            <Text
+              style={[styles.familyLabel, form.fontChoice === null && styles.familyLabelActive]}
+            >
+              Use device default
+            </Text>
+          </Pressable>
+          {FONT_CHOICE_ORDER.map((fontId) => {
+            const option = FONT_CHOICES[fontId];
+            const active = form.fontChoice === fontId;
+            return (
+              <Pressable
+                key={fontId}
+                style={[styles.familyRow, active && styles.familyRowActive]}
+                onPress={() => updateField("fontChoice", fontId)}
+              >
+                <Text
+                  style={[
+                    styles.familyLabel,
+                    active && styles.familyLabelActive,
+                    option.fontFamily ? { fontFamily: option.fontFamily } : null,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </>
+      )}
 
       <Field
         label="Notes"
@@ -1036,6 +1047,16 @@ function createStyles(theme: Theme) {
       fontSize: 16,
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
+      marginBottom: 10,
+    },
+    collapsibleHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    collapsibleChevron: {
+      color: theme.colors.textMuted,
+      fontSize: 16,
       marginBottom: 10,
     },
     hint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 10 },

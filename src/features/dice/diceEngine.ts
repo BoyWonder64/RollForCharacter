@@ -44,8 +44,25 @@ export type RollResult = {
   rolls: { sides: number; value: number }[];
 };
 
+// Developer mode's forced-outcome d20s (see DeveloperModeContext): lets
+// testers reliably hit crit/fumble UI without grinding for a nat 1 or 20.
+let devD20OverrideEnabled = false;
+let devD20RollCount = 0;
+
+export function setDevD20Override(enabled: boolean): void {
+  devD20OverrideEnabled = enabled;
+  devD20RollCount = 0;
+}
+
 export function rollDie(sides: number): number {
-  return Math.floor(Math.random() * sides) + 1;
+  const value = Math.floor(Math.random() * sides) + 1;
+  if (sides === 20 && devD20OverrideEnabled) {
+    devD20RollCount += 1;
+    // Both land on the same roll every 30th die -- the fumble wins.
+    if (devD20RollCount % 6 === 0) return 1;
+    if (devD20RollCount % 5 === 0) return 20;
+  }
+  return value;
 }
 
 export function rollExpression(expression: string): RollResult {

@@ -4,12 +4,12 @@ import { useTheme } from "../../theme/ThemeContext";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
+import { usePartyMode } from "../../features/settings/PartyModeContext";
 
 function TabIcon({ tabName, focused }: { tabName: string; focused: boolean }) {
   const { iconsEnabled, iconStyle } = useIconSettings();
   if (!iconsEnabled) return null;
-  // The Encounter tab has no icon of its own yet, so it borrows the dice one.
-  const icon = getTabIcon(iconStyle, tabName === "encounter" ? "dice-roller" : tabName);
+  const icon = getTabIcon(iconStyle, tabName);
   if (!icon) return null;
   return (
     <Image
@@ -24,6 +24,7 @@ export default function TabLayout() {
   const theme = useTheme();
   const { iconsEnabled } = useIconSettings();
   const { dmMode } = useDmMode();
+  const { partyMode } = usePartyMode();
 
   return (
     <Tabs
@@ -73,9 +74,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="encounter"
         options={{
-          title: "Encounter",
+          title: "DM",
           href: dmMode ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon tabName="encounter" focused={focused} />,
+        }}
+      />
+      {/* Paid feature: `href: null` hides the tab while Party mode is off. */}
+      <Tabs.Screen
+        name="party"
+        options={{
+          title: "Party",
+          href: partyMode ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon tabName="party" focused={focused} />,
         }}
       />
       {/* Settings keeps the system font so its own picker stays readable

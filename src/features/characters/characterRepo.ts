@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import * as Crypto from "expo-crypto";
 import { db } from "../../db/client";
 import { characterClasses, characters } from "../../db/schema";
 import type { AbilityScoreKey, Character } from "../../types/models";
@@ -46,7 +47,7 @@ export async function getCharacter(id: number): Promise<Character | undefined> {
 export async function createCharacter(name: string): Promise<Character> {
   const rows = await db
     .insert(characters)
-    .values({ name, maxHp: 10, currentHp: 10 })
+    .values({ name, maxHp: 10, currentHp: 10, syncId: Crypto.randomUUID() })
     .returning();
   return rows[0];
 }
@@ -144,6 +145,7 @@ export async function createCharacterFromOnboarding(
         input.customClassWeaponProficiencies ?? []
       ),
       customClassTraits: serializeCustomClassTraits(input.customClassTraits ?? []),
+      syncId: Crypto.randomUUID(),
     })
     .returning();
   return rows[0];
@@ -162,6 +164,8 @@ export async function updateCharacter(
     .set({ ...changes, updatedAt: new Date().toISOString() })
     .where(eq(characters.id, id));
 }
+
+export { touchCharacterUpdatedAt } from "./syncClock";
 
 export async function adjustHp(id: number, delta: number): Promise<void> {
   const character = await getCharacter(id);

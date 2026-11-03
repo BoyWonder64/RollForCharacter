@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { characterSpells, spellSlots, spells } from "../../db/schema";
+import { touchCharacterUpdatedAt } from "../characters/syncClock";
 
 export async function listSpellsForCharacter(characterId: number) {
   return db
@@ -76,6 +77,7 @@ export async function addSpellToCharacter(
     spellId: spell.id,
     prepared: false,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 /** Add a spell the player picked directly from the catalog (by its row id). */
@@ -88,17 +90,95 @@ export async function addCatalogSpellToCharacter(
     spellId,
     prepared: false,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function togglePrepared(characterSpellId: number, prepared: boolean) {
+  const [row] = await db.select().from(characterSpells).where(eq(characterSpells.id, characterSpellId));
   await db
     .update(characterSpells)
     .set({ prepared })
     .where(eq(characterSpells.id, characterSpellId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function removeCharacterSpell(characterSpellId: number) {
+  const [row] = await db.select().from(characterSpells).where(eq(characterSpells.id, characterSpellId));
   await db.delete(characterSpells).where(eq(characterSpells.id, characterSpellId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
+}
+
+// --- Shared homebrew library -----------------------------------------------
+// `spells` is already global and `addSpellToCharacter` above already dedupes
+// a hand-typed add by exact name match -- but that path only ever writes
+// name+level, and a blank `classes` hides the result from `listSpellCatalog`'s
+// class filter, so there's no real way to browse/reuse it. This gives
+// homebrew spells the same full shape and catalog visibility as a seeded
+// spell, tagged for attribution and guarded so seeded rows can't be edited.
+// `addSpellToCharacter`'s bare name+level path is left alone -- it's a
+// different, lower-friction flow.
+
+export type HomebrewSpellInput = {
+  name: string;
+  level: number;
+  school?: string;
+  castingTime?: string;
+  range?: string;
+  duration?: string;
+  components?: string;
+  concentration?: boolean;
+  ritual?: boolean;
+  classes?: string[];
+  description?: string;
+};
+
+export async function createHomebrewSpell(input: HomebrewSpellInput): Promise<number> {
+  const [row] = await db
+    .insert(spells)
+    .values({
+      name: input.name,
+      level: input.level,
+      school: input.school ?? "",
+      castingTime: input.castingTime ?? "",
+      range: input.range ?? "",
+      duration: input.duration ?? "",
+      components: input.components ?? "",
+      concentration: input.concentration ?? false,
+      ritual: input.ritual ?? false,
+      classes: (input.classes ?? []).join(","),
+      description: input.description ?? "",
+      sourceKey: "homebrew",
+      sourceName: "Homebrew",
+    })
+    .returning();
+  return row.id;
+}
+
+export async function updateHomebrewSpell(id: number, input: HomebrewSpellInput): Promise<void> {
+  const [row] = await db.select().from(spells).where(eq(spells.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db
+    .update(spells)
+    .set({
+      name: input.name,
+      level: input.level,
+      school: input.school ?? "",
+      castingTime: input.castingTime ?? "",
+      range: input.range ?? "",
+      duration: input.duration ?? "",
+      components: input.components ?? "",
+      concentration: input.concentration ?? false,
+      ritual: input.ritual ?? false,
+      classes: (input.classes ?? []).join(","),
+      description: input.description ?? "",
+    })
+    .where(eq(spells.id, id));
+}
+
+export async function deleteHomebrewSpell(id: number): Promise<void> {
+  const [row] = await db.select().from(spells).where(eq(spells.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db.delete(spells).where(eq(spells.id, id));
 }
 
 export async function listSpellSlots(characterId: number) {

@@ -24,6 +24,8 @@ type ResourceOverrideModalProps = {
   hidden: boolean;
   onClose: () => void;
   onSave: (change: ResourceOverrideChange) => void;
+  /** Clears any house rule on this resource and refills its remaining uses to the default max. */
+  onReset: () => void;
 };
 
 /** House rules for a built-in ability: change its number of uses, or hide it. Blank max = use the ruleset's. */
@@ -39,7 +41,7 @@ export function ResourceOverrideModal(props: ResourceOverrideModalProps) {
   );
 }
 
-function OverrideForm({ name, defaultMax, overrideMax, hidden, onClose, onSave }: ResourceOverrideModalProps) {
+function OverrideForm({ name, defaultMax, overrideMax, hidden, onClose, onSave, onReset }: ResourceOverrideModalProps) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [maxText, setMaxText] = useState(overrideMax !== undefined ? String(overrideMax) : "");
@@ -70,7 +72,7 @@ function OverrideForm({ name, defaultMax, overrideMax, hidden, onClose, onSave }
       </Pressable>
 
       <View style={styles.buttonRow}>
-        <Pressable style={styles.secondaryButton} onPress={() => onSave({ hidden: false, maxOverride: null })}>
+        <Pressable style={styles.secondaryButton} onPress={onReset}>
           <Text style={styles.secondaryButtonText}>Reset</Text>
         </Pressable>
         <Pressable style={styles.secondaryButton} onPress={onClose}>

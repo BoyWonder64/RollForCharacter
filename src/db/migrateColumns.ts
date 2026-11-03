@@ -1,4 +1,5 @@
 import type { SQLiteDatabase } from "expo-sqlite";
+import * as Crypto from "expo-crypto";
 import { EQUIPMENT_CATALOG } from "./seedEquipmentItems";
 
 type ColumnMigration = {
@@ -150,6 +151,43 @@ const COLUMN_MIGRATIONS: ColumnMigration[] = [
   // character_custom_resources shipped first without icon/roll_formula.
   { table: "character_custom_resources", column: "icon", definition: "TEXT NOT NULL DEFAULT ''" },
   { table: "character_custom_resources", column: "roll_formula", definition: "TEXT NOT NULL DEFAULT ''" },
+  { table: "characters", column: "sync_id", definition: "TEXT" },
+  // Shared homebrew library -- the homebrew_* tables themselves are new
+  // tables, created for every install (new or existing) by CREATE_TABLES_SQL's
+  // `IF NOT EXISTS`. Only these new COLUMNS on pre-existing tables need an
+  // explicit migration here.
+  {
+    table: "characters",
+    column: "homebrew_race_id",
+    definition: "INTEGER REFERENCES homebrew_races(id) ON DELETE SET NULL",
+  },
+  {
+    table: "characters",
+    column: "homebrew_class_id",
+    definition: "INTEGER REFERENCES homebrew_classes(id) ON DELETE SET NULL",
+  },
+  {
+    table: "characters",
+    column: "homebrew_subclass_id",
+    definition: "INTEGER REFERENCES homebrew_subclasses(id) ON DELETE SET NULL",
+  },
+  {
+    table: "character_weapons",
+    column: "homebrew_source_id",
+    definition: "INTEGER REFERENCES homebrew_weapons(id) ON DELETE SET NULL",
+  },
+  {
+    table: "character_armor",
+    column: "homebrew_source_id",
+    definition: "INTEGER REFERENCES homebrew_armor(id) ON DELETE SET NULL",
+  },
+  {
+    table: "character_custom_resources",
+    column: "homebrew_source_id",
+    definition: "INTEGER REFERENCES homebrew_resources(id) ON DELETE SET NULL",
+  },
+  { table: "spells", column: "source_key", definition: "TEXT NOT NULL DEFAULT ''" },
+  { table: "spells", column: "source_name", definition: "TEXT NOT NULL DEFAULT ''" },
 ];
 
 // The `equipment_item_id` entry in COLUMN_MIGRATIONS above only ever ADDED
@@ -294,6 +332,26 @@ function migrateLegacyFeatsIfNeeded(sqliteDb: SQLiteDatabase): void {
   });
 }
 
+// Backfills `sync_id` for any character created before cloud sync existed --
+// new characters get one at creation time (characterRepo.ts), but existing
+// rows need one assigned once so sync/Party mode have a stable id to key on.
+function migrateBackfillSyncIds(sqliteDb: SQLiteDatabase): void {
+  const rows = sqliteDb.getAllSync<{ id: number }>(
+    "SELECT id FROM characters WHERE sync_id IS NULL;",
+    []
+  );
+  if (rows.length === 0) return;
+
+  sqliteDb.withTransactionSync(() => {
+    for (const row of rows) {
+      sqliteDb.runSync("UPDATE characters SET sync_id = ? WHERE id = ?;", [
+        Crypto.randomUUID(),
+        row.id,
+      ]);
+    }
+  });
+}
+
 export function runColumnMigrations(sqliteDb: SQLiteDatabase): void {
   migrateDressUpItemIdRename(sqliteDb);
   migrateLegsSlotRemoval(sqliteDb);
@@ -317,4 +375,5 @@ export function runColumnMigrations(sqliteDb: SQLiteDatabase): void {
   // the `feats` column entirely, this query would fail until that ADD
   // COLUMN has run.
   migrateLegacyFeatsIfNeeded(sqliteDb);
+  migrateBackfillSyncIds(sqliteDb);
 }

@@ -1,9 +1,16 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
-import { characterArmor, characterGearItems, characterWeapons } from "../../db/schema";
+import {
+  characterArmor,
+  characterGearItems,
+  characterWeapons,
+  homebrewArmor,
+  homebrewWeapons,
+} from "../../db/schema";
 import { getRulesetCatalog } from "../../data/rulesets";
 import type { ArmorDefinition, WeaponDefinition } from "../../data/rulesets";
 import { abilityModifier, type FeatEffectBundle } from "./characterCalculations";
+import { touchCharacterUpdatedAt } from "./syncClock";
 
 export function listWeaponCatalog(ruleset: string): WeaponDefinition[] {
   return getRulesetCatalog(ruleset).weapons ?? [];
@@ -72,6 +79,7 @@ export async function addWeaponFromCatalog(
     properties: definition.properties.join(","),
     description: definition.description,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function addCustomWeapon(
@@ -93,14 +101,176 @@ export async function addCustomWeapon(
     isMagic: input.isMagic ?? false,
     magicBonus: input.magicBonus ?? 0,
   });
+  await touchCharacterUpdatedAt(characterId);
+}
+
+// --- Shared homebrew library -----------------------------------------------
+// Weapons/armor have no DB catalog at all (WeaponDefinition/ArmorDefinition
+// are static TS data), so these are new global tables. "Taking" one clones
+// its fields onto a character_weapons/character_armor row, same shape as
+// addWeaponFromCatalog/addArmorFromCatalog, with `homebrewSourceId` left as
+// a provenance backpointer (never a live reference).
+
+export async function listHomebrewWeapons(ruleset?: string) {
+  const rows = await db.select().from(homebrewWeapons).orderBy(homebrewWeapons.name);
+  return ruleset ? rows.filter((w) => w.ruleset === ruleset) : rows;
+}
+
+export async function createHomebrewWeapon(ruleset: string, input: CustomWeaponInput): Promise<number> {
+  const [row] = await db
+    .insert(homebrewWeapons)
+    .values({
+      ruleset,
+      name: input.name,
+      category: input.category ?? "",
+      cost: input.cost ?? "",
+      damageDice: input.damageDice ?? "",
+      damageType: input.damageType ?? "",
+      weight: input.weight ?? 0,
+      properties: (input.properties ?? []).join(","),
+      description: input.description ?? "",
+      isMagic: input.isMagic ?? false,
+      magicBonus: input.magicBonus ?? 0,
+    })
+    .returning();
+  return row.id;
+}
+
+export async function updateHomebrewWeapon(id: number, input: CustomWeaponInput): Promise<void> {
+  await db
+    .update(homebrewWeapons)
+    .set({
+      name: input.name,
+      category: input.category ?? "",
+      cost: input.cost ?? "",
+      damageDice: input.damageDice ?? "",
+      damageType: input.damageType ?? "",
+      weight: input.weight ?? 0,
+      properties: (input.properties ?? []).join(","),
+      description: input.description ?? "",
+      isMagic: input.isMagic ?? false,
+      magicBonus: input.magicBonus ?? 0,
+    })
+    .where(eq(homebrewWeapons.id, id));
+}
+
+export async function deleteHomebrewWeapon(id: number): Promise<void> {
+  await db.delete(homebrewWeapons).where(eq(homebrewWeapons.id, id));
+}
+
+export async function addWeaponFromHomebrew(
+  characterId: number,
+  homebrewId: number,
+  options: AddGearOptions = {}
+): Promise<void> {
+  const [definition] = await db.select().from(homebrewWeapons).where(eq(homebrewWeapons.id, homebrewId));
+  if (!definition) return;
+  await db.insert(characterWeapons).values({
+    characterId,
+    equipped: options.equipped ?? false,
+    quantity: Math.max(1, options.quantity ?? 1),
+    catalogId: null,
+    homebrewSourceId: definition.id,
+    name: definition.name,
+    category: definition.category,
+    cost: definition.cost,
+    damageDice: definition.damageDice,
+    damageType: definition.damageType,
+    weight: definition.weight,
+    properties: definition.properties,
+    description: definition.description,
+    isMagic: definition.isMagic,
+    magicBonus: definition.magicBonus,
+  });
+  await touchCharacterUpdatedAt(characterId);
+}
+
+export async function listHomebrewArmor(ruleset?: string) {
+  const rows = await db.select().from(homebrewArmor).orderBy(homebrewArmor.name);
+  return ruleset ? rows.filter((a) => a.ruleset === ruleset) : rows;
+}
+
+export async function createHomebrewArmor(ruleset: string, input: CustomArmorInput): Promise<number> {
+  const [row] = await db
+    .insert(homebrewArmor)
+    .values({
+      ruleset,
+      name: input.name,
+      category: input.category ?? "",
+      cost: input.cost ?? "",
+      baseArmorClass: input.baseArmorClass ?? 10,
+      dexModifier: input.dexModifier ?? "full",
+      strengthRequirement: input.strengthRequirement,
+      stealthDisadvantage: input.stealthDisadvantage ?? false,
+      weight: input.weight ?? 0,
+      description: input.description ?? "",
+      isMagic: input.isMagic ?? false,
+      magicBonus: input.magicBonus ?? 0,
+    })
+    .returning();
+  return row.id;
+}
+
+export async function updateHomebrewArmor(id: number, input: CustomArmorInput): Promise<void> {
+  await db
+    .update(homebrewArmor)
+    .set({
+      name: input.name,
+      category: input.category ?? "",
+      cost: input.cost ?? "",
+      baseArmorClass: input.baseArmorClass ?? 10,
+      dexModifier: input.dexModifier ?? "full",
+      strengthRequirement: input.strengthRequirement,
+      stealthDisadvantage: input.stealthDisadvantage ?? false,
+      weight: input.weight ?? 0,
+      description: input.description ?? "",
+      isMagic: input.isMagic ?? false,
+      magicBonus: input.magicBonus ?? 0,
+    })
+    .where(eq(homebrewArmor.id, id));
+}
+
+export async function deleteHomebrewArmor(id: number): Promise<void> {
+  await db.delete(homebrewArmor).where(eq(homebrewArmor.id, id));
+}
+
+export async function addArmorFromHomebrew(
+  characterId: number,
+  homebrewId: number,
+  options: AddGearOptions = {}
+): Promise<void> {
+  const [definition] = await db.select().from(homebrewArmor).where(eq(homebrewArmor.id, homebrewId));
+  if (!definition) return;
+  await db.insert(characterArmor).values({
+    characterId,
+    equipped: options.equipped ?? false,
+    catalogId: null,
+    homebrewSourceId: definition.id,
+    name: definition.name,
+    category: definition.category,
+    cost: definition.cost,
+    baseArmorClass: definition.baseArmorClass,
+    dexModifier: definition.dexModifier,
+    strengthRequirement: definition.strengthRequirement,
+    stealthDisadvantage: definition.stealthDisadvantage,
+    weight: definition.weight,
+    description: definition.description,
+    isMagic: definition.isMagic,
+    magicBonus: definition.magicBonus,
+  });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function removeCharacterWeapon(weaponId: number): Promise<void> {
+  const [row] = await db.select().from(characterWeapons).where(eq(characterWeapons.id, weaponId));
   await db.delete(characterWeapons).where(eq(characterWeapons.id, weaponId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function setWeaponEquipped(weaponId: number, equipped: boolean): Promise<void> {
+  const [row] = await db.select().from(characterWeapons).where(eq(characterWeapons.id, weaponId));
   await db.update(characterWeapons).set({ equipped }).where(eq(characterWeapons.id, weaponId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export type CustomArmorInput = {
@@ -139,6 +309,7 @@ export async function addArmorFromCatalog(
     weight: definition.weight,
     description: definition.description,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function addCustomArmor(
@@ -160,6 +331,7 @@ export async function addCustomArmor(
     isMagic: input.isMagic ?? false,
     magicBonus: input.magicBonus ?? 0,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function listGearItems(characterId: number) {
@@ -184,6 +356,7 @@ export async function addGearItem(
       .update(characterGearItems)
       .set({ quantity: existing.quantity + quantity })
       .where(eq(characterGearItems.id, existing.id));
+    await touchCharacterUpdatedAt(characterId);
     return;
   }
   await db.insert(characterGearItems).values({
@@ -192,27 +365,36 @@ export async function addGearItem(
     quantity,
     description: input.description?.trim() ?? "",
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 /** Sets a gear item's quantity; 0 or less removes it. */
 export async function setGearItemQuantity(itemId: number, quantity: number): Promise<void> {
+  const [row] = await db.select().from(characterGearItems).where(eq(characterGearItems.id, itemId));
   if (quantity <= 0) {
     await db.delete(characterGearItems).where(eq(characterGearItems.id, itemId));
-    return;
+  } else {
+    await db.update(characterGearItems).set({ quantity: Math.floor(quantity) }).where(eq(characterGearItems.id, itemId));
   }
-  await db.update(characterGearItems).set({ quantity: Math.floor(quantity) }).where(eq(characterGearItems.id, itemId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function removeGearItem(itemId: number): Promise<void> {
+  const [row] = await db.select().from(characterGearItems).where(eq(characterGearItems.id, itemId));
   await db.delete(characterGearItems).where(eq(characterGearItems.id, itemId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function removeCharacterArmor(armorId: number): Promise<void> {
+  const [row] = await db.select().from(characterArmor).where(eq(characterArmor.id, armorId));
   await db.delete(characterArmor).where(eq(characterArmor.id, armorId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function setArmorEquipped(armorId: number, equipped: boolean): Promise<void> {
+  const [row] = await db.select().from(characterArmor).where(eq(characterArmor.id, armorId));
   await db.update(characterArmor).set({ equipped }).where(eq(characterArmor.id, armorId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 /**

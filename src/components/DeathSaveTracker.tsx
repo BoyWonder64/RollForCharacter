@@ -8,6 +8,7 @@ import {
 } from "../features/characters/characterRepo";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../features/icons/iconAssets";
+import { useSoundEffects } from "../features/sound/useSoundEffects";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 
@@ -25,6 +26,7 @@ export function DeathSaveTracker({
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { iconsEnabled, iconStyle } = useIconSettings();
+  const playSound = useSoundEffects();
   const [lastOutcome, setLastOutcome] = useState<DeathSaveOutcome | null>(null);
 
   // Reusing the Necromancy spell-school icon as a skull -- there's no
@@ -36,7 +38,12 @@ export function DeathSaveTracker({
 
   async function handleRoll() {
     const outcome = await rollDeathSave(characterId);
-    if (outcome) setLastOutcome(outcome);
+    if (outcome) {
+      setLastOutcome(outcome);
+      playSound("diceLand");
+      if (outcome.roll === 20) playSound("critNat20");
+      if (outcome.roll === 1) playSound("critNat1");
+    }
     onChanged();
   }
 

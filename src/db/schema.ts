@@ -103,6 +103,24 @@ export const characters = sqliteTable("characters", {
   customClassArmorProficiencies: text("custom_class_armor_proficiencies").notNull().default(""), // comma-separated free-text labels
   customClassWeaponProficiencies: text("custom_class_weapon_proficiencies").notNull().default(""), // comma-separated free-text labels
   customClassTraits: text("custom_class_traits").notNull().default(""), // JSON: ClassTrait[]
+  // Backpointers to a shared homebrew-library entry this character's race/
+  // class/subclass was picked from (see homebrewRaces/homebrewClasses/
+  // homebrewSubclasses below) -- provenance only. Picking one clones its
+  // fields onto the custom* columns above the same way picking a catalog
+  // item clones onto characterWeapons/characterArmor, so the existing
+  // CUSTOM_OPTION_ID merge path in characterCalculations.ts needs no changes
+  // and a library edit never retroactively changes a character that already
+  // took it. Null for a one-off custom race/class never saved to the library.
+  homebrewRaceId: integer("homebrew_race_id").references((): AnySQLiteColumn => homebrewRaces.id, {
+    onDelete: "set null",
+  }),
+  homebrewClassId: integer("homebrew_class_id").references((): AnySQLiteColumn => homebrewClasses.id, {
+    onDelete: "set null",
+  }),
+  homebrewSubclassId: integer("homebrew_subclass_id").references(
+    (): AnySQLiteColumn => homebrewSubclasses.id,
+    { onDelete: "set null" }
+  ),
   armorClass: integer("armor_class").notNull().default(10),
   speed: integer("speed").notNull().default(30),
   proficiencyBonus: integer("proficiency_bonus").notNull().default(2),
@@ -114,6 +132,12 @@ export const characters = sqliteTable("characters", {
   charisma: integer("charisma").notNull().default(10),
   notes: text("notes").notNull().default(""),
   portraitUri: text("portrait_uri"),
+  // Stable cross-device identity for cloud sync (Supabase `characters.client_sync_id`)
+  // and for Party mode's `character_client_sync_id` -- this local autoincrement
+  // `id` isn't globally unique, so it can't serve either purpose. Generated via
+  // expo-crypto's randomUUID() at creation time; backfilled for older rows by
+  // migrateColumns.ts.
+  syncId: text("sync_id"),
   // Standard 5e denominations.
   copperPieces: integer("copper_pieces").notNull().default(0),
   silverPieces: integer("silver_pieces").notNull().default(0),
@@ -198,6 +222,11 @@ export const spells = sqliteTable("spells", {
   // Comma-separated ClassDefinition ids (e.g. "sorcerer,wizard").
   classes: text("classes").notNull().default(""),
   description: text("description").notNull().default(""),
+  // Which source this came from, same attribution pattern as feats/magicItems/
+  // monsters below -- "" for the original seeded rows (predates this column),
+  // "homebrew" for a library spell created via createHomebrewSpell.
+  sourceKey: text("source_key").notNull().default(""),
+  sourceName: text("source_name").notNull().default(""),
 });
 
 export const characterSpells = sqliteTable("character_spells", {
@@ -257,6 +286,13 @@ export const characterWeapons = sqliteTable("character_weapons", {
   magicBonus: integer("magic_bonus").notNull().default(0),
   // A stack of identical weapons (4 handaxes, 5 daggers) is one row.
   quantity: integer("quantity").notNull().default(1),
+  // Backpointer to the homebrewWeapons library row this was cloned from, if
+  // any -- see the comment on characters.homebrewRaceId for why this is a
+  // clone-and-backpointer rather than a live reference.
+  homebrewSourceId: integer("homebrew_source_id").references(
+    (): AnySQLiteColumn => homebrewWeapons.id,
+    { onDelete: "set null" }
+  ),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -304,6 +340,11 @@ export const characterArmor = sqliteTable("character_armor", {
   // the flat enchantment bonus applied to AC.
   isMagic: integer("is_magic", { mode: "boolean" }).notNull().default(false),
   magicBonus: integer("magic_bonus").notNull().default(0),
+  // Backpointer to the homebrewArmor library row this was cloned from, if
+  // any -- see the comment on characters.homebrewRaceId.
+  homebrewSourceId: integer("homebrew_source_id").references((): AnySQLiteColumn => homebrewArmor.id, {
+    onDelete: "set null",
+  }),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -554,6 +595,12 @@ export const characterCustomResources = sqliteTable("character_custom_resources"
   // (see src/features/dice/rollFormula.ts). Empty = no roll.
   rollFormula: text("roll_formula").notNull().default(""),
   sortOrder: integer("sort_order").notNull().default(0),
+  // Backpointer to the homebrewResources library row this was cloned from,
+  // if any -- see the comment on characters.homebrewRaceId.
+  homebrewSourceId: integer("homebrew_source_id").references(
+    (): AnySQLiteColumn => homebrewResources.id,
+    { onDelete: "set null" }
+  ),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -582,6 +629,134 @@ export const diceRollHistory =sqliteTable("dice_roll_history", {
   result: integer("result").notNull(),
   breakdown: text("breakdown").notNull(),
   rolledAt: text("rolled_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// ---------------------------------------------------------------------------
+// Shared homebrew library -- global, not character-scoped, so a piece of
+// homebrew can be created once and reused across characters, same spirit as
+// the seeded feats/magicItems/monsters catalogs. Weapons/armor/resources have
+// no catalog table to piggyback on (WeaponDefinition/ArmorDefinition are
+// static TS data, character_custom_resources is character-scoped only), and
+// races/classes/subclasses have no table at all today (they're stored inline
+// on `characters`), so each gets its own table here. A character "takes" one
+// of these by cloning its fields onto its own row/table (characterWeapons,
+// characterArmor, characterCustomResources, or the custom* columns on
+// characters), with a `homebrewSourceId`/`homebrewRaceId` etc. backpointer --
+// never a live reference -- matching this schema's existing catalogId
+// pattern throughout.
+// ---------------------------------------------------------------------------
+
+export const homebrewWeapons = sqliteTable("homebrew_weapons", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ruleset: text("ruleset").notNull().default("5e"),
+  name: text("name").notNull(),
+  category: text("category").notNull().default(""),
+  cost: text("cost").notNull().default(""),
+  damageDice: text("damage_dice").notNull().default(""),
+  damageType: text("damage_type").notNull().default(""),
+  weight: real("weight").notNull().default(0),
+  properties: text("properties").notNull().default(""),
+  description: text("description").notNull().default(""),
+  isMagic: integer("is_magic", { mode: "boolean" }).notNull().default(false),
+  magicBonus: integer("magic_bonus").notNull().default(0),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+export const homebrewArmor = sqliteTable("homebrew_armor", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ruleset: text("ruleset").notNull().default("5e"),
+  name: text("name").notNull(),
+  category: text("category").notNull().default(""),
+  cost: text("cost").notNull().default(""),
+  baseArmorClass: integer("base_armor_class").notNull().default(10),
+  dexModifier: text("dex_modifier").notNull().default("full"),
+  strengthRequirement: integer("strength_requirement"),
+  stealthDisadvantage: integer("stealth_disadvantage", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  weight: real("weight").notNull().default(0),
+  description: text("description").notNull().default(""),
+  isMagic: integer("is_magic", { mode: "boolean" }).notNull().default(false),
+  magicBonus: integer("magic_bonus").notNull().default(0),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// Mirrors characterCustomResources minus characterId -- see CustomResourceInput
+// in resourceRepo.ts for the field shapes (maxMode/usesByLevel/ability/etc).
+export const homebrewResources = sqliteTable("homebrew_resources", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  maxMode: text("max_mode").notNull().default("fixed"),
+  fixedMax: integer("fixed_max").notNull().default(1),
+  usesByLevel: text("uses_by_level").notNull().default("{}"), // JSON: Record<level, uses>
+  ability: text("ability").notNull().default("charisma"),
+  abilityBonus: integer("ability_bonus").notNull().default(0),
+  abilityMinimum: integer("ability_minimum").notNull().default(1),
+  rechargeOn: text("recharge_on").notNull().default("long"),
+  isPointPool: integer("is_point_pool", { mode: "boolean" }).notNull().default(false),
+  icon: text("icon").notNull().default(""),
+  rollFormula: text("roll_formula").notNull().default(""),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A reusable homebrew race -- same fields as the customRace* overlay columns
+// on `characters`, just not tied to one character. Picking one from the
+// library (see homebrewRepo.ts's setCharacterHomebrewRace) copies these onto
+// that character's customRace* columns, same CUSTOM_OPTION_ID merge path as
+// a one-off custom race, with `characters.homebrewRaceId` left as a
+// provenance backpointer.
+export const homebrewRaces = sqliteTable("homebrew_races", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ruleset: text("ruleset").notNull().default("5e"),
+  name: text("name").notNull(),
+  abilityBonuses: text("ability_bonuses").notNull().default(""), // JSON: Partial<Record<AbilityScoreKey, number>>
+  size: text("size").notNull().default("Medium"),
+  speed: integer("speed").notNull().default(30),
+  traits: text("traits").notNull().default(""), // JSON: RaceTrait[]
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A reusable homebrew class -- same fields as the customClass* overlay
+// columns on `characters`. See homebrewRaces above for the pick-from-library
+// pattern (setCharacterHomebrewClass).
+export const homebrewClasses = sqliteTable("homebrew_classes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ruleset: text("ruleset").notNull().default("5e"),
+  name: text("name").notNull(),
+  hitDie: integer("hit_die").notNull().default(8),
+  savingThrows: text("saving_throws").notNull().default(""), // comma-separated AbilityScoreKey, e.g. "strength,constitution"
+  armorProficiencies: text("armor_proficiencies").notNull().default(""), // comma-separated free-text labels
+  weaponProficiencies: text("weapon_proficiencies").notNull().default(""), // comma-separated free-text labels
+  traits: text("traits").notNull().default(""), // JSON: ClassTrait[]
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+// A reusable homebrew subclass -- flavor-only for now (named traits shown on
+// the sheet), same as a homebrew class's traits. `parentClassId` is either a
+// built-in ClassDefinition id (e.g. "fighter") or a homebrewClasses.id
+// stringified, same free-form-id spirit as catalogId elsewhere in this
+// schema. Full per-level homebrew class progression (spell slots, scaling
+// resources) is a separate, later piece of work -- see TODO.md.
+export const homebrewSubclasses = sqliteTable("homebrew_subclasses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ruleset: text("ruleset").notNull().default("5e"),
+  name: text("name").notNull(),
+  parentClassId: text("parent_class_id").notNull().default(""),
+  traits: text("traits").notNull().default(""), // JSON: ClassTrait[]
+  createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
 });

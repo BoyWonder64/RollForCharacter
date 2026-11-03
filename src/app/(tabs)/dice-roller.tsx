@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Button } from "../../components/Button";
 import { InvalidDiceExpressionError, parseDiceExpression, rollExpression, type RollResult } from "../../features/dice/diceEngine";
 import { clearRollHistory, recentRolls, saveRoll } from "../../features/dice/diceRepo";
 import {
@@ -47,6 +48,7 @@ import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
+import { useSoundEffects } from "../../features/sound/useSoundEffects";
 
 function inferDieType(expr: string): DieType | null {
   try {
@@ -138,6 +140,7 @@ export default function DiceRollerScreen() {
   const { iconsEnabled, iconStyle } = useIconSettings();
   const { dmMode } = useDmMode();
   const { historyEnabled } = useRollHistorySetting();
+  const playSound = useSoundEffects();
   const styles = useMemo(() => createStyles(theme), [theme]);
   // Arriving from a character's own screen (a "Roll" link there) locks this
   // screen to that character for the visit, regardless of DM mode -- you
@@ -291,6 +294,9 @@ export default function DiceRollerScreen() {
 
   async function playRollAnimation(dieType: DieType | null): Promise<void> {
     setIsRolling(true);
+    // dice-throw.mp3 runs ~680ms, matching ROLL_ANIMATION_MS (650ms) almost
+    // exactly, so the rattle plays out for the same stretch as the spin.
+    playSound("diceThrow");
     spin.setValue(0);
     const cycle = setInterval(() => {
       if (dieType) {
@@ -313,6 +319,9 @@ export default function DiceRollerScreen() {
   }
 
   function landPunch() {
+    // Fires the instant the spin animation resolves, so the "clack" lands
+    // exactly on the first frame of the punch/bounce below.
+    playSound("diceLand");
     punch.setValue(1);
     Animated.sequence([
       Animated.timing(punch, { toValue: 1.2, duration: 90, useNativeDriver: true }),
@@ -334,6 +343,7 @@ export default function DiceRollerScreen() {
   }
 
   function triggerHolyBurst() {
+    playSound("critNat20");
     setScreenFlashColor("#FFF4D6");
     setShowHolyBurst(true);
     holyBurst.setValue(0);
@@ -353,6 +363,7 @@ export default function DiceRollerScreen() {
   }
 
   function triggerDoomBurst() {
+    playSound("critNat1");
     setScreenFlashColor("#4A0000");
     setShowDoomBurst(true);
     doomBurst.setValue(0);
@@ -1039,18 +1050,25 @@ export default function DiceRollerScreen() {
             </>
           )}
 
-          <Pressable
-            style={[styles.rollButton, isRolling && styles.rollButtonDisabled]}
+          <Button
+            variant="primary"
+            title={isRolling ? "Rolling…" : "Roll"}
+            textStyle={styles.rollButtonText}
+            contentStyle={styles.rollButtonContent}
             disabled={isRolling}
+            style={styles.rollButtonWrap}
             onPress={() => (mode === "freeform" ? rollFreeform(expression) : rollStructured())}
-          >
-            <Text style={styles.rollButtonText}>{isRolling ? "Rolling…" : "Roll"}</Text>
-          </Pressable>
+          />
 
           {!isRolling && mode === "attack" && attackType !== "initiative" && lastRoll && (
-            <Pressable style={styles.damageRollButton} onPress={handleRollDamage}>
-              <Text style={styles.damageRollButtonText}>Roll Damage</Text>
-            </Pressable>
+            <Button
+              variant="secondary"
+              title="Roll Damage"
+              textStyle={styles.damageRollButtonText}
+              contentStyle={styles.damageRollButtonContent}
+              style={styles.damageRollButtonWrap}
+              onPress={handleRollDamage}
+            />
           )}
         </View>
 
@@ -1323,7 +1341,7 @@ function createStyles(theme: Theme) {
     },
     burstSparkle: {
       position: "absolute",
-      fontSize: 22,
+      fontSize: 34,
       color: "#FFE9A8",
       textShadowColor: "#FFD76A",
       textShadowRadius: 8,
@@ -1338,7 +1356,7 @@ function createStyles(theme: Theme) {
     },
     doomSkull: {
       position: "absolute",
-      fontSize: 22,
+      fontSize: 34,
       textShadowColor: "#000000",
       textShadowRadius: 8,
       textShadowOffset: { width: 0, height: 0 },
@@ -1400,14 +1418,8 @@ function createStyles(theme: Theme) {
       letterSpacing: 0.6,
     },
     resultTotal: { color: theme.colors.text, fontSize: 30, fontWeight: "800" },
-    rollButton: {
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.radius,
-      paddingHorizontal: 32,
-      paddingVertical: 12,
-      marginTop: 16,
-    },
-    rollButtonDisabled: { opacity: 0.6 },
+    rollButtonWrap: { marginTop: 16 },
+    rollButtonContent: { paddingHorizontal: 32, paddingVertical: 12 },
     rollButtonText: {
       color: theme.colors.primaryText,
       fontWeight: "700",
@@ -1428,13 +1440,8 @@ function createStyles(theme: Theme) {
       marginTop: 8,
       textAlign: "center",
     },
-    damageRollButton: {
-      backgroundColor: theme.colors.surfaceAlt,
-      borderRadius: theme.radius,
-      paddingHorizontal: 24,
-      paddingVertical: 10,
-      marginTop: 10,
-    },
+    damageRollButtonWrap: { marginTop: 10 },
+    damageRollButtonContent: { paddingHorizontal: 24, paddingVertical: 10 },
     damageRollButtonText: {
       color: theme.colors.accent,
       fontWeight: "700",

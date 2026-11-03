@@ -5,6 +5,7 @@ import {
   characterCustomResources,
   characterResourceOverrides,
   characterResourceUses,
+  homebrewResources,
 } from "../../db/schema";
 import type { ClassResourceDefinition } from "../../data/rulesets/types";
 import type { AbilityScoreKey, Character, CharacterCustomResource } from "../../types/models";
@@ -18,6 +19,7 @@ import {
   getClassProgression,
   getRaceDefinitionForCharacter,
 } from "./characterCalculations";
+import { touchCharacterUpdatedAt } from "./syncClock";
 
 export type CharacterResource = {
   definition: ClassResourceDefinition;
@@ -294,6 +296,7 @@ export async function setResourceOverride(
   const existing = await db.select().from(characterResourceOverrides).where(where);
   if (!change.hidden && maxOverride === null) {
     if (existing.length > 0) await db.delete(characterResourceOverrides).where(where);
+    await touchCharacterUpdatedAt(characterId);
     return;
   }
   if (existing.length > 0) {
@@ -303,6 +306,21 @@ export async function setResourceOverride(
       .insert(characterResourceOverrides)
       .values({ characterId, resourceId, hidden: change.hidden, maxOverride });
   }
+  await touchCharacterUpdatedAt(characterId);
+}
+
+/**
+ * The house-rules popup's "Reset" button: clears any max-uses/hidden
+ * override on a built-in resource AND refills its remaining uses to the
+ * (now default) max -- clearing the override alone leaves a spent resource
+ * looking untouched, which reads as the button doing nothing.
+ */
+export async function resetResource(character: Character, resourceId: string): Promise<void> {
+  await setResourceOverride(character.id, resourceId, { hidden: false, maxOverride: null });
+  const resource = (await listCharacterResources(character, { includeHidden: true })).find(
+    (r) => r.definition.id === resourceId
+  );
+  if (resource) await setRemaining(character.id, resourceId, resource.max);
 }
 
 /**
@@ -366,13 +384,16 @@ export async function addCustomResource(
     .insert(characterCustomResources)
     .values({ characterId, sortOrder, ...rowValues(input) })
     .returning();
+  await touchCharacterUpdatedAt(characterId);
   return row;
 }
 
 /** Edits a player-made resource in place. Spent uses are kept (and clamped to the new max when listed). */
 export async function updateCustomResource(id: number, input: CustomResourceInput): Promise<void> {
   if (!input.name.trim()) throw new Error("A custom resource needs a name.");
+  const [row] = await db.select().from(characterCustomResources).where(eq(characterCustomResources.id, id));
   await db.update(characterCustomResources).set(rowValues(input)).where(eq(characterCustomResources.id, id));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 /** Deletes a player-made resource along with its spent-use record. */
@@ -388,6 +409,65 @@ export async function removeCustomResource(id: number): Promise<void> {
       )
     );
   await db.delete(characterCustomResources).where(eq(characterCustomResources.id, id));
+  await touchCharacterUpdatedAt(rows[0].characterId);
+}
+
+// --- Shared homebrew library -----------------------------------------------
+// `character_custom_resources` is character-scoped only, so this is a new
+// global table (same shape minus characterId/sortOrder, reusing `rowValues`).
+// "Taking" one from the library clones its fields onto a fresh
+// character_custom_resources row, same as addCustomResource, with
+// `homebrewSourceId` left as a provenance backpointer.
+
+export async function listHomebrewResources() {
+  return db.select().from(homebrewResources).orderBy(asc(homebrewResources.name));
+}
+
+export async function createHomebrewResource(input: CustomResourceInput): Promise<number> {
+  if (!input.name.trim()) throw new Error("A custom resource needs a name.");
+  const [row] = await db.insert(homebrewResources).values(rowValues(input)).returning();
+  return row.id;
+}
+
+export async function updateHomebrewResource(id: number, input: CustomResourceInput): Promise<void> {
+  if (!input.name.trim()) throw new Error("A custom resource needs a name.");
+  await db.update(homebrewResources).set(rowValues(input)).where(eq(homebrewResources.id, id));
+}
+
+export async function deleteHomebrewResource(id: number): Promise<void> {
+  await db.delete(homebrewResources).where(eq(homebrewResources.id, id));
+}
+
+export async function addResourceFromHomebrew(
+  characterId: number,
+  homebrewId: number
+): Promise<CharacterCustomResource> {
+  const [definition] = await db.select().from(homebrewResources).where(eq(homebrewResources.id, homebrewId));
+  if (!definition) throw new Error("That homebrew resource no longer exists.");
+  const existing = await listCustomResourceRows(characterId);
+  const sortOrder = existing.reduce((highest, row) => Math.max(highest, row.sortOrder), -1) + 1;
+  const [row] = await db
+    .insert(characterCustomResources)
+    .values({
+      characterId,
+      sortOrder,
+      homebrewSourceId: definition.id,
+      name: definition.name,
+      description: definition.description,
+      maxMode: definition.maxMode,
+      fixedMax: definition.fixedMax,
+      usesByLevel: definition.usesByLevel,
+      ability: definition.ability as AbilityScoreKey,
+      abilityBonus: definition.abilityBonus,
+      abilityMinimum: definition.abilityMinimum,
+      rechargeOn: definition.rechargeOn,
+      isPointPool: definition.isPointPool,
+      icon: definition.icon,
+      rollFormula: definition.rollFormula,
+    })
+    .returning();
+  await touchCharacterUpdatedAt(characterId);
+  return row;
 }
 
 async function setRemaining(characterId: number, resourceId: string, remaining: number): Promise<void> {
@@ -409,6 +489,7 @@ async function setRemaining(characterId: number, resourceId: string, remaining: 
   } else {
     await db.insert(characterResourceUses).values({ characterId, resourceId, usesRemaining: remaining });
   }
+  await touchCharacterUpdatedAt(characterId);
 }
 
 /**

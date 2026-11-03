@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { campaignItems, campaignNotes } from "../../db/schema";
 import type { CampaignItemIconId } from "../icons/iconAssets";
+import { touchCharacterUpdatedAt } from "./syncClock";
 
 /** Most recent first -- this is a journal history, not a single evolving blob. */
 export async function listCampaignNotes(characterId: number) {
@@ -21,20 +22,25 @@ export async function addCampaignNote(
     subject: input.subject,
     body: input.body,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function updateCampaignNote(
   noteId: number,
   input: { subject: string; body: string }
 ) {
+  const [row] = await db.select().from(campaignNotes).where(eq(campaignNotes.id, noteId));
   await db
     .update(campaignNotes)
     .set({ subject: input.subject, body: input.body, updatedAt: new Date().toISOString() })
     .where(eq(campaignNotes.id, noteId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function removeCampaignNote(noteId: number) {
+  const [row] = await db.select().from(campaignNotes).where(eq(campaignNotes.id, noteId));
   await db.delete(campaignNotes).where(eq(campaignNotes.id, noteId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function listCampaignItems(characterId: number) {
@@ -55,8 +61,11 @@ export async function addCampaignItem(
     icon: input.icon,
     description: input.description ?? "",
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function removeCampaignItem(campaignItemId: number) {
+  const [row] = await db.select().from(campaignItems).where(eq(campaignItems.id, campaignItemId));
   await db.delete(campaignItems).where(eq(campaignItems.id, campaignItemId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }

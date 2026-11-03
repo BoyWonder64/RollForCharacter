@@ -7,6 +7,7 @@ import {
   type SpendHitDieOutcome,
 } from "../features/characters/characterRepo";
 import { getClassDefinitionForCharacter } from "../features/characters/characterCalculations";
+import { useSoundEffects } from "../features/sound/useSoundEffects";
 import type { Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
@@ -41,6 +42,7 @@ function RestModalForm({
 }: Omit<RestModalProps, "visible">) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const playSound = useSoundEffects();
   const [lastRoll, setLastRoll] = useState<SpendHitDieOutcome | null>(null);
   const [manualEntryOpen, setManualEntryOpen] = useState(false);
   const [manualValue, setManualValue] = useState("");
@@ -53,7 +55,12 @@ function RestModalForm({
 
   async function handleSpendHitDie(manualRoll?: number) {
     const outcome = await spendHitDie(character.id, manualRoll);
-    if (outcome) setLastRoll(outcome);
+    if (outcome) {
+      setLastRoll(outcome);
+      // Only for an app-rolled die -- manual entry just records a roll made
+      // at the table, so there's nothing here for the app to "land".
+      if (manualRoll === undefined) playSound("diceLand");
+    }
     onChanged();
   }
 

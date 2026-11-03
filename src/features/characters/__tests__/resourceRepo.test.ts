@@ -2,17 +2,23 @@ import { recentRolls } from "../../dice/diceRepo";
 import { createCharacter, getCharacter, longRest, shortRest, updateCharacter } from "../characterRepo";
 import {
   addCustomResource,
+  addResourceFromHomebrew,
   applyShortRestRecharge,
+  createHomebrewResource,
+  deleteHomebrewResource,
   formatLevelBreakpoints,
   listCharacterResources,
   listCustomResources,
+  listHomebrewResources,
   parseLevelBreakpoints,
   removeCustomResource,
+  resetResource,
   rollResource,
   setResourceOverride,
   restoreResourceUse,
   spendResourceUse,
   updateCustomResource,
+  updateHomebrewResource,
   type CustomResourceInput,
 } from "../resourceRepo";
 
@@ -220,6 +226,59 @@ describe("custom resources", () => {
       const row = await addCustomResource(character.id, BASE_INPUT);
       await setResourceOverride(character.id, "custom-" + row.id, { hidden: true, maxOverride: 9 });
       expect(find(await listCharacterResources(character), "Wild Surge")).toMatchObject({ max: 2 });
+    });
+
+    it("resets a spent, hidden, overridden resource to visible and full", async () => {
+      const character = await fighter("Override Reset");
+      const id = find(await listCharacterResources(character), "Action Surge")!.definition.id;
+
+      await setResourceOverride(character.id, id, { hidden: false, maxOverride: 3 });
+      await spendResourceUse(character, id, 2);
+      await setResourceOverride(character.id, id, { hidden: true, maxOverride: 3 });
+      expect(find(await listCharacterResources(character, { includeHidden: true }), "Action Surge")).toMatchObject({
+        max: 3,
+        remaining: 1,
+        hidden: true,
+      });
+
+      await resetResource(character, id);
+      expect(find(await listCharacterResources(character), "Action Surge")).toMatchObject({
+        max: 1,
+        remaining: 1,
+        hidden: false,
+        overrideMax: undefined,
+      });
+    });
+  });
+
+  describe("homebrew library", () => {
+    it("creates a homebrew resource, lists it, and lets a character take a cloned copy", async () => {
+      const id = await createHomebrewResource(BASE_INPUT);
+      expect((await listHomebrewResources()).map((r) => r.name)).toContain("Wild Surge");
+
+      const character = await freshCharacter("Homebrew Resource Owner");
+      const row = await addResourceFromHomebrew(character.id, id);
+      expect(row).toMatchObject({ name: "Wild Surge", fixedMax: 2, homebrewSourceId: id });
+
+      expect(find(await listCharacterResources(character), "Wild Surge")).toMatchObject({ max: 2 });
+    });
+
+    it("edits a homebrew resource without changing characters that already took it", async () => {
+      const id = await createHomebrewResource(BASE_INPUT);
+      const character = await freshCharacter("Homebrew Resource Edit Owner");
+      await addResourceFromHomebrew(character.id, id);
+
+      await updateHomebrewResource(id, { ...BASE_INPUT, name: "Wild Surge II", fixedMax: 4 });
+
+      expect(find(await listCharacterResources(character), "Wild Surge")).toMatchObject({ max: 2 });
+      const libraryEntry = (await listHomebrewResources()).find((r) => r.id === id);
+      expect(libraryEntry).toMatchObject({ name: "Wild Surge II", fixedMax: 4 });
+    });
+
+    it("deletes a homebrew resource from the library", async () => {
+      const id = await createHomebrewResource(BASE_INPUT);
+      await deleteHomebrewResource(id);
+      expect((await listHomebrewResources()).find((r) => r.id === id)).toBeUndefined();
     });
   });
 });

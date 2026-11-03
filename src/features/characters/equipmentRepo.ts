@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { characterEquipment, equipmentItems } from "../../db/schema";
+import { touchCharacterUpdatedAt } from "./syncClock";
 
 export const EQUIPMENT_SLOTS = [
   "Head",
@@ -48,6 +49,7 @@ export async function equipItem(
 ): Promise<void> {
   if (isMultiSlot(slot)) {
     await db.insert(characterEquipment).values({ characterId, slot, equipmentItemId });
+    await touchCharacterUpdatedAt(characterId);
     return;
   }
 
@@ -65,6 +67,7 @@ export async function equipItem(
   } else {
     await db.insert(characterEquipment).values({ characterId, slot, equipmentItemId });
   }
+  await touchCharacterUpdatedAt(characterId);
 }
 
 // Unequips every item in the given slot (for a multi-select slot like
@@ -78,10 +81,13 @@ export async function unequipSlot(characterId: number, slot: EquipmentSlot): Pro
   for (const row of existing.filter((row) => row.slot === slot)) {
     await db.delete(characterEquipment).where(eq(characterEquipment.id, row.id));
   }
+  await touchCharacterUpdatedAt(characterId);
 }
 
 // Unequips a single equipped row by its own id -- needed for multi-select
 // slots where several items share the same slot and only one should go.
 export async function unequipItem(characterEquipmentId: number): Promise<void> {
+  const [row] = await db.select().from(characterEquipment).where(eq(characterEquipment.id, characterEquipmentId));
   await db.delete(characterEquipment).where(eq(characterEquipment.id, characterEquipmentId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }

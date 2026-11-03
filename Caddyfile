@@ -1,0 +1,13 @@
+:80 {
+	root * /srv
+	encode gzip
+
+	# expo-sqlite's web build runs on WebAssembly + SharedArrayBuffer, which
+	# needs the page to be cross-origin isolated -- see metro.config.js for
+	# the equivalent dev-server headers.
+	header Cross-Origin-Opener-Policy "same-origin"
+	header Cross-Origin-Embedder-Policy "credentialless"
+
+	try_files {path} /index.html
+	file_server
+}

@@ -9,6 +9,7 @@ import {
   type ResolvedFeatPick,
 } from "./characterCalculations";
 import type { AbilityScoreKey, Character } from "../../types/models";
+import { touchCharacterUpdatedAt } from "./syncClock";
 
 // Writes the ability score columns directly (not via characterRepo's
 // `updateCharacter`) to avoid a circular import -- characterRepo.ts itself
@@ -79,6 +80,7 @@ export async function addResolvedFeat(character: Character, feat: ResolvedFeatPi
     enabled: true,
     effects: serializeFeatEffects(feat.effects),
   });
+  await touchCharacterUpdatedAt(character.id);
 }
 
 /** Adds a feat picked from the catalog, with its player choices already resolved into `effects`. */
@@ -105,9 +107,58 @@ export async function addCustomFeat(
 }
 
 export async function setFeatEnabled(characterFeatId: number, enabled: boolean): Promise<void> {
+  const [row] = await db.select().from(characterFeats).where(eq(characterFeats.id, characterFeatId));
   await db.update(characterFeats).set({ enabled }).where(eq(characterFeats.id, characterFeatId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function removeCharacterFeat(characterFeatId: number): Promise<void> {
+  const [row] = await db.select().from(characterFeats).where(eq(characterFeats.id, characterFeatId));
   await db.delete(characterFeats).where(eq(characterFeats.id, characterFeatId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
+}
+
+// --- Shared homebrew library -----------------------------------------------
+// A homebrew feat is just a `feats` row tagged `sourceKey: "homebrew"` --
+// the catalog table is already global, so `listFeatCatalog` already returns
+// these, and `addCatalogFeat` already works unchanged via `catalogFeatId`.
+// The guard on update/delete keeps seeded SRD rows from ever being edited.
+
+export type HomebrewFeatInput = {
+  name: string;
+  prerequisite?: string;
+  description?: string;
+};
+
+export async function createHomebrewFeat(input: HomebrewFeatInput): Promise<number> {
+  const [row] = await db
+    .insert(feats)
+    .values({
+      name: input.name,
+      prerequisite: input.prerequisite ?? "",
+      description: input.description ?? "",
+      sourceKey: "homebrew",
+      sourceName: "Homebrew",
+    })
+    .returning();
+  return row.id;
+}
+
+export async function updateHomebrewFeat(id: number, input: HomebrewFeatInput): Promise<void> {
+  const [row] = await db.select().from(feats).where(eq(feats.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db
+    .update(feats)
+    .set({
+      name: input.name,
+      prerequisite: input.prerequisite ?? "",
+      description: input.description ?? "",
+    })
+    .where(eq(feats.id, id));
+}
+
+export async function deleteHomebrewFeat(id: number): Promise<void> {
+  const [row] = await db.select().from(feats).where(eq(feats.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db.delete(feats).where(eq(feats.id, id));
 }

@@ -330,3 +330,114 @@ export async function loadSavedEncounter(id: number): Promise<void> {
 export async function deleteSavedEncounter(id: number): Promise<void> {
   await db.delete(dmEncounters).where(eq(dmEncounters.id, id));
 }
+
+// --- Shared homebrew library -----------------------------------------------
+// A homebrew monster is just a `monsters` row tagged `sourceKey: "homebrew"`
+// -- the catalog table is already global, so `listMonsterCatalog` already
+// returns these, and `addDmCreatureFromCatalog` already works unchanged via
+// `monsterId`. The guard on update/delete keeps seeded SRD rows from ever
+// being edited; `catalogCache` is cleared so `getMonsterCatalog` picks up the
+// change immediately instead of serving a stale session-cached list.
+
+export type HomebrewMonsterInput = {
+  name: string;
+  size?: string;
+  type?: string;
+  alignment?: string;
+  armorClass?: number;
+  armorDetail?: string;
+  hitPoints?: number;
+  hitDice?: string;
+  speed?: string;
+  strength?: number;
+  dexterity?: number;
+  constitution?: number;
+  intelligence?: number;
+  wisdom?: number;
+  charisma?: number;
+  challengeRating?: string;
+  xp?: number;
+  senses?: string;
+  languages?: string;
+  traits?: MonsterTraitEntry[];
+  actions?: MonsterTraitEntry[];
+  legendaryActions?: MonsterTraitEntry[];
+};
+
+function serializeTraitEntries(entries: MonsterTraitEntry[] | undefined): string {
+  return entries && entries.length > 0 ? JSON.stringify(entries) : "";
+}
+
+export async function createHomebrewMonster(input: HomebrewMonsterInput): Promise<number> {
+  const [row] = await db
+    .insert(monsters)
+    .values({
+      name: input.name,
+      size: input.size ?? "",
+      type: input.type ?? "",
+      alignment: input.alignment ?? "",
+      armorClass: input.armorClass ?? 10,
+      armorDetail: input.armorDetail ?? "",
+      hitPoints: input.hitPoints ?? 1,
+      hitDice: input.hitDice ?? "",
+      speed: input.speed ?? "",
+      strength: input.strength ?? 10,
+      dexterity: input.dexterity ?? 10,
+      constitution: input.constitution ?? 10,
+      intelligence: input.intelligence ?? 10,
+      wisdom: input.wisdom ?? 10,
+      charisma: input.charisma ?? 10,
+      challengeRating: input.challengeRating ?? "0",
+      xp: input.xp ?? 0,
+      senses: input.senses ?? "",
+      languages: input.languages ?? "",
+      traits: serializeTraitEntries(input.traits),
+      actions: serializeTraitEntries(input.actions),
+      legendaryActions: serializeTraitEntries(input.legendaryActions),
+      sourceKey: "homebrew",
+      sourceName: "Homebrew",
+    })
+    .returning();
+  catalogCache = null;
+  return row.id;
+}
+
+export async function updateHomebrewMonster(id: number, input: HomebrewMonsterInput): Promise<void> {
+  const [row] = await db.select().from(monsters).where(eq(monsters.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db
+    .update(monsters)
+    .set({
+      name: input.name,
+      size: input.size ?? "",
+      type: input.type ?? "",
+      alignment: input.alignment ?? "",
+      armorClass: input.armorClass ?? 10,
+      armorDetail: input.armorDetail ?? "",
+      hitPoints: input.hitPoints ?? 1,
+      hitDice: input.hitDice ?? "",
+      speed: input.speed ?? "",
+      strength: input.strength ?? 10,
+      dexterity: input.dexterity ?? 10,
+      constitution: input.constitution ?? 10,
+      intelligence: input.intelligence ?? 10,
+      wisdom: input.wisdom ?? 10,
+      charisma: input.charisma ?? 10,
+      challengeRating: input.challengeRating ?? "0",
+      xp: input.xp ?? 0,
+      senses: input.senses ?? "",
+      languages: input.languages ?? "",
+      traits: serializeTraitEntries(input.traits),
+      actions: serializeTraitEntries(input.actions),
+      legendaryActions: serializeTraitEntries(input.legendaryActions),
+    })
+    .where(eq(monsters.id, id));
+  catalogCache = null;
+}
+
+export async function deleteHomebrewMonster(id: number): Promise<void> {
+  const [row] = await db.select().from(monsters).where(eq(monsters.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db.delete(monsters).where(eq(monsters.id, id));
+  catalogCache = null;
+}

@@ -39,6 +39,9 @@ export const CREATE_TABLES_SQL = `
     custom_class_armor_proficiencies TEXT NOT NULL DEFAULT '',
     custom_class_weapon_proficiencies TEXT NOT NULL DEFAULT '',
     custom_class_traits TEXT NOT NULL DEFAULT '',
+    homebrew_race_id INTEGER REFERENCES homebrew_races(id) ON DELETE SET NULL,
+    homebrew_class_id INTEGER REFERENCES homebrew_classes(id) ON DELETE SET NULL,
+    homebrew_subclass_id INTEGER REFERENCES homebrew_subclasses(id) ON DELETE SET NULL,
     armor_class INTEGER NOT NULL DEFAULT 10,
     speed INTEGER NOT NULL DEFAULT 30,
     proficiency_bonus INTEGER NOT NULL DEFAULT 2,
@@ -50,6 +53,7 @@ export const CREATE_TABLES_SQL = `
     charisma INTEGER NOT NULL DEFAULT 10,
     notes TEXT NOT NULL DEFAULT '',
     portrait_uri TEXT,
+    sync_id TEXT,
     copper_pieces INTEGER NOT NULL DEFAULT 0,
     silver_pieces INTEGER NOT NULL DEFAULT 0,
     electrum_pieces INTEGER NOT NULL DEFAULT 0,
@@ -97,7 +101,9 @@ export const CREATE_TABLES_SQL = `
     concentration INTEGER NOT NULL DEFAULT 0,
     ritual INTEGER NOT NULL DEFAULT 0,
     classes TEXT NOT NULL DEFAULT '',
-    description TEXT NOT NULL DEFAULT ''
+    description TEXT NOT NULL DEFAULT '',
+    source_key TEXT NOT NULL DEFAULT '',
+    source_name TEXT NOT NULL DEFAULT ''
   );
 
   CREATE TABLE IF NOT EXISTS character_spells (
@@ -138,6 +144,7 @@ export const CREATE_TABLES_SQL = `
     is_magic INTEGER NOT NULL DEFAULT 0,
     magic_bonus INTEGER NOT NULL DEFAULT 0,
     quantity INTEGER NOT NULL DEFAULT 1,
+    homebrew_source_id INTEGER REFERENCES homebrew_weapons(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -166,6 +173,7 @@ export const CREATE_TABLES_SQL = `
     equipped INTEGER NOT NULL DEFAULT 0,
     is_magic INTEGER NOT NULL DEFAULT 0,
     magic_bonus INTEGER NOT NULL DEFAULT 0,
+    homebrew_source_id INTEGER REFERENCES homebrew_armor(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -317,6 +325,7 @@ export const CREATE_TABLES_SQL = `
     icon TEXT NOT NULL DEFAULT '',
     roll_formula TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
+    homebrew_source_id INTEGER REFERENCES homebrew_resources(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 
@@ -335,5 +344,87 @@ export const CREATE_TABLES_SQL = `
     result INTEGER NOT NULL,
     breakdown TEXT NOT NULL,
     rolled_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS homebrew_weapons (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruleset TEXT NOT NULL DEFAULT '5e',
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT '',
+    cost TEXT NOT NULL DEFAULT '',
+    damage_dice TEXT NOT NULL DEFAULT '',
+    damage_type TEXT NOT NULL DEFAULT '',
+    weight REAL NOT NULL DEFAULT 0,
+    properties TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    is_magic INTEGER NOT NULL DEFAULT 0,
+    magic_bonus INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS homebrew_armor (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruleset TEXT NOT NULL DEFAULT '5e',
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT '',
+    cost TEXT NOT NULL DEFAULT '',
+    base_armor_class INTEGER NOT NULL DEFAULT 10,
+    dex_modifier TEXT NOT NULL DEFAULT 'full',
+    strength_requirement INTEGER,
+    stealth_disadvantage INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 0,
+    description TEXT NOT NULL DEFAULT '',
+    is_magic INTEGER NOT NULL DEFAULT 0,
+    magic_bonus INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS homebrew_resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    max_mode TEXT NOT NULL DEFAULT 'fixed',
+    fixed_max INTEGER NOT NULL DEFAULT 1,
+    uses_by_level TEXT NOT NULL DEFAULT '{}',
+    ability TEXT NOT NULL DEFAULT 'charisma',
+    ability_bonus INTEGER NOT NULL DEFAULT 0,
+    ability_minimum INTEGER NOT NULL DEFAULT 1,
+    recharge_on TEXT NOT NULL DEFAULT 'long',
+    is_point_pool INTEGER NOT NULL DEFAULT 0,
+    icon TEXT NOT NULL DEFAULT '',
+    roll_formula TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS homebrew_races (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruleset TEXT NOT NULL DEFAULT '5e',
+    name TEXT NOT NULL,
+    ability_bonuses TEXT NOT NULL DEFAULT '',
+    size TEXT NOT NULL DEFAULT 'Medium',
+    speed INTEGER NOT NULL DEFAULT 30,
+    traits TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS homebrew_classes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruleset TEXT NOT NULL DEFAULT '5e',
+    name TEXT NOT NULL,
+    hit_die INTEGER NOT NULL DEFAULT 8,
+    saving_throws TEXT NOT NULL DEFAULT '',
+    armor_proficiencies TEXT NOT NULL DEFAULT '',
+    weapon_proficiencies TEXT NOT NULL DEFAULT '',
+    traits TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
+  );
+
+  CREATE TABLE IF NOT EXISTS homebrew_subclasses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruleset TEXT NOT NULL DEFAULT '5e',
+    name TEXT NOT NULL,
+    parent_class_id TEXT NOT NULL DEFAULT '',
+    traits TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (current_timestamp)
   );
 `;

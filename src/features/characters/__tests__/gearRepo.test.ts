@@ -1,21 +1,31 @@
 import { createCharacter } from "../characterRepo";
 import {
   addArmorFromCatalog,
+  addArmorFromHomebrew,
   addCustomArmor,
   addCustomWeapon,
   addWeaponFromCatalog,
+  addWeaponFromHomebrew,
+  createHomebrewArmor,
+  createHomebrewWeapon,
+  deleteHomebrewArmor,
+  deleteHomebrewWeapon,
   describeArmorAc,
   describeAttackBonus,
   isProficientWithWeapon,
   listArmorCatalog,
   listCharacterArmor,
   listCharacterWeapons,
+  listHomebrewArmor,
+  listHomebrewWeapons,
   listWeaponCatalog,
   parseWeaponProperties,
   removeCharacterArmor,
   removeCharacterWeapon,
   setArmorEquipped,
   setWeaponEquipped,
+  updateHomebrewArmor,
+  updateHomebrewWeapon,
   weaponAttackBonus,
 } from "../gearRepo";
 
@@ -218,6 +228,83 @@ describe("gearRepo", () => {
       expect(describeAttackBonus(5)).toBe("+5");
       expect(describeAttackBonus(0)).toBe("+0");
       expect(describeAttackBonus(-1)).toBe("-1");
+    });
+  });
+
+  describe("homebrew library", () => {
+    it("creates a homebrew weapon, lists it, and lets two characters each take a cloned copy", async () => {
+      const weaponId = await createHomebrewWeapon("5e", {
+        name: "Library Glaive",
+        category: "Martial Melee",
+        damageDice: "1d10",
+        damageType: "Slashing",
+      });
+
+      expect((await listHomebrewWeapons("5e")).map((w) => w.name)).toContain("Library Glaive");
+
+      const characterA = await createCharacter("Homebrew Weapon A");
+      const characterB = await createCharacter("Homebrew Weapon B");
+      await addWeaponFromHomebrew(characterA.id, weaponId);
+      await addWeaponFromHomebrew(characterB.id, weaponId, { equipped: true });
+
+      const [weaponA] = await listCharacterWeapons(characterA.id);
+      const [weaponB] = await listCharacterWeapons(characterB.id);
+      expect(weaponA).toMatchObject({ name: "Library Glaive", catalogId: null, homebrewSourceId: weaponId });
+      expect(weaponB).toMatchObject({ equipped: true, homebrewSourceId: weaponId });
+    });
+
+    it("edits a homebrew weapon without changing characters that already took it", async () => {
+      const weaponId = await createHomebrewWeapon("5e", { name: "Library Edit Weapon", damageDice: "1d6" });
+      const character = await createCharacter("Homebrew Weapon Edit Owner");
+      await addWeaponFromHomebrew(character.id, weaponId);
+
+      await updateHomebrewWeapon(weaponId, { name: "Library Edited Weapon", damageDice: "1d8" });
+
+      const [taken] = await listCharacterWeapons(character.id);
+      expect(taken.name).toBe("Library Edit Weapon");
+      const libraryEntry = (await listHomebrewWeapons("5e")).find((w) => w.id === weaponId);
+      expect(libraryEntry?.name).toBe("Library Edited Weapon");
+    });
+
+    it("deletes a homebrew weapon from the library", async () => {
+      const weaponId = await createHomebrewWeapon("5e", { name: "Library Delete Weapon" });
+      await deleteHomebrewWeapon(weaponId);
+      expect((await listHomebrewWeapons("5e")).find((w) => w.id === weaponId)).toBeUndefined();
+    });
+
+    it("creates a homebrew armor, lists it, and lets a character take a cloned copy", async () => {
+      const armorId = await createHomebrewArmor("5e", {
+        name: "Library Scale",
+        baseArmorClass: 13,
+        dexModifier: "max2",
+      });
+
+      expect((await listHomebrewArmor("5e")).map((a) => a.name)).toContain("Library Scale");
+
+      const character = await createCharacter("Homebrew Armor Owner");
+      await addArmorFromHomebrew(character.id, armorId);
+
+      const [armor] = await listCharacterArmor(character.id);
+      expect(armor).toMatchObject({ name: "Library Scale", catalogId: null, homebrewSourceId: armorId, baseArmorClass: 13 });
+    });
+
+    it("edits a homebrew armor without changing characters that already took it", async () => {
+      const armorId = await createHomebrewArmor("5e", { name: "Library Edit Armor", baseArmorClass: 12 });
+      const character = await createCharacter("Homebrew Armor Edit Owner");
+      await addArmorFromHomebrew(character.id, armorId);
+
+      await updateHomebrewArmor(armorId, { name: "Library Edited Armor", baseArmorClass: 17 });
+
+      const [taken] = await listCharacterArmor(character.id);
+      expect(taken).toMatchObject({ name: "Library Edit Armor", baseArmorClass: 12 });
+      const libraryEntry = (await listHomebrewArmor("5e")).find((a) => a.id === armorId);
+      expect(libraryEntry).toMatchObject({ name: "Library Edited Armor", baseArmorClass: 17 });
+    });
+
+    it("deletes a homebrew armor from the library", async () => {
+      const armorId = await createHomebrewArmor("5e", { name: "Library Delete Armor" });
+      await deleteHomebrewArmor(armorId);
+      expect((await listHomebrewArmor("5e")).find((a) => a.id === armorId)).toBeUndefined();
     });
   });
 });

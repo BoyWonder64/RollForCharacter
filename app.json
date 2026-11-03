@@ -34,7 +34,9 @@
           "photosPermission": "Let RollForCharacter use your photo library to set a character's profile picture.",
           "cameraPermission": "Let RollForCharacter use your camera to take a character's profile picture."
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

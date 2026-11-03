@@ -60,11 +60,15 @@ const SPELL_SCHOOL_ICONS_PIXEL: Record<string, number> = {
 // Bottom tab bar icons. No literal dice/gear/person art exists in this
 // pack (it's fantasy items, not generic UI glyphs), so these are the
 // closest thematic stand-ins: a helmet for Characters, a faceted gem for
-// Dice Roller, a key for Settings.
+// Dice Roller, a book (the DM's rulebook) for the DM mode Encounter tab,
+// and a key for Settings.
 const TAB_ICONS_PIXEL: Record<string, number> = {
   characters: require("../../../assets/icons/tabs/characters.png"),
   "dice-roller": require("../../../assets/icons/tabs/dice-roller.png"),
+  encounter: require("../../../assets/icons/tabs/encounter.png"),
   settings: require("../../../assets/icons/tabs/settings.png"),
+  // No purpose-drawn "party" icon exists yet in the Raven set -- getTabIcon
+  // returns undefined for it, which TabIcon already renders as no icon.
 };
 
 // Selectable icons for campaign notes' "special items" list -- a curated

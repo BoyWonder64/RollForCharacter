@@ -3,12 +3,15 @@ import {
   addCatalogSpellToCharacter,
   addSpellToCharacter,
   adjustSpellSlotUsage,
+  createHomebrewSpell,
+  deleteHomebrewSpell,
   listSpellCatalog,
   listSpellSlots,
   listSpellsForCharacter,
   removeCharacterSpell,
   setSpellSlot,
   togglePrepared,
+  updateHomebrewSpell,
 } from "../spellRepo";
 import type { InferInsertModel } from "drizzle-orm";
 import { db } from "../../../db/client";
@@ -148,6 +151,53 @@ describe("spellRepo catalog", () => {
       name: "Catalog Add Spell",
       prepared: false,
     });
+  });
+});
+
+describe("spellRepo homebrew library", () => {
+  it("creates a homebrew spell with the full shape and classes, visible to the catalog", async () => {
+    await createHomebrewSpell({
+      name: "Homebrew Spark",
+      level: 2,
+      school: "Evocation",
+      classes: ["wizard", "sorcerer"],
+      description: "A custom bolt of energy.",
+    });
+
+    const results = await listSpellCatalog({ classId: "wizard" });
+    const spell = results.find((s) => s.name === "Homebrew Spark");
+    expect(spell).toMatchObject({
+      level: 2,
+      school: "Evocation",
+      sourceKey: "homebrew",
+      sourceName: "Homebrew",
+    });
+  });
+
+  it("updates a homebrew spell in place", async () => {
+    const id = await createHomebrewSpell({ name: "Homebrew Edit Me", level: 1 });
+    await updateHomebrewSpell(id, { name: "Homebrew Edited", level: 2, classes: ["druid"] });
+
+    const results = await listSpellCatalog({ classId: "druid" });
+    expect(results.map((s) => s.name)).toContain("Homebrew Edited");
+  });
+
+  it("refuses to edit or delete a non-homebrew (seeded) spell", async () => {
+    const catalogSpell = await makeCatalogSpell({ name: "Seeded Spell Guard" });
+
+    await updateHomebrewSpell(catalogSpell.id, { name: "Hijacked Name", level: 9 });
+    await deleteHomebrewSpell(catalogSpell.id);
+
+    const results = await listSpellCatalog({ search: "Seeded Spell Guard" });
+    expect(results).toHaveLength(1);
+  });
+
+  it("deletes a homebrew spell", async () => {
+    const id = await createHomebrewSpell({ name: "Homebrew Delete Me", level: 1 });
+    await deleteHomebrewSpell(id);
+
+    const results = await listSpellCatalog({ search: "Homebrew Delete Me" });
+    expect(results).toHaveLength(0);
   });
 });
 

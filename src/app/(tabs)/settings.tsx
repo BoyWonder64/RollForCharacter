@@ -1,13 +1,31 @@
 import { useMemo, useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
+import Constants from "expo-constants";
+import { Button } from "../../components/Button";
 import { useThemeContext, type ThemePreference } from "../../theme/ThemeContext";
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../theme/colors";
 import { FONT_CHOICE_ORDER, FONT_CHOICES } from "../../theme/fonts";
 import { useKeepAwakeSetting } from "../../features/settings/KeepAwakeContext";
 import { useDmMode } from "../../features/settings/DmModeContext";
+import { useDeveloperMode } from "../../features/settings/DeveloperModeContext";
+import { usePartyMode } from "../../features/settings/PartyModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
+import { useSoundSettings } from "../../features/settings/SoundSettingsContext";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { ICON_STYLE_ORDER, ICON_STYLES } from "../../features/icons/iconStyles";
+import { useAuth } from "../../features/auth/AuthContext";
+import { AccountSection } from "../../features/auth/AccountSection";
 
 const MODE_OPTIONS: { key: ThemePreference; label: string }[] = [
   { key: "system", label: "System" },
@@ -43,6 +61,14 @@ const CREDITS: { title: string; text: string }[] = [
   {
     title: "Pixel Dice Sprites",
     text: "By LullabyJazz.",
+  },
+  {
+    title: "Dice Rolling Sounds",
+    text: "Kenney Casino Audio pack by Kenney (kenney.nl), CC0 1.0.",
+  },
+  {
+    title: "Natural 20 / Natural 1 Stingers",
+    text: 'From "512 Sound Effects (8-bit style)" by Juhani Junkala (OpenGameArt), CC0 1.0.',
   },
 ];
 
@@ -117,15 +143,57 @@ export default function SettingsScreen() {
     useThemeContext();
   const { keepScreenOn, setKeepScreenOn } = useKeepAwakeSetting();
   const { dmMode, setDmMode } = useDmMode();
+  const { developerMode, setDeveloperMode } = useDeveloperMode();
+  const { partyMode, setPartyMode } = usePartyMode();
   const { historyEnabled, setHistoryEnabled } = useRollHistorySetting();
+  const { soundEnabled, setSoundEnabled } = useSoundSettings();
   const { iconsEnabled, setIconsEnabled, iconStyle, setIconStyle } = useIconSettings();
+  const { user } = useAuth();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [oglExpanded, setOglExpanded] = useState(false);
 
+  const buildDiagnostics = () =>
+    [
+      `App version: ${Constants.expoConfig?.version ?? "unknown"}`,
+      `Platform: ${Platform.OS} ${Platform.Version}`,
+      `Execution environment: ${Constants.executionEnvironment ?? "unknown"}`,
+      `Debug build: ${Constants.debugMode ?? __DEV__}`,
+      `Device: ${Constants.deviceName ?? "unknown"}`,
+      `Supabase project: ${process.env.EXPO_PUBLIC_SUPABASE_URL ?? "not configured"}`,
+      `Signed in: ${user ? user.email : "no"}`,
+      `DM mode: ${dmMode} · Party mode: ${partyMode} · Icons: ${iconsEnabled}`,
+    ].join("\n");
+
+  const handleShareDiagnostics = async () => {
+    try {
+      await Share.share({ message: buildDiagnostics() });
+    } catch {
+      // User cancelled the share sheet -- nothing to do.
+    }
+  };
+
+  const handlePartyModeChange = (value: boolean) => {
+    if (!value) {
+      setPartyMode(false);
+      return;
+    }
+    Alert.alert(
+      "Premium feature",
+      "Party mode connects your characters with other players over the cloud so your DM can review the party remotely. Purchasing isn't set up yet, so it's free to try during early access.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Turn on", onPress: () => setPartyMode(true) },
+      ]
+    );
+  };
+
   const handleSendFeedback = async () => {
+    const body = developerMode
+      ? `Bug report or feature suggestion:\n\n\n\n---\nDiagnostics\n${buildDiagnostics()}`
+      : "Bug report or feature suggestion:\n\n";
     const url = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(
       "RollForCharacter feedback"
-    )}&body=${encodeURIComponent("Bug report or feature suggestion:\n\n")}`;
+    )}&body=${encodeURIComponent(body)}`;
     try {
       const supported = await Linking.canOpenURL(url);
       if (!supported) {
@@ -157,20 +225,21 @@ export default function SettingsScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
-      <Text style={styles.sectionTitle}>Appearance</Text>
+      <Text style={styles.sectionTitle}>Account</Text>
+      <AccountSection />
+
+      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Appearance</Text>
       <View style={styles.optionRow}>
         {MODE_OPTIONS.map((option) => {
           const active = preference === option.key;
           return (
-            <Pressable
+            <Button
               key={option.key}
-              style={[styles.optionButton, active && styles.optionButtonActive]}
+              title={option.label}
+              selected={active}
+              style={styles.optionButtonWrap}
               onPress={() => setPreference(option.key)}
-            >
-              <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>
-                {option.label}
-              </Text>
-            </Pressable>
+            />
           );
         })}
       </View>
@@ -247,8 +316,23 @@ export default function SettingsScreen() {
       </View>
       <Text style={styles.toggleHint}>
         Adds an Encounter tab: roll initiative, saves and checks for the whole party at
-        once, build encounters from the SRD bestiary, and roll anything on a monster's stat
+        once, build encounters from the SRD bestiary, and roll anything on a monster&apos;s stat
         block. The Dice Roller can also switch between any character. Off by default.
+      </Text>
+
+      <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+        <Text style={styles.toggleLabel}>Party mode (Premium)</Text>
+        <Switch
+          value={partyMode}
+          onValueChange={handlePartyModeChange}
+          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
+          thumbColor={theme.colors.primaryText}
+        />
+      </View>
+      <Text style={styles.toggleHint}>
+        Paid feature. Adds a Party tab: connect with other players&apos; devices over the
+        cloud, choose what your character shares, and let the DM review everyone&apos;s stats
+        remotely. Off by default.
       </Text>
 
       <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
@@ -263,6 +347,19 @@ export default function SettingsScreen() {
       <Text style={styles.toggleHint}>
         Keeps a log of recent rolls on the Dice Roller screen. Turn off to stop saving rolls
         entirely.
+      </Text>
+
+      <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+        <Text style={styles.toggleLabel}>Sound effects</Text>
+        <Switch
+          value={soundEnabled}
+          onValueChange={setSoundEnabled}
+          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
+          thumbColor={theme.colors.primaryText}
+        />
+      </View>
+      <Text style={styles.toggleHint}>
+        Dice rolling and button sounds. On by default.
       </Text>
 
       <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Icons</Text>
@@ -330,14 +427,12 @@ export default function SettingsScreen() {
       <View style={styles.creditRow}>
         <Text style={styles.creditText}>{OGL_COPYRIGHT_NOTICE}</Text>
       </View>
-      <Pressable
-        style={styles.feedbackButton}
+      <Button
+        title={oglExpanded ? "Hide Full License Text" : "View Full License Text"}
+        textStyle={styles.feedbackButtonText}
+        fullWidth
         onPress={() => setOglExpanded((expanded) => !expanded)}
-      >
-        <Text style={styles.feedbackButtonText}>
-          {oglExpanded ? "Hide Full License Text" : "View Full License Text"}
-        </Text>
-      </Pressable>
+      />
       {oglExpanded && (
         <View style={styles.creditRow}>
           <Text style={styles.creditText}>{OGL_FULL_TEXT}</Text>
@@ -345,14 +440,46 @@ export default function SettingsScreen() {
       )}
 
       <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Feedback</Text>
-      <Pressable style={styles.feedbackButton} onPress={handleSendFeedback}>
-        <Text style={styles.feedbackButtonText}>Report a Bug / Suggest a Feature</Text>
-      </Pressable>
+      <Button
+        title="Report a Bug / Suggest a Feature"
+        textStyle={styles.feedbackButtonText}
+        fullWidth
+        onPress={handleSendFeedback}
+      />
 
       <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Support</Text>
-      <Pressable style={styles.feedbackButton} onPress={handleDonate}>
-        <Text style={styles.feedbackButtonText}>Donate</Text>
-      </Pressable>
+      <Button title="Donate" textStyle={styles.feedbackButtonText} fullWidth onPress={handleDonate} />
+
+      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Advanced</Text>
+      <View style={styles.toggleRow}>
+        <Text style={styles.toggleLabel}>Developer mode</Text>
+        <Switch
+          value={developerMode}
+          onValueChange={setDeveloperMode}
+          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
+          thumbColor={theme.colors.primaryText}
+        />
+      </View>
+      <Text style={styles.toggleHint}>
+        Shows app and sync diagnostics below, and attaches them to bug reports sent from this
+        screen. Also forces every 5th d20 roll to a 20 and every 6th to a 1, so crit/fumble UI
+        is easy to test on demand. Off by default.
+      </Text>
+
+      {developerMode && (
+        <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+          <Text style={styles.creditText}>{buildDiagnostics()}</Text>
+        </View>
+      )}
+      {developerMode && (
+        <Button
+          title="Share Diagnostics"
+          textStyle={styles.feedbackButtonText}
+          fullWidth
+          style={styles.toggleRowSpaced}
+          onPress={handleShareDiagnostics}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -373,21 +500,7 @@ function createStyles(theme: Theme) {
     themeSectionTitle: { marginTop: 24 },
     hint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 10 },
     optionRow: { flexDirection: "row", gap: 8 },
-    optionButton: {
-      flex: 1,
-      backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: theme.radius,
-      paddingVertical: 12,
-      alignItems: "center",
-    },
-    optionButtonActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
-    },
-    optionLabel: { color: theme.colors.text, fontWeight: "600" },
-    optionLabelActive: { color: theme.colors.primaryText },
+    optionButtonWrap: { flex: 1 },
     familyRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -431,14 +544,6 @@ function createStyles(theme: Theme) {
     },
     creditTitle: { color: theme.colors.text, fontWeight: "600" },
     creditText: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
-    feedbackButton: {
-      backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: theme.radius,
-      paddingVertical: 12,
-      alignItems: "center",
-    },
-    feedbackButtonText: { color: theme.colors.accent, fontWeight: "600" },
+    feedbackButtonText: { color: theme.colors.accent },
   });
 }

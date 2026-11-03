@@ -6,8 +6,12 @@ import {
   addDmCreatureFromCatalog,
   clearAllInitiative,
   clearDmCreatures,
+  createHomebrewMonster,
+  deleteHomebrewMonster,
   deleteSavedEncounter,
+  getMonsterCatalog,
   listDmCreatures,
+  listMonsterCatalog,
   listPartyInitiative,
   listSavedEncounters,
   loadSavedEncounter,
@@ -17,6 +21,7 @@ import {
   setDmCreatureInitiative,
   setPartyInitiative,
   toggleDmCreatureCondition,
+  updateHomebrewMonster,
 } from "../dmCreatureRepo";
 import { parseUsedAbilities } from "../monsterRolls";
 
@@ -137,5 +142,57 @@ describe("dmCreatureRepo", () => {
 
     await deleteSavedEncounter(saved.id);
     expect(await listSavedEncounters()).toEqual([]);
+  });
+});
+
+describe("dmCreatureRepo homebrew library", () => {
+  beforeEach(async () => {
+    await clearDmCreatures();
+  });
+
+  it("creates a homebrew monster, visible in the catalog, and usable like a seeded one", async () => {
+    const id = await createHomebrewMonster({
+      name: "Library Wyrmling",
+      hitPoints: 20,
+      armorClass: 16,
+      challengeRating: "2",
+    });
+
+    const catalog = await listMonsterCatalog();
+    const entry = catalog.find((m) => m.id === id);
+    expect(entry).toMatchObject({ name: "Library Wyrmling", hitPoints: 20, sourceKey: "homebrew" });
+
+    await addDmCreatureFromCatalog(id);
+    const creature = (await listDmCreatures()).find((c) => c.name === "Library Wyrmling");
+    expect(creature).toMatchObject({ maxHp: 20, armorClass: 16 });
+  });
+
+  it("edits a homebrew monster and sees the change reflected in the catalog cache", async () => {
+    // Uses the cached getMonsterCatalog (not listMonsterCatalog) deliberately, to prove
+    // createHomebrewMonster/updateHomebrewMonster invalidate the module-level cache.
+    await getMonsterCatalog();
+    const id = await createHomebrewMonster({ name: "Library Edit Monster", hitPoints: 5 });
+    await updateHomebrewMonster(id, { name: "Library Edited Monster", hitPoints: 9 });
+
+    const catalog = await getMonsterCatalog();
+    expect(catalog.find((m) => m.id === id)).toMatchObject({ name: "Library Edited Monster", hitPoints: 9 });
+  });
+
+  it("refuses to edit or delete a non-homebrew (seeded) monster", async () => {
+    const goblinId = await insertGoblin();
+
+    await updateHomebrewMonster(goblinId, { name: "Hijacked", hitPoints: 999 });
+    await deleteHomebrewMonster(goblinId);
+
+    const catalog = await listMonsterCatalog();
+    expect(catalog.find((m) => m.id === goblinId)).toMatchObject({ name: "Goblin", hitPoints: 7 });
+  });
+
+  it("deletes a homebrew monster from the library", async () => {
+    const id = await createHomebrewMonster({ name: "Library Delete Monster" });
+    await deleteHomebrewMonster(id);
+
+    const catalog = await listMonsterCatalog();
+    expect(catalog.find((m) => m.id === id)).toBeUndefined();
   });
 });

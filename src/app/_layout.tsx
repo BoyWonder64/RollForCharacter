@@ -11,13 +11,22 @@ import { SpecialElite_400Regular } from "@expo-google-fonts/special-elite";
 import { Orbitron_700Bold } from "@expo-google-fonts/orbitron";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { setAudioModeAsync } from "expo-audio";
 import { ThemeProvider, useTheme } from "../theme/ThemeContext";
 import { KeepAwakeProvider } from "../features/settings/KeepAwakeContext";
 import { DmModeProvider } from "../features/settings/DmModeContext";
+import { DeveloperModeProvider } from "../features/settings/DeveloperModeContext";
 import { RollHistoryProvider } from "../features/settings/RollHistoryContext";
+import { SoundSettingsProvider } from "../features/settings/SoundSettingsContext";
+import { PartyModeProvider } from "../features/settings/PartyModeContext";
 import { IconSettingsProvider } from "../features/icons/IconSettingsContext";
+import { AuthProvider } from "../features/auth/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
+
+// Sound effects should play like a game's SFX, not interrupted music -- audible
+// even with the iOS silent switch on, and mixed with whatever else is playing.
+setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "mixWithOthers" }).catch(() => {});
 
 function ThemedRoot() {
   const theme = useTheme();
@@ -67,13 +76,21 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <KeepAwakeProvider>
-            <DmModeProvider>
-              <RollHistoryProvider>
-                <IconSettingsProvider>
-                  <ThemedRoot />
-                </IconSettingsProvider>
-              </RollHistoryProvider>
-            </DmModeProvider>
+            <DeveloperModeProvider>
+              <DmModeProvider>
+                <RollHistoryProvider>
+                  <SoundSettingsProvider>
+                    <IconSettingsProvider>
+                      <PartyModeProvider>
+                        <AuthProvider>
+                          <ThemedRoot />
+                        </AuthProvider>
+                      </PartyModeProvider>
+                    </IconSettingsProvider>
+                  </SoundSettingsProvider>
+                </RollHistoryProvider>
+              </DmModeProvider>
+            </DeveloperModeProvider>
           </KeepAwakeProvider>
         </ThemeProvider>
       </SafeAreaProvider>

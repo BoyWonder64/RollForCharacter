@@ -7,6 +7,7 @@ import {
   listCharacterResources,
   listCustomResources,
   removeCustomResource,
+  resetResource,
   restoreResourceUse,
   rollResource,
   setResourceOverride,
@@ -93,6 +94,12 @@ export function ClassResourceTracker({ character }: { character: Character }) {
 
   async function handleOverride(change: ResourceOverrideChange) {
     if (adjusting) await setResourceOverride(character.id, adjusting.definition.id, change);
+    setAdjusting(null);
+    refresh();
+  }
+
+  async function handleReset() {
+    if (adjusting) await resetResource(character, adjusting.definition.id);
     setAdjusting(null);
     refresh();
   }
@@ -245,6 +252,7 @@ export function ClassResourceTracker({ character }: { character: Character }) {
         hidden={adjusting?.hidden ?? false}
         onClose={() => setAdjusting(null)}
         onSave={handleOverride}
+        onReset={handleReset}
       />
       <CustomResourceModal
         visible={modalOpen}

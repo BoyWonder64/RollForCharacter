@@ -1,6 +1,7 @@
 import { eq, like, and } from "drizzle-orm";
 import { db } from "../../db/client";
 import { characterMagicItems, magicItems } from "../../db/schema";
+import { touchCharacterUpdatedAt } from "./syncClock";
 
 const RARITY_ORDER: Record<string, number> = {
   Common: 0,
@@ -66,6 +67,7 @@ export async function addMagicItemFromCatalog(characterId: number, catalogId: nu
     requiresAttunement: definition.requiresAttunement,
     description: definition.description,
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function addCustomMagicItem(
@@ -81,16 +83,75 @@ export async function addCustomMagicItem(
     requiresAttunement: input.requiresAttunement ?? false,
     description: input.description ?? "",
   });
+  await touchCharacterUpdatedAt(characterId);
 }
 
 export async function removeCharacterMagicItem(itemId: number): Promise<void> {
+  const [row] = await db.select().from(characterMagicItems).where(eq(characterMagicItems.id, itemId));
   await db.delete(characterMagicItems).where(eq(characterMagicItems.id, itemId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function setMagicItemAttuned(itemId: number, attuned: boolean): Promise<void> {
+  const [row] = await db.select().from(characterMagicItems).where(eq(characterMagicItems.id, itemId));
   await db.update(characterMagicItems).set({ attuned }).where(eq(characterMagicItems.id, itemId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
 }
 
 export async function setMagicItemEquipped(itemId: number, equipped: boolean): Promise<void> {
+  const [row] = await db.select().from(characterMagicItems).where(eq(characterMagicItems.id, itemId));
   await db.update(characterMagicItems).set({ equipped }).where(eq(characterMagicItems.id, itemId));
+  if (row) await touchCharacterUpdatedAt(row.characterId);
+}
+
+// --- Shared homebrew library -----------------------------------------------
+// A homebrew magic item is just a `magicItems` row tagged `sourceKey:
+// "homebrew"` -- the catalog table is already global, so `listMagicItemCatalog`
+// already returns these, and `addMagicItemFromCatalog` already works
+// unchanged via `catalogId`. The guard on update/delete keeps seeded SRD rows
+// from ever being edited.
+
+export type HomebrewMagicItemInput = {
+  name: string;
+  category?: string;
+  rarity?: string;
+  requiresAttunement?: boolean;
+  description?: string;
+};
+
+export async function createHomebrewMagicItem(input: HomebrewMagicItemInput): Promise<number> {
+  const [row] = await db
+    .insert(magicItems)
+    .values({
+      name: input.name,
+      category: input.category ?? "",
+      rarity: input.rarity ?? "",
+      requiresAttunement: input.requiresAttunement ?? false,
+      description: input.description ?? "",
+      sourceKey: "homebrew",
+      sourceName: "Homebrew",
+    })
+    .returning();
+  return row.id;
+}
+
+export async function updateHomebrewMagicItem(id: number, input: HomebrewMagicItemInput): Promise<void> {
+  const [row] = await db.select().from(magicItems).where(eq(magicItems.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db
+    .update(magicItems)
+    .set({
+      name: input.name,
+      category: input.category ?? "",
+      rarity: input.rarity ?? "",
+      requiresAttunement: input.requiresAttunement ?? false,
+      description: input.description ?? "",
+    })
+    .where(eq(magicItems.id, id));
+}
+
+export async function deleteHomebrewMagicItem(id: number): Promise<void> {
+  const [row] = await db.select().from(magicItems).where(eq(magicItems.id, id));
+  if (!row || row.sourceKey !== "homebrew") return;
+  await db.delete(magicItems).where(eq(magicItems.id, id));
 }

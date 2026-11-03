@@ -9,18 +9,20 @@ Built and covered by Jest, but nobody has run these on a device or the web build
 - [ ] **DM Encounter tab**: party roller, bestiary browser (filters, quantity, roll HP, custom creatures), creature stat-block rolls, initiative tracker and saved encounters. Logic: `monsterRolls.test.ts`, `dmCreatureRepo.test.ts`. The roll buttons come from parsing stat-block text, so look at a few odd monsters as well as common ones.
 
 ## Top priority: make everything homebrewable
-Goal: anything the app ships as a catalog entry, a player can also create, edit and reuse. Custom abilities and trackers are done (see above). What's left is a shared library: today homebrew is per-character and one-off.
+Goal: anything the app ships as a catalog entry, a player can also create, edit and reuse. Custom abilities and trackers are done (see above). The reusable library's **data layer** is now done too (see below) -- what's left is the UI on top of it.
 
 ### Reusable homebrew library
-- [ ] Custom race and class are one overlay per character (`customRace*` / `customClass*` columns on `characters`). A second custom class (multiclass) is not modeled (from code).
-- [ ] Store homebrew once and pick it from any character: races, classes, subclasses, spells, feats, items, monsters and resources.
+- [x] Data layer: races, classes, subclasses, spells, feats, items, monsters and resources can each be stored once in a shared library and cloned onto any character. New `homebrewRepo.ts` (races/classes/subclasses), plus homebrew-aware additions to `featRepo.ts`, `magicItemRepo.ts`, `dmCreatureRepo.ts` (monsters), `gearRepo.ts` (weapons/armor), `resourceRepo.ts`, and `spellRepo.ts`. Picking a library race/class still clones onto the existing `customRace*`/`customClass*` overlay columns -- see the item below, unchanged by this.
+- [ ] UI: a browsable "Homebrew Library" screen (create/edit/delete each type, "add to character" from it), plus wiring the existing add-feat/add-item/add-spell/add-creature/add-resource modals to offer "save to library" and "pick from library". Nothing above is reachable from the app yet.
+- [ ] Custom race and class are still one overlay per character (`customRace*` / `customClass*` columns on `characters`). A second custom class (multiclass) is not modeled (from code).
 - [ ] Custom class progression (per-level features, spell slot table, resources, subclass level) so homebrew classes can use Level Up.
-- [ ] Create UI for custom spells (the `spells` table already allows a null `slug` for hand-typed ones), conditions, skills, languages and backgrounds.
-- [ ] Custom DM creatures can be added from the Encounter tab but only with name, HP, AC and DEX, and only into the current encounter. Give them actions and keep them in the library.
-- [ ] Edit and delete for existing custom weapons, armor, magic items and feats (add flows exist; edit does not).
+- [ ] Create UI for custom conditions, skills, languages and backgrounds (spells now have a UI-ready data path -- see above -- these four still don't).
+- [ ] Custom DM creatures: the repo now supports a full stat block (traits/actions/legendary actions) for a homebrew monster, but the Encounter tab's "+ custom creature" flow still only collects name/HP/AC/DEX and only adds into the current encounter, not the library -- the UI item above covers this.
+- [ ] Edit and delete for a character's own one-off custom weapons, armor, magic items and feats (the ones typed directly onto a character, distinct from the new shared library, which does have edit/delete) -- add flows exist; edit still does not.
 - [ ] Clone a catalog entry as a starting point for homebrew.
 - [ ] Export and import homebrew as JSON to share between players.
 - [ ] Custom abilities: an attached roll's `level` is total character level, not class level. Built-in abilities can be resized or hidden, but their recharge rule can't be changed and they can't get a roll.
+- [ ] Custom race size picker ([new.tsx:894](src/app/(tabs)/characters/new.tsx#L894)) only offers Small/Medium. Add Large, and widen the `"Small" | "Medium"` union in [types.ts:38,50](src/data/rulesets/types.ts#L38) plus the `customRaceSize` column default/type.
 
 ### Content and legal wording
 - [ ] The comment at [schema.ts:362](src/db/schema.ts#L362) says the app "only ships official D&D content". User-created content is the user's own, so reword it and add a note that homebrew is not covered by the SRD credits.

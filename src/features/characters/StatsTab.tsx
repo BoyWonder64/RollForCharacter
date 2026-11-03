@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import {
   ABILITY_LABELS,
@@ -46,8 +46,6 @@ import type { LevelUpChoices } from "./characterRepo";
 import type { AbilityScoreKey, Character, CharacterClass } from "../../types/models";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
-import { useIconSettings } from "../icons/IconSettingsContext";
-import { getCampaignItemIcon } from "../icons/iconAssets";
 
 const CURRENCY_FIELDS: {
   key: CurrencyDenomination;
@@ -211,14 +209,6 @@ export function StatsTab({
   const knownLanguages = parseLanguages(character)
     .map((id) => catalog.languages?.find((l) => l.id === id))
     .filter((l): l is NonNullable<typeof l> => !!l);
-  const { iconsEnabled, iconStyle } = useIconSettings();
-  const coinIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "coin") : undefined;
-  const gemIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "gem") : undefined;
-  const savingThrowIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "shield") : undefined;
-  const skillsIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "book") : undefined;
-  const armorIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "shield") : undefined;
-  const weaponsIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "sword") : undefined;
-  const notesIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "scroll") : undefined;
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [xpModalOpen, setXpModalOpen] = useState(false);
@@ -396,10 +386,7 @@ export function StatsTab({
       </View>
 
       <View style={styles.currencyHeaderRow}>
-        <View style={styles.sectionTitleRow}>
-          {coinIcon && <Image source={coinIcon} style={styles.sectionIcon} resizeMode="contain" />}
-          <Text style={[styles.sectionTitle, styles.sectionTitleInline]}>Currency</Text>
-        </View>
+        <Text style={[styles.sectionTitle, styles.sectionTitleInline]}>Currency</Text>
         <Pressable onPress={() => setCurrencyModalOpen(true)}>
           <Text style={styles.currencyEditLink}>Add / Spend</Text>
         </Pressable>
@@ -422,7 +409,7 @@ export function StatsTab({
         onConfirm={handleCurrencyConfirm}
       />
 
-      <SectionTitle icon={gemIcon} title="Ability Scores" />
+      <SectionTitle title="Ability Scores" />
       <View style={styles.abilityGrid}>
         {ABILITY_KEYS.map((key) => {
           const score = character[key];
@@ -441,7 +428,7 @@ export function StatsTab({
         })}
       </View>
 
-      <SectionTitle icon={savingThrowIcon} title="Saving Throws" />
+      <SectionTitle title="Saving Throws" />
       <View style={styles.proficiencyGrid}>
         {ABILITY_KEYS.map((key) => {
           const proficient = isSavingThrowProficient(character, key, feats);
@@ -470,7 +457,7 @@ export function StatsTab({
         })}
       </View>
 
-      <SectionTitle icon={skillsIcon} title="Skills" />
+      <SectionTitle title="Skills" />
       <View style={styles.proficiencyGrid}>
         {catalog.skills.map((skill) => {
           const proficient = isSkillProficient(character, skill.id, feats);
@@ -504,7 +491,7 @@ export function StatsTab({
         })}
       </View>
 
-      <SectionTitle icon={skillsIcon} title="Passive Scores" />
+      <SectionTitle title="Passive Scores" />
       <View style={styles.summaryRow}>
         {PASSIVE_SKILLS.map(({ label, skillIds }) => {
           const skill = catalog.skills.find((s) => skillIds.includes(s.id));
@@ -522,11 +509,7 @@ export function StatsTab({
         })}
       </View>
 
-      <View style={styles.sectionTitleRow}>
-        {armorIcon && <Image source={armorIcon} style={styles.sectionIcon} resizeMode="contain" />}
-        {weaponsIcon && <Image source={weaponsIcon} style={styles.sectionIcon} resizeMode="contain" />}
-        <Text style={styles.sectionTitle}>Armor &amp; Weapons</Text>
-      </View>
+      <Text style={styles.sectionTitle}>Armor &amp; Weapons</Text>
       {weapons.length === 0 && armor.length === 0 ? (
         <Text style={styles.flavorLine}>
           Nothing carried yet — add gear from the Equipment tab.
@@ -678,7 +661,7 @@ export function StatsTab({
 
       {character.notes ? (
         <>
-          <SectionTitle icon={notesIcon} title="Notes" />
+          <SectionTitle title="Notes" />
           <Text style={styles.notes}>{character.notes}</Text>
         </>
       ) : null}
@@ -686,13 +669,12 @@ export function StatsTab({
   );
 }
 
-function SectionTitle({ icon, title }: { icon?: number; title: string }) {
+function SectionTitle({ title }: { title: string }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.sectionTitleRow}>
-      {icon && <Image source={icon} style={styles.sectionIcon} resizeMode="contain" />}
       <Text style={styles.sectionTitle}>{title}</Text>
     </View>
   );
@@ -789,7 +771,6 @@ function createStyles(theme: Theme) {
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     sectionTitleInline: { marginTop: 0, marginBottom: 0 },
-    sectionIcon: { width: 18, height: 18 },
     currencyHeaderRow: {
       flexDirection: "row",
       alignItems: "center",

@@ -26,10 +26,12 @@ import { DeathSaveTracker } from "../../../../components/DeathSaveTracker";
 import { RestModal } from "../../../../components/RestModal";
 import {
   buildStructuredRollPlan,
+  naturalD20Flag,
   rollD20,
   structuredRollToResult,
 } from "../../../../features/dice/structuredRolls";
 import { saveRoll } from "../../../../features/dice/diceRepo";
+import { useSoundEffects } from "../../../../features/sound/useSoundEffects";
 import { useTheme } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
 import type { Theme } from "../../../../theme/colors";
@@ -101,6 +103,7 @@ function CharacterSheetBody({
 }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const playSound = useSoundEffects();
   const [activeTab, setActiveTab] = useState<TabKey>("stats");
   const [hpModalMode, setHpModalMode] = useState<"damage" | "heal" | null>(null);
   const [restModalOpen, setRestModalOpen] = useState(false);
@@ -164,6 +167,10 @@ function CharacterSheetBody({
               raw,
               "normal"
             );
+            playSound("diceLand");
+            const flag = naturalD20Flag(raw.used);
+            if (flag === "nat20") playSound("critNat20");
+            if (flag === "nat1") playSound("critNat1");
             await saveRoll(result, characterId);
             if (raw.total < dc) {
               await endConcentration(characterId);

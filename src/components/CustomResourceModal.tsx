@@ -159,7 +159,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
         {maxMode === "level" && (
           <>
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.spacedInput]}
               value={breakpoints}
               onChangeText={setBreakpoints}
               placeholder="level:uses, e.g. 1:1, 5:2, 11:3"
@@ -179,7 +179,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
               onChange={setAbility}
               styles={styles}
             />
-            <View style={styles.pairRow}>
+            <View style={[styles.pairRow, styles.spacedInput]}>
               <View style={styles.pairCell}>
                 <Text style={styles.fieldLabel}>Bonus</Text>
                 <TextInput
@@ -378,10 +378,11 @@ function createStyles(theme: Theme) {
     iconImage: { width: 28, height: 28 },
     iconFallback: { color: theme.colors.text, fontWeight: "700", fontSize: 11 },
     shortInput: { width: 90, marginTop: 8 },
+    spacedInput: { marginTop: 10 },
     multilineInput: { minHeight: 60, textAlignVertical: "top" },
     pairRow: { flexDirection: "row", gap: 10 },
     pairCell: { flex: 1 },
-    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, rowGap: 8 },
     chip: {
       backgroundColor: theme.colors.surfaceAlt,
       borderWidth: 1,
