@@ -402,6 +402,7 @@ export function DmCreatureCard({
       )}
 
       <View style={styles.row}>
+        <Text style={styles.hint}>Amount</Text>
         <TextInput
           style={styles.smallInput}
           value={hpAmount}

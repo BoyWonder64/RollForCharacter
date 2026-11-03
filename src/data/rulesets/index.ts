@@ -17,14 +17,7 @@ import { SPELLS_35E } from "./3.5e/spells";
 import { SKILLS_35E } from "./3.5e/skills";
 import { SRD_LANGUAGES } from "./sharedLanguages";
 import type { RulesetCatalog } from "./types";
-import {
-  NON_SRD_SUBCLASS_NAMES_5E,
-  withNonSrdSubclasses,
-} from "./nonSrdSubclasses";
 import { withPactMagic } from "./warlockPactMagic";
-import { SUBCLASSES_5E } from "./5e/subclasses";
-import { SUBCLASSES_5E_MARTIAL } from "./5e/subclassesMartial";
-import { SUBCLASSES_5E_2024 } from "./5e-2024/subclasses";
 
 // Every ruleset the app supports is registered here; onboarding's ruleset
 // picker and every lookup in this file reads from this record generically,
@@ -35,7 +28,7 @@ export const RULESETS: Record<string, RulesetCatalog> = {
     label: "D&D 5th Edition (2024)",
     races: RACES_5E_2024,
     classes: CLASSES_5E_2024,
-    classProgressions: withPactMagic(withNonSrdSubclasses(CLASS_PROGRESSIONS_5E_2024, {}, SUBCLASSES_5E_2024)),
+    classProgressions: withPactMagic(CLASS_PROGRESSIONS_5E_2024),
     spells: SPELLS_5E_2024,
     skills: SKILLS_5E_2024,
     // Same weapon/armor stat tables as 2014 (verified against SRD 5.2's
@@ -55,7 +48,7 @@ export const RULESETS: Record<string, RulesetCatalog> = {
     label: "D&D 5th Edition (2014)",
     races: RACES_5E,
     classes: CLASSES_5E,
-    classProgressions: withPactMagic(withNonSrdSubclasses(CLASS_PROGRESSIONS_5E, NON_SRD_SUBCLASS_NAMES_5E, { ...SUBCLASSES_5E, ...SUBCLASSES_5E_MARTIAL })),
+    classProgressions: withPactMagic(CLASS_PROGRESSIONS_5E),
     spells: SPELLS_5E,
     skills: SKILLS_5E,
     weapons: WEAPONS_5E,

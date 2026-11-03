@@ -15,9 +15,13 @@ type Props = {
 
 /**
  * Chooses a class's subclass (Bard College, Divine Domain, Martial
- * Archetype, ...). Lists the ruleset's catalog entries, plus a "Custom"
- * option for anything not catalogued -- every edition only ships its SRD
- * subclasses' text, so the rest of a class's subclasses are typed by name.
+ * Archetype, ...). Lists only the ruleset's SRD subclass for that class
+ * (the one real, CC-BY/OGL-licensed option each edition ships) plus a
+ * free-text "Custom" field for jotting down a name. Every other published
+ * subclass (Battle Master, Circle of the Moon, etc.) is non-SRD content
+ * this app doesn't catalog or suggest by name -- players who want one of
+ * those should build it as a real Homebrew Subclass (Settings → Homebrew
+ * Library) instead, which supports full traits rather than just a name.
  * Shared by onboarding and the edit screen; Level Up has its own
  * step-by-step version of the same choice.
  */
@@ -51,22 +55,23 @@ export function SubclassPicker({ progression, value, onChange, onCustomFocus }: 
           styles={styles}
         />
       </View>
-      {selected && (
-        <Text style={styles.hint}>
-          {selected.srdLicensed
-            ? selected.summary
-            : "Not SRD content — we only record the name, so add your own notes for its features."}
-        </Text>
-      )}
+      {selected && <Text style={styles.hint}>{selected.summary}</Text>}
       {isCustom && (
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={onChange}
-          onFocus={onCustomFocus}
-          placeholder={progression.subclassLabel ? `Name of your ${progression.subclassLabel}` : "Subclass name"}
-          placeholderTextColor={theme.colors.textMuted}
-        />
+        <>
+          <TextInput
+            style={styles.input}
+            value={value}
+            onChangeText={onChange}
+            onFocus={onCustomFocus}
+            placeholder={progression.subclassLabel ? `Name of your ${progression.subclassLabel}` : "Subclass name"}
+            placeholderTextColor={theme.colors.textMuted}
+          />
+          <Text style={styles.hint}>
+            Not SRD content, so this app doesn&apos;t ship or suggest it by name -- this is just a
+            label. For real features and resources, build it as a Homebrew Subclass instead
+            (Settings → Homebrew Library).
+          </Text>
+        </>
       )}
     </View>
   );

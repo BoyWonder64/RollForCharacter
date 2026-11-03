@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { useTheme } from "../theme/ThemeContext";
-import { createDmStyles } from "../components/dmStyles";
+import type { Theme } from "../theme/colors";
 import { Button } from "../components/Button";
 import { RULESETS, DEFAULT_RULESET } from "../data/rulesets";
 import {
@@ -193,7 +193,7 @@ async function deleteRow(category: CategoryKey, id: number): Promise<void> {
 
 export default function HomebrewLibraryScreen() {
   const theme = useTheme();
-  const styles = useMemo(() => createDmStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const rulesetOptions = useMemo(() => Object.values(RULESETS).map((r) => ({ id: r.id, label: r.label })), []);
   const [ruleset, setRuleset] = useState(DEFAULT_RULESET);
@@ -324,46 +324,56 @@ export default function HomebrewLibraryScreen() {
     : characters;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: 16 }}>
+    <View style={styles.container}>
       <Stack.Screen options={{ title: "Homebrew Library" }} />
 
-      <Text style={styles.subTitle}>Ruleset</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
-          {rulesetOptions.map((r) => (
-            <Pressable
+      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
+        <Text style={styles.title}>Homebrew Library</Text>
+        <Text style={styles.hint}>
+          Create your own races, classes, weapons, armor, magic items, feats, monsters,
+          abilities, and spells here -- once saved, reuse them on any character.
+        </Text>
+
+        <Text style={styles.fieldLabel}>Ruleset</Text>
+        {rulesetOptions.map((r) => {
+          const full = RULESETS[r.id];
+          return (
+            <ChoiceRow
               key={r.id}
-              style={[styles.chip, ruleset === r.id && styles.chipActive]}
+              label={r.label}
+              sublabel={
+                full
+                  ? `${full.classes.length} classes · ${full.races.length} races · ${full.spells.length} spells`
+                  : ""
+              }
+              selected={ruleset === r.id}
               onPress={() => setRuleset(r.id)}
-            >
-              <Text style={[styles.chipText, ruleset === r.id && styles.chipTextActive]}>{r.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+            />
+          );
+        })}
 
-      <Text style={[styles.subTitle, { marginTop: 14 }]}>Category</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
+        <Text style={[styles.fieldLabel, { marginTop: 18 }]}>Category</Text>
+        <View style={styles.categoryGrid}>
           {CATEGORIES.map((c) => (
-            <Pressable key={c.key} style={[styles.chip, category === c.key && styles.chipActive]} onPress={() => setCategory(c.key)}>
-              <Text style={[styles.chipText, category === c.key && styles.chipTextActive]}>{c.label}</Text>
+            <Pressable
+              key={c.key}
+              onPress={() => setCategory(c.key)}
+              style={[styles.categoryCard, category === c.key && styles.categoryCardActive]}
+            >
+              <Text
+                style={[styles.categoryCardText, category === c.key && styles.categoryCardTextActive]}
+              >
+                {c.label}
+              </Text>
             </Pressable>
           ))}
         </View>
-      </ScrollView>
 
-      <Button
-        title={`+ New ${activeCategory.singular}`}
-        variant="primary"
-        fullWidth
-        style={{ marginTop: 14, marginBottom: 10 }}
-        onPress={openCreate}
-      />
-
-      <ScrollView style={{ flex: 1 }}>
+        <Text style={[styles.fieldLabel, { marginTop: 18 }]}>
+          {activeCategory.label} ({rows.length})
+        </Text>
         {rows.length === 0 && (
-          <Text style={[styles.hint, { textAlign: "center", padding: 20 }]}>
+          <Text style={styles.hint}>
             {activeCategory.usesRuleset
               ? `No homebrew ${activeCategory.label.toLowerCase()} yet for ${RULESETS[ruleset]?.label ?? ruleset}.`
               : `No homebrew ${activeCategory.label.toLowerCase()} yet.`}
@@ -371,28 +381,32 @@ export default function HomebrewLibraryScreen() {
         )}
         {rows.map((row) => (
           <View key={row.id} style={styles.card}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sectionTitle}>{row.name}</Text>
-                <Text style={styles.hint}>{row.summary}</Text>
-              </View>
-              <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                {category !== "monsters" && (
-                  <Pressable style={styles.secondaryButton} onPress={() => openAddToCharacter(row)}>
-                    <Text style={styles.secondaryButtonText}>Add to Character</Text>
-                  </Pressable>
-                )}
-                <Pressable style={styles.secondaryButton} onPress={() => openEdit(row)}>
-                  <Text style={styles.secondaryButtonText}>Edit</Text>
-                </Pressable>
-                <Pressable style={styles.dangerButton} onPress={() => confirmDelete(row)}>
-                  <Text style={styles.dangerButtonText}>Delete</Text>
-                </Pressable>
-              </View>
+            <Text style={styles.cardName}>{row.name}</Text>
+            <Text style={styles.cardSummary}>{row.summary}</Text>
+            <View style={styles.cardActions}>
+              {category !== "monsters" && (
+                <Button
+                  title="Add to Character"
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => openAddToCharacter(row)}
+                />
+              )}
+              <Button title="Edit" size="sm" variant="secondary" onPress={() => openEdit(row)} />
+              <Button title="Delete" size="sm" variant="danger" onPress={() => confirmDelete(row)} />
             </View>
           </View>
         ))}
       </ScrollView>
+
+      <View style={styles.navRow}>
+        <Button
+          title={`+ New ${activeCategory.singular}`}
+          variant="primary"
+          fullWidth
+          onPress={openCreate}
+        />
+      </View>
 
       <AddToCharacterModal
         visible={addTargetRow !== null}
@@ -502,4 +516,105 @@ export default function HomebrewLibraryScreen() {
       )}
     </View>
   );
+}
+
+function ChoiceRow({
+  label,
+  sublabel,
+  selected,
+  onPress,
+}: {
+  label: string;
+  sublabel: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <Pressable style={[styles.choiceRow, selected && styles.choiceRowActive]} onPress={onPress}>
+      <Text style={styles.choiceRowLabel}>{label}</Text>
+      {sublabel.length > 0 && <Text style={styles.choiceRowSub}>{sublabel}</Text>}
+    </Pressable>
+  );
+}
+
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    body: { flex: 1 },
+    bodyContent: { padding: 16 },
+    title: {
+      color: theme.colors.text,
+      fontSize: 22,
+      fontWeight: "700",
+      marginBottom: 8,
+      fontFamily: theme.displayFontFamily,
+    },
+    hint: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 12 },
+    fieldLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      fontFamily: theme.displayFontFamily,
+      marginBottom: 8,
+    },
+    choiceRow: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius,
+      padding: 14,
+      marginBottom: 8,
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    choiceRowActive: { borderColor: theme.colors.primary },
+    choiceRowLabel: {
+      color: theme.colors.text,
+      fontSize: 16,
+      fontWeight: "600",
+      fontFamily: theme.displayFontFamily,
+    },
+    choiceRowSub: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
+    categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    categoryCard: {
+      width: "31%",
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingVertical: 10,
+      alignItems: "center",
+    },
+    categoryCardActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    categoryCardText: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: "600",
+      fontFamily: theme.displayFontFamily,
+      textAlign: "center",
+    },
+    categoryCardTextActive: { color: theme.colors.primaryText },
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: 14,
+      marginBottom: 8,
+    },
+    cardName: {
+      color: theme.colors.text,
+      fontSize: 17,
+      fontWeight: "600",
+      fontFamily: theme.displayFontFamily,
+    },
+    cardSummary: { color: theme.colors.textMuted, fontSize: 13, marginTop: 2, marginBottom: 10 },
+    cardActions: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+    navRow: {
+      padding: 16,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+    },
+  });
 }

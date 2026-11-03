@@ -174,13 +174,13 @@ describe("multiclassing into a class that picks its subclass at level 1", () => 
 
     const outcome = await addClass(character.id, "cleric", "Cleric", {
       hpMethod: "average",
-      subclassId: "knowledge-domain",
+      subclassId: "life-domain",
     });
 
     const rows = await listCharacterClasses(character.id);
-    expect(rows[1]).toMatchObject({ classId: "cleric", subclass: "knowledge-domain" });
+    expect(rows[1]).toMatchObject({ classId: "cleric", subclass: "life-domain" });
     expect(outcome?.featuresGained.map((f) => f.name)).toEqual(
-      expect.arrayContaining(["Spellcasting", "Blessings of Knowledge"])
+      expect.arrayContaining(["Spellcasting", "Life Domain Spells"])
     );
   });
 });

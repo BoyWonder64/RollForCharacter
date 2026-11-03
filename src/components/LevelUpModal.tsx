@@ -394,9 +394,7 @@ function LevelUpModalForm({
                 }}
               >
                 <Text style={styles.optionButtonTitle}>{sub.name}</Text>
-                <Text style={styles.optionButtonSub}>
-                  {sub.srdLicensed ? sub.summary : "Not SRD content — pick this and add your own notes."}
-                </Text>
+                <Text style={styles.optionButtonSub}>{sub.summary}</Text>
               </Pressable>
             ))}
           </View>
@@ -404,14 +402,14 @@ function LevelUpModalForm({
         <>
             <Text style={styles.hint}>
               {subclasses.length > 0
-                ? "Not listed? Type the name of yours instead."
+                ? "Not listed? This app only catalogs the SRD subclass, so anything else isn't suggested by name. Type a label here, or build it as a Homebrew Subclass (Settings → Homebrew Library) for real features."
                 : "We don't have detailed data for this ruleset's subclasses yet — type the name of the one you picked."}
             </Text>
             <TextInput
               style={styles.input}
               value={customSubclassName}
               onChangeText={setCustomSubclassName}
-              placeholder="e.g. Battle Master"
+              placeholder="Subclass name"
               placeholderTextColor={theme.colors.textMuted}
             />
             <Pressable

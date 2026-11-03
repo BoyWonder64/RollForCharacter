@@ -148,11 +148,12 @@ export type Subclass = {
    * True only when this subclass's own feature text is itself SRD/OGL/CC-BY
    * licensed and safe to ship verbatim -- the same distinction already made
    * for backgrounds (see `project_character_onboarding` memory). Each 5e
-   * SRD edition publishes exactly one subclass per class under this rule;
-   * every other subclass (Battle Master, Circle of the Moon, etc.) is
-   * PHB-only content, so it's represented with `srdLicensed: false` and no
-   * copied feature text -- name/summary only, same free-text spirit as the
-   * Background picker's "Custom..." option.
+   * SRD edition catalogs exactly one subclass per class under this rule;
+   * every other published subclass (Battle Master, Circle of the Moon,
+   * etc.) is non-SRD and is deliberately *not* catalogued or suggested by
+   * name here -- see `project_subclass_policy` memory. A player who wants
+   * one builds it as a real Homebrew Subclass (full traits) instead of
+   * this app shipping a pre-written name/summary for it.
    */
   srdLicensed: boolean;
   features: ClassFeature[];

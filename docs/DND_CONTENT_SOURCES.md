@@ -25,6 +25,28 @@ reversal is recorded in full in "Implementation outcome" below so the
 history (and the reasoning) isn't lost, but it does not reflect this
 app's current or intended content.
 
+**Subclasses specifically (2026-11-03 policy)**: each class's catalog ships
+*only* the one SRD-licensed subclass the SRD itself publishes in full.
+Every other published subclass (Battle Master, Circle of the Moon, Oath of
+Vengeance, etc.) used to be catalogued too — as an original-wording
+paraphrase of the mechanic, never the book's text — but this was removed
+entirely at the user's explicit instruction, including the name-only
+suggestions. Even though an original paraphrase is legally distinct from
+copying protected text (mechanics/rules aren't copyrightable, only their
+specific expression is — see the Copyright & trademark boundaries section
+below), the user's call is that it's simpler to build out real Homebrew
+Subclass support (already shipped — `src/components/homebrew/
+HomebrewSubclassModal.tsx`, `homebrewRepo.ts`) than to maintain any
+non-SRD content, even content that's probably fine. This is a deliberate
+risk-tolerance choice, not a gap: don't re-add non-SRD subclass names,
+summaries, or features to the catalog, and don't suggest them as
+placeholder examples in UI copy either (e.g. a text input's placeholder
+text) — point users to Homebrew Subclass instead. The same reasoning likely
+extends to other "original-paraphrase-of-non-SRD-content" categories if
+they ever come up (e.g. non-SRD feats/invocations written in original
+wording) — ask the user before adding any such category, don't assume
+the subclass precedent only covers subclasses.
+
 **If a future task calls for expanding content** (more races, classes,
 feats, monsters, magic items, or anything else) and the official WotC SRD
 doesn't have enough material to satisfy it, **stop and ask the user**
@@ -44,6 +66,50 @@ what actually gets pulled in. It complements the sourcing notes already in
 `project_character_onboarding` memory (per-ruleset API endpoints, the
 curl-not-WebFetch rule, the SRD-vs-PHB licensing split for
 backgrounds/subclasses).
+
+## Copyright & trademark boundaries (what's safe vs. protected)
+
+General background, so future content decisions don't have to re-derive
+this from scratch. This is not legal advice — it's working guidance for
+staying inside the WotC-SRD-only scope policy above.
+
+**Not copyrightable — safe regardless of source:**
+- Game mechanics, math, and procedures themselves (rolling a d20 + modifier
+  vs. AC, how advantage works, level-progression structure). U.S. copyright
+  doesn't cover rules/mechanics, only their specific written expression.
+- Rules re-written in this app's own words rather than copied verbatim.
+- Generic fantasy tropes not unique to D&D (orcs, goblins, elves, dwarves,
+  basic swords/potions) — stock mythological/public-domain elements, though
+  a specific art depiction of one could still be protected.
+
+**The CC-BY-4.0 SRD content** (5.1 and 5.2/5.2.1) is explicitly licensed for
+reuse, verbatim text included, as long as the attribution terms are
+followed — see the Settings → Legal & Licenses screen's "D&D Content Sources" section for the
+exact required notices, sourced verbatim from each SRD's own Legal
+Information page.
+
+**Copyrighted/trademarked — stays out of scope regardless of CC-BY/OGL
+status:**
+- Verbatim text from non-SRD books (Player's Handbook, DMG, Xanathar's,
+  Tasha's, any other sourcebook) — already excluded by the scope policy
+  above, not just a copyright nicety.
+- Product Identity / trademarks: "Dungeons & Dragons," "D&D," "Wizards of
+  the Coast," proprietary monsters (Beholder, Mind Flayer/Illithid,
+  Carrion Crawler, Displacer Beast, Yuan-ti, etc.), and proprietary
+  lore/settings (Forgotten Realms, Ravenloft, Waterdeep, named NPCs like
+  Elminster or Drizzt). Note this is mostly moot for this app already —
+  the SRD itself omits almost all of these by design, so the monster/race
+  catalogs pulled from `srd-2014`/`srd-2024` don't contain them in the
+  first place.
+- All official WotC art, maps, icons, and logos — this app's own art
+  (Raven Fantasy Icons, etc., see the Settings Credits section) is
+  separately licensed and never WotC's.
+
+**If a future task wants non-SRD monster stats or named items**: per the
+scope policy above, stop and ask the user first — don't "file-serial-number"
+a proprietary monster (rename Mind Flayer to an original creature with its
+own name/description) as a default workaround without checking, even though
+that technique is legally valid in general.
 
 ## What the app already has
 
@@ -274,6 +340,17 @@ app today.
 - **Extended Races/Classes**: removed entirely (see below) — the onboarding
   race/class steps are back to core-SRD-only, same as before this day's
   work. No "Extended" toggle exists in the UI anymore.
+- **Subclasses (2026-11-03)**: originally each class's catalog carried one
+  SRD subclass with real feature text plus every other published subclass
+  as an original-wording paraphrase (`src/data/rulesets/nonSrdSubclasses.ts`,
+  `5e/subclasses.ts`, `5e/subclassesMartial.ts`, `5e-2024/subclasses.ts`,
+  merged in via `withNonSrdSubclasses` in `index.ts`). All four files and
+  the merge call were removed at the user's explicit instruction — see the
+  "Subclasses specifically" note above. Each class's catalog now carries
+  exactly its one SRD subclass; `SubclassPicker.tsx` and `LevelUpModal.tsx`
+  were updated so their free-text fallback points to Homebrew Subclass
+  instead of suggesting a non-SRD name (the old placeholder text literally
+  said "e.g. Battle Master").
 
 ### What was tried and reverted the same day
 
