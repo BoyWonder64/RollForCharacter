@@ -27,8 +27,8 @@ Goal: anything the app ships as a catalog entry, a player can also create, edit 
 - [ ] Custom race size picker ([new.tsx:894](src/app/(tabs)/characters/new.tsx#L894)) only offers Small/Medium. Add Large, and widen the `"Small" | "Medium"` union in [types.ts:38,50](src/data/rulesets/types.ts#L38) plus the `customRaceSize` column default/type.
 
 ### Content and legal wording
-- [ ] The comment at [schema.ts:362](src/db/schema.ts#L362) says the app "only ships official D&D content". User-created content is the user's own, so reword it and add a note that homebrew is not covered by the SRD credits.
-- [ ] Make the Credits screen in [settings.tsx](src/app/(tabs)/settings.tsx) distinguish shipped SRD/OGL content from user content.
+- [x] The `feats` table comment in [schema.ts](src/db/schema.ts) said the app "only ships official D&D content" -- reworded to note homebrew feats share the same table (`sourceKey: "homebrew"`) and aren't SRD/CC-BY/OGL content.
+- [x] Credits/content-sources moved off the main Settings screen into their own [legal.tsx](src/app/legal.tsx) screen (Settings → Legal & Licenses), which now also states that Homebrew Library content isn't covered by the SRD/CC-BY/OGL licenses listed there.
 
 ## Starting equipment: still open
 - [ ] 3.5e kits are text only ("A greataxe or other martial weapon"), with no swap and no stats, and the text ends up as gear items. This needs a 3.5e weapon, armor and shield catalog (from d20srd.org) and a proficiency model.
@@ -79,5 +79,5 @@ Found in the 2026-11-02 class and race review against open5e v2 (srd-2014) and d
 - [ ] Rogue special abilities (13/16/19) and Monk/Fighter bonus feats are listed, but the picks aren't tracked.
 
 ## Docs
-- [ ] Code comments point to files that don't exist: `LEGAL.md` (3.5e OGL notes), `docs/DND_CONTENT_SOURCES.md` (SRD source and licence history), `FEATURES.md` / `ART_ONBOARDING.md` (icon pack notes) and `EQUIPMENT_ICON_CATALOG.md`. Recreate them or remove the comments.
+- [x] `LEGAL.md` (3.5e OGL notes, at `src/data/rulesets/3.5e/LEGAL.md`), `docs/DND_CONTENT_SOURCES.md`, `FEATURES.md`, `ART_ONBOARDING.md` and `EQUIPMENT_ICON_CATALOG.md` all exist now -- the old "points to files that don't exist" note was stale.
 - [ ] Keep README.md and [docs/DATA_LAYER.md](docs/DATA_LAYER.md) in step with any schema change (see Checks in README).

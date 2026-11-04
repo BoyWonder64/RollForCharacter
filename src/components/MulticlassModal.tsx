@@ -464,6 +464,13 @@ export function MulticlassModalForm({
             {f.description ? ` -- ${f.description}` : ""}
           </Text>
         ))}
+        {progression?.subclassLevel !== undefined && progression.subclassLevel > 1 && (
+          <Text style={styles.featureText}>
+            A {chosenClass.name} normally chooses their {progression.subclassLabel ?? "subclass"} at
+            level {progression.subclassLevel} -- you&apos;ll be asked when this class reaches that
+            level.
+          </Text>
+        )}
       </View>
       <Pressable
         style={styles.primaryButton}

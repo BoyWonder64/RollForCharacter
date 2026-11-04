@@ -399,9 +399,12 @@ export const feats = sqliteTable("feats", {
   prerequisite: text("prerequisite").notNull().default(""),
   description: text("description").notNull().default(""),
   // Which official WotC SRD document this came from (e.g. "srd-2024") and
-  // its display name, for the Settings credits/attribution screen. This app
-  // only ships official D&D content -- see docs/DND_CONTENT_SOURCES.md's
-  // "Scope" note.
+  // its display name, for the Settings → Legal & Licenses attribution
+  // screen -- see docs/DND_CONTENT_SOURCES.md's "Scope" note. This table
+  // also holds player-created homebrew feats (see `createHomebrewFeat` in
+  // featRepo.ts), tagged `sourceKey: "homebrew"` / `sourceName: "Homebrew"`
+  // instead of a real SRD key. Homebrew rows are the player's own content,
+  // not covered by the SRD/CC-BY/OGL credits that screen lists.
   sourceKey: text("source_key").notNull().default(""),
   sourceName: text("source_name").notNull().default(""),
 });

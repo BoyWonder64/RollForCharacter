@@ -134,9 +134,12 @@ export default function LegalScreen() {
 
         <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>D&amp;D Content Sources</Text>
         <Text style={styles.hint}>
-          Races, classes, spells, feats, magic items, monsters, and conditions in this app are
-          drawn from these openly-licensed rules documents, used under their Creative Commons
-          attribution terms.
+          Races, classes, spells, feats, magic items, monsters, and conditions this app ships
+          as catalog entries are drawn from these openly-licensed rules documents, used under
+          their Creative Commons attribution terms. This does not cover anything you create
+          yourself in Homebrew Library -- homebrew races, classes, subclasses, spells, feats,
+          magic items, monsters, and abilities are your own content, not SRD/CC-BY/OGL material,
+          and aren&apos;t covered by the licenses or attributions on this screen.
         </Text>
         {DND_CONTENT_SOURCES.map((source) => (
           <Pressable
