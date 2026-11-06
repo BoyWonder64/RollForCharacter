@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "./AppText";
 import { useFocusEffect } from "expo-router";
 import {
   addCatalogFeat,

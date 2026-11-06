@@ -6,9 +6,9 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   View,
 } from "react-native";
+import { Text } from "../../components/AppText";
 import { router, useFocusEffect } from "expo-router";
 import { CreatePartyModal } from "../../components/CreatePartyModal";
 import { JoinPartyModal } from "../../components/JoinPartyModal";

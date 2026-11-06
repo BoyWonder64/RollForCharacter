@@ -6,14 +6,14 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getCampaignItemIcon } from "../features/icons/iconAssets";
+import { DoneAccessory } from "./DoneAccessory";
 
 type HpDeltaModalProps = {
   visible: boolean;
@@ -28,6 +28,7 @@ export function HpDeltaModal({ visible, mode, onClose, onConfirm }: HpDeltaModal
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-HpDeltaModal" />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -78,7 +79,7 @@ function HpDeltaModalForm({
         onChangeText={setAmountText}
         placeholder="0"
         placeholderTextColor={theme.colors.textMuted}
-        keyboardType="number-pad"
+        keyboardType="number-pad" inputAccessoryViewID="done-HpDeltaModal"
         autoFocus
       />
       {mode === "damage" && (

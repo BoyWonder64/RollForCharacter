@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULT_RULESET, getRulesetCatalog } from "../data/rulesets";
 import { ABILITY_LABELS } from "../features/characters/characterCalculations";
@@ -19,6 +20,7 @@ import { useRollHistorySetting } from "../features/settings/RollHistoryContext";
 import type { AbilityScoreKey, Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "./dmStyles";
+import { DoneAccessory } from "./DoneAccessory";
 
 const SELECTION_KEY = "rollforcharacter.dm.partySelection";
 
@@ -299,13 +301,14 @@ export function DmPartyRoller({
             {rollType !== "initiative" && (
               <View>
                 <Text style={styles.subTitle}>DC</Text>
+                <DoneAccessory id="done-DmPartyRoller" />
                 <TextInput
                   style={styles.smallInput}
                   value={dcText}
                   onChangeText={setDcText}
                   placeholder="—"
                   placeholderTextColor={theme.colors.textMuted}
-                  keyboardType="number-pad"
+                  keyboardType="number-pad" inputAccessoryViewID="done-DmPartyRoller"
                 />
               </View>
             )}

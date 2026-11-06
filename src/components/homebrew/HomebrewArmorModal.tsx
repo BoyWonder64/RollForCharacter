@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, View } from "react-native";
+import { Text, TextInput } from "../AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import {
@@ -8,6 +9,7 @@ import {
   updateHomebrewArmor,
   type CustomArmorInput,
 } from "../../features/characters/gearRepo";
+import { DoneAccessory } from "../DoneAccessory";
 
 const CATEGORIES = ["Light", "Medium", "Heavy", "Shield"] as const;
 const DEX_MODIFIERS = ["full", "max2", "none"] as const;
@@ -77,12 +79,12 @@ export function HomebrewArmorModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-HomebrewArmorModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{initial ? "Edit Armor" : "New Homebrew Armor"}</Text>
-            <KeyboardAwareScrollView
-              keyboardShouldPersistTaps="handled"
+            <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
               style={{ maxHeight: 420 }}
               bottomOffset={60}
             >
@@ -108,11 +110,11 @@ export function HomebrewArmorModal({
               <View style={[styles.row, { marginTop: 8 }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hint}>Base AC</Text>
-                  <TextInput style={styles.input} value={baseAcText} onChangeText={setBaseAcText} keyboardType="number-pad" />
+                  <TextInput style={styles.input} value={baseAcText} onChangeText={setBaseAcText} keyboardType="number-pad" inputAccessoryViewID="done-HomebrewArmorModal" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hint}>Weight (lb)</Text>
-                  <TextInput style={styles.input} value={weightText} onChangeText={setWeightText} keyboardType="decimal-pad" />
+                  <TextInput style={styles.input} value={weightText} onChangeText={setWeightText} keyboardType="decimal-pad" inputAccessoryViewID="done-HomebrewArmorModal" />
                 </View>
               </View>
 
@@ -142,7 +144,7 @@ export function HomebrewArmorModal({
                     style={styles.input}
                     value={strengthReqText}
                     onChangeText={setStrengthReqText}
-                    keyboardType="number-pad"
+                    keyboardType="number-pad" inputAccessoryViewID="done-HomebrewArmorModal"
                   />
                 </View>
               </View>
@@ -177,7 +179,7 @@ export function HomebrewArmorModal({
                   onChangeText={setMagicBonusText}
                   placeholder="Enchantment bonus, e.g. 1"
                   placeholderTextColor={theme.colors.textMuted}
-                  keyboardType="number-pad"
+                  keyboardType="number-pad" inputAccessoryViewID="done-HomebrewArmorModal"
                 />
               )}
             </KeyboardAwareScrollView>
@@ -196,7 +198,6 @@ export function HomebrewArmorModal({
             </View>
           </View>
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );

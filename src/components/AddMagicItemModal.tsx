@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import {
@@ -35,7 +36,6 @@ export function AddMagicItemModal({
             <AddMagicItemModalForm onClose={onClose} onPickCatalog={onPickCatalog} onAddCustom={onAddCustom} />
           )}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -196,7 +196,7 @@ function AddMagicItemModalForm({
           </ScrollView>
         </>
       ) : (
-        <KeyboardAwareScrollView style={styles.customForm} bottomOffset={60}>
+        <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.customForm} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Name</Text>
           <TextInput
             style={styles.input}

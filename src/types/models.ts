@@ -4,7 +4,6 @@ import type {
   campaignNotes,
   characterArmor,
   characterClasses,
-  characterEquipment,
   characterFeats,
   characterGearItems,
   characterCustomResources,
@@ -13,7 +12,6 @@ import type {
   characterWeapons,
   characters,
   diceRollHistory,
-  equipmentItems,
   spellSlots,
   spells,
 } from "../db/schema";
@@ -23,8 +21,6 @@ export type CharacterClass = InferSelectModel<typeof characterClasses>;
 export type SpellSlot = InferSelectModel<typeof spellSlots>;
 export type Spell = InferSelectModel<typeof spells>;
 export type CharacterSpell = InferSelectModel<typeof characterSpells>;
-export type EquipmentItem = InferSelectModel<typeof equipmentItems>;
-export type CharacterEquipment = InferSelectModel<typeof characterEquipment>;
 export type CharacterWeapon = InferSelectModel<typeof characterWeapons>;
 export type CharacterGearItem = InferSelectModel<typeof characterGearItems>;
 export type CharacterArmor =InferSelectModel<typeof characterArmor>;

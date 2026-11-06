@@ -3,14 +3,15 @@ import {
   Animated,
   Pressable,
   StyleSheet,
-  Text,
   type GestureResponderEvent,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { Text } from "./AppText";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
+import { PixelFrameOverlay } from "./PixelFrame";
 
 export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 export type ButtonSize = "md" | "sm";
@@ -73,7 +74,7 @@ export function Button({
         {
           backgroundColor: colors.background,
           borderColor: colors.border,
-          borderWidth: theme.radius === 0 ? 1 : StyleSheet.hairlineWidth + 1,
+          borderWidth: theme.pixel ? 0 : theme.radius === 0 ? 1 : StyleSheet.hairlineWidth + 1,
           transform: [{ scale }],
         },
         fullWidth && styles.fullWidth,
@@ -82,6 +83,7 @@ export function Button({
         contentStyle,
       ]}
     >
+      <PixelFrameOverlay />
       <Pressable
         onPress={disabled ? undefined : onPress}
         onPressIn={disabled ? undefined : handlePressIn}

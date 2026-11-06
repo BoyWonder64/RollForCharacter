@@ -14,7 +14,7 @@ RollForCharacter has no network API. All data is local: SQLite (via `expo-sqlite
 | --- | --- |
 | Character | `characters`, `character_classes` (multiclass rows), `character_resource_uses`, `character_custom_resources` (player-made abilities), `character_resource_overrides` (house rules on built-in ones) |
 | Spells | `spells` (catalog and hand-typed), `character_spells`, `spell_slots` |
-| Gear | `character_weapons` (with `quantity`), `character_armor`, `character_gear_items` (packs, foci, tools, ammunition), `character_magic_items`, `equipment_items` (dress-up art), `character_equipment` |
+| Gear | `character_weapons` (with `quantity`), `character_armor`, `character_gear_items` (packs, foci, tools, ammunition), `character_magic_items` |
 | Feats | `feats` (catalog), `character_feats` |
 | Campaign | `campaign_notes`, `campaign_items` |
 | DM | `monsters` (catalog), `dm_creatures`, `dm_party_initiative`, `dm_encounters` |
@@ -38,7 +38,6 @@ All functions are async unless noted and take a character id or `Character` obje
 | `characters/startingGearRepo` | `applyStartingGear`: saves what onboarding's Starting Equipment step resolved to (weapons, equipped armor, gear items, gold) |
 | `characters/magicItemRepo` | `listMagicItemCatalog`, `listMagicItemRarities`, `listCharacterMagicItems`, `addMagicItemFromCatalog`, `addCustomMagicItem`, `removeCharacterMagicItem`, `setMagicItemAttuned`, `setMagicItemEquipped` |
 | `characters/featRepo` | `listFeatCatalog`, `listCharacterFeats`, `addResolvedFeat`, `addCatalogFeat`, `addCustomFeat`, `setFeatEnabled`, `removeCharacterFeat` |
-| `characters/equipmentRepo` | dress-up equipment: list items, equip, unequip |
 | `characters/campaignRepo` | notes and special items: list, add, update (notes only), remove |
 | `spells/spellRepo` | `listSpellsForCharacter`, `listSpellCatalog`, `addSpellToCharacter`, `addCatalogSpellToCharacter`, `togglePrepared`, `removeCharacterSpell`, `listSpellSlots`, `setSpellSlot`, `adjustSpellSlotUsage`, `resetSpellSlotUsage` |
 | `dice/diceRepo` | `saveRoll`, `recentRolls`, `clearRollHistory` |

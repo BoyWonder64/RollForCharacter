@@ -1,4 +1,5 @@
 import type { ImageSourcePropType } from "react-native";
+import { JOURNAL_PIXEL_KIT, type PixelKit } from "./pixelKits";
 
 export type ThemeColors = {
   background: string;
@@ -38,10 +39,13 @@ export type Theme = {
   backdrop?: ImageSourcePropType;
   /** Background for screen roots: `colors.background`, or transparent when a backdrop is showing. */
   screenBackground: string;
+  /** Pixel-art frames/banners; absent for themes that use flat boxes. */
+  pixel?: PixelKit;
 };
 
 type ThemeFamilyDefinition = {
   label: string;
+  pixel?: PixelKit;
   light: ThemeColors;
   dark: ThemeColors;
   displayFontFamily?: string;
@@ -145,6 +149,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Adventurer's journal: handwritten notebook, ink-blue accent.
   journal: {
     label: "Journal",
+    pixel: JOURNAL_PIXEL_KIT,
     displayFontFamily: "Caveat_700Bold",
     light: {
       background: "#FAF6ED",
@@ -360,6 +365,7 @@ export function buildTheme(family: ThemeFamilyId, mode: ThemeMode): Theme {
     radius: RADIUS,
     displayFontFamily: definition.displayFontFamily,
     backdrop,
+    pixel: definition.pixel,
     screenBackground: backdrop ? "transparent" : colors.background,
   };
 }

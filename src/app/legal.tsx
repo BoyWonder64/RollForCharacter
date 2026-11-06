@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "../components/AppText";
 import { Stack } from "expo-router";
 import { Button } from "../components/Button";
 import { useTheme } from "../theme/ThemeContext";

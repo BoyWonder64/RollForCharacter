@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { useTheme } from "../theme/ThemeContext";
 import { joinParty } from "../features/party/partyRepo";
 import { createDmStyles } from "./dmStyles";

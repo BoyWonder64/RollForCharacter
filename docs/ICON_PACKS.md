@@ -80,9 +80,8 @@ Shikashi has no spell-school icons, so spell schools would fall back to Raven or
 
 ## Status (implemented)
 
-- Four options in Settings > Icons & Sound: **Auto (follow theme, default)**, `pixel` (Raven), `shikashi` (drop-shadow, light), `shikashi-dark` (plain transparent, dark). Auto = Raven for Forest and Crimson; every other theme gets Shikashi on light modes and Shikashi-dark on dark modes (`resolveIconStyle` in `iconStyles.ts`; edit `FAMILY_ICON_STYLE` to override per family).
-- `scripts/build_shikashi_icons.py` slices the v2 sheets using a (row, col) table and regenerates `assets/icons/shikashi*/` plus `src/features/icons/shikashiAssets.ts`. Edit the table and rerun to change any icon.
-- Dark style overrides: blinded and unconscious use brighter icons, since the dark-outlined closed eye and Zzz vanish on dark backgrounds.
+- Three options in Settings > Icons & Sound: **Auto (follow theme, default)**, `pixel` (Raven), `shikashi` (drop-shadow). The `shikashi-dark` style was removed 2026-11-05. Auto = Raven for Forest, Crimson and every dark mode; other light modes get Shikashi (`resolveIconStyle` in `iconStyles.ts`; edit `FAMILY_ICON_STYLE` to override per family).
+- `scripts/build_shikashi_icons.py` slices the v2 sheets using a (row, col) table and regenerates `assets/icons/shikashi/` plus `src/features/icons/shikashiAssets.ts`. Edit the table and rerun to change any icon.
 - Spell-school mapping (guesses from the art): abjuration=guard shield, conjuration=casting hand, divination=purple orb, enchantment=heart, evocation=ring of fire, illusion=psychic figure, necromancy=skull, transmutation=burning cauldron.
 - Not used: Shikashi v1, BG 1-11 background tiles, 32rogues items/monsters.
 - 32rogues license: user reviewed and accepted (2026-11-05). Credit is in the Legal screen. Still keep raw packs out of public repos and ship only cropped sprites.

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Image, Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import type { AbilityScoreKey } from "../types/models";
@@ -19,6 +20,7 @@ import {
   type CustomResourceMaxMode,
   type CustomResourceRecharge,
 } from "../features/characters/resourceRepo";
+import { DoneAccessory } from "./DoneAccessory";
 
 const ABILITIES: { key: AbilityScoreKey; label: string }[] = [
   { key: "strength", label: "STR" },
@@ -58,9 +60,9 @@ export function CustomResourceModal(props: CustomResourceModalProps) {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-CustomResourceModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>{visible && <CustomResourceForm {...props} />}</View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -111,7 +113,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
 
   return (
     <View style={styles.card}>
-      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" bottomOffset={60}>
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" bottomOffset={60}>
         <Text style={styles.title}>{initial ? "Edit Ability" : "Create Ability"}</Text>
 
         <Text style={styles.fieldLabel}>Name</Text>
@@ -141,7 +143,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
             style={[styles.input, styles.shortInput]}
             value={fixedMax}
             onChangeText={setFixedMax}
-            keyboardType="number-pad"
+            keyboardType="number-pad" inputAccessoryViewID="done-CustomResourceModal"
           />
         )}
         {maxMode === "level" && (
@@ -185,7 +187,7 @@ function CustomResourceForm({ initial, onClose, onConfirm, onDelete }: CustomRes
                   style={styles.input}
                   value={abilityMinimum}
                   onChangeText={setAbilityMinimum}
-                  keyboardType="number-pad"
+                  keyboardType="number-pad" inputAccessoryViewID="done-CustomResourceModal"
                 />
               </View>
             </View>

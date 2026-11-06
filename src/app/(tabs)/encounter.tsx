@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
 import { Button } from "../../components/Button";
 import { DmCreatureCard } from "../../components/DmCreatureCard";

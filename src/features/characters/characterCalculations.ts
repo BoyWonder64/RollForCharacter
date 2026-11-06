@@ -55,6 +55,22 @@ export function calculateMaxHp(
   return Math.max(level, firstLevel + laterLevels) + racialBonusPerLevel * level;
 }
 
+/**
+ * Same as `calculateMaxHp`, but levels 2+ use the player's own hit-die rolls
+ * (one raw die per level after the first) instead of the average. Raw dice
+ * are stored rather than totals so a later CON change still applies.
+ */
+export function calculateMaxHpFromRolls(
+  hitDie: number,
+  rolls: number[],
+  conModifier: number,
+  racialBonusPerLevel = 0
+): number {
+  const level = rolls.length + 1;
+  const laterLevels = rolls.reduce((sum, roll) => sum + Math.max(1, roll + conModifier), 0);
+  return Math.max(level, hitDie + conModifier + laterLevels) + racialBonusPerLevel * level;
+}
+
 /** HP gained for one level: average (`floor(hitDie/2)+1`) + CON mod, minimum 1. */
 export function averageHpGain(hitDie: number, conModifier: number, racialBonus = 0): number {
   return Math.max(1, Math.floor(hitDie / 2) + 1 + conModifier) + racialBonus;
@@ -761,6 +777,22 @@ export function parseLanguages(character: Character): string[] {
 
 export function serializeLanguages(languageIds: string[]): string {
   return languageIds.join(",");
+}
+
+export const CUSTOM_LANGUAGE_PREFIX = "custom:";
+
+/** Custom (user-typed) languages are stored in the same list as `custom:<name>`; commas are stripped so the comma-separated storage stays intact. */
+export function customLanguageId(name: string): string | null {
+  const clean = name.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+  return clean ? CUSTOM_LANGUAGE_PREFIX + clean : null;
+}
+
+export function isCustomLanguageId(id: string): boolean {
+  return id.startsWith(CUSTOM_LANGUAGE_PREFIX);
+}
+
+export function customLanguageName(id: string): string {
+  return id.slice(CUSTOM_LANGUAGE_PREFIX.length);
 }
 
 export function knowsLanguage(character: Character, languageId: string): boolean {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Modal, Pressable, ScrollView, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import {
   deleteSavedEncounter,
   listSavedEncounters,

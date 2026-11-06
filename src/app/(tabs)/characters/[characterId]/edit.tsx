@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "../../../../components/AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
   deleteCharacter,
@@ -17,6 +18,9 @@ import {
   parseCustomRaceTraits,
   parseCustomClassSavingThrows,
   parseLanguages,
+  customLanguageId,
+  isCustomLanguageId,
+  customLanguageName,
   parseSavingThrowProficiencies,
   parseSkillProficiencies,
   serializeCustomClassSavingThrows,
@@ -47,6 +51,7 @@ import { useTheme } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../../../theme/colors";
 import { FONT_CHOICE_ORDER, FONT_CHOICES, type FontChoiceId } from "../../../../theme/fonts";
+import { DoneAccessory } from "../../../../components/DoneAccessory";
 
 const FAMILY_ORDER: ThemeFamilyId[] = [
   "crimson",
@@ -271,6 +276,14 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
     });
   }
 
+  const [customLanguageText, setCustomLanguageText] = useState("");
+  function addCustomLanguage() {
+    const id = customLanguageId(customLanguageText);
+    if (!id) return;
+    setLanguageIds((prev) => new Set(prev).add(id));
+    setCustomLanguageText("");
+  }
+
   function toggleLanguage(languageId: string) {
     setLanguageIds((prev) => {
       const next = new Set(prev);
@@ -406,7 +419,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
 
   return (
     <View style={styles.container}>
-      <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bottomOffset={24} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={{ flex: 1 }} contentContainerStyle={styles.content} bottomOffset={24}>
       <View style={styles.portraitRow}>
         <Pressable onPress={() => setPortraitModalOpen(true)}>
           {form.portraitUri ? (
@@ -738,7 +751,29 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
                 </Pressable>
               );
             })}
+            {Array.from(languageIds)
+              .filter(isCustomLanguageId)
+              .map((id) => (
+                <Pressable
+                  key={id}
+                  onPress={() => toggleLanguage(id)}
+                  style={[styles.skillChip, styles.skillChipActive]}
+                >
+                  <Text style={[styles.skillChipText, styles.skillChipTextActive]}>
+                    {customLanguageName(id)} ✕
+                  </Text>
+                </Pressable>
+              ))}
           </View>
+          <TextInput
+            style={styles.input}
+            value={customLanguageText}
+            onChangeText={setCustomLanguageText}
+            onSubmitEditing={addCustomLanguage}
+            placeholder="Custom language, e.g. Satyr"
+            placeholderTextColor={theme.colors.textMuted}
+            returnKeyType="done"
+          />
         </>
       )}
 
@@ -909,7 +944,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         <Text style={styles.deleteButtonText}>Delete Character</Text>
       </Pressable>
       </KeyboardAwareScrollView>
-      <KeyboardToolbar />
+      <DoneAccessory id="done-edit" />
     </View>
   );
 }
@@ -942,6 +977,7 @@ function Field({
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType ?? "default"}
+        inputAccessoryViewID={keyboardType === "number-pad" ? "done-edit" : undefined}
         multiline={multiline}
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}

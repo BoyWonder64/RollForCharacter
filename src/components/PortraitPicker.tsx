@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "./AppText";
 import * as ImagePicker from "expo-image-picker";
 import { SPRITE_PORTRAITS, type SpritePortrait } from "../data/spritePortraits";
 import { useTheme } from "../theme/ThemeContext";

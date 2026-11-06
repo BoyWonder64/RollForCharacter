@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, View } from "react-native";
+import { Text, TextInput } from "../AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import {
@@ -8,6 +9,7 @@ import {
   updateHomebrewWeapon,
   type CustomWeaponInput,
 } from "../../features/characters/gearRepo";
+import { DoneAccessory } from "../DoneAccessory";
 
 const CATEGORIES = ["Simple Melee", "Simple Ranged", "Martial Melee", "Martial Ranged"] as const;
 const DAMAGE_TYPES = ["Bludgeoning", "Piercing", "Slashing", ""] as const;
@@ -71,12 +73,12 @@ export function HomebrewWeaponModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-HomebrewWeaponModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{initial ? "Edit Weapon" : "New Homebrew Weapon"}</Text>
-            <KeyboardAwareScrollView
-              keyboardShouldPersistTaps="handled"
+            <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
               style={{ maxHeight: 420 }}
               bottomOffset={60}
             >
@@ -116,7 +118,7 @@ export function HomebrewWeaponModal({
                     style={styles.input}
                     value={weightText}
                     onChangeText={setWeightText}
-                    keyboardType="decimal-pad"
+                    keyboardType="decimal-pad" inputAccessoryViewID="done-HomebrewWeaponModal"
                   />
                 </View>
               </View>
@@ -171,7 +173,7 @@ export function HomebrewWeaponModal({
                   onChangeText={setMagicBonusText}
                   placeholder="Enchantment bonus, e.g. 1"
                   placeholderTextColor={theme.colors.textMuted}
-                  keyboardType="number-pad"
+                  keyboardType="number-pad" inputAccessoryViewID="done-HomebrewWeaponModal"
                 />
               )}
             </KeyboardAwareScrollView>
@@ -190,7 +192,6 @@ export function HomebrewWeaponModal({
             </View>
           </View>
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );

@@ -118,19 +118,16 @@ const CONDITION_ICONS_PIXEL: Record<string, number> = {
 const EQUIPMENT_SLOT_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
   pixel: EQUIPMENT_SLOT_ICONS_PIXEL,
   shikashi: shikashi.SHIKASHI_EQUIPMENT,
-  "shikashi-dark": shikashi.SHIKASHI_DARK_EQUIPMENT,
 };
 
 const SPELL_SCHOOL_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
   pixel: SPELL_SCHOOL_ICONS_PIXEL,
   shikashi: shikashi.SHIKASHI_SPELL_SCHOOLS,
-  "shikashi-dark": shikashi.SHIKASHI_DARK_SPELL_SCHOOLS,
 };
 
 const TAB_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
   pixel: TAB_ICONS_PIXEL,
   shikashi: shikashi.SHIKASHI_TABS,
-  "shikashi-dark": shikashi.SHIKASHI_DARK_TABS,
 };
 
 const CAMPAIGN_ITEM_ICONS_BY_STYLE: Record<
@@ -139,13 +136,11 @@ const CAMPAIGN_ITEM_ICONS_BY_STYLE: Record<
 > = {
   pixel: CAMPAIGN_ITEM_ICONS_PIXEL,
   shikashi: shikashi.SHIKASHI_CAMPAIGN_ITEMS as Record<CampaignItemIconId, number>,
-  "shikashi-dark": shikashi.SHIKASHI_DARK_CAMPAIGN_ITEMS as Record<CampaignItemIconId, number>,
 };
 
 const CONDITION_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
   pixel: CONDITION_ICONS_PIXEL,
   shikashi: shikashi.SHIKASHI_CONDITIONS,
-  "shikashi-dark": shikashi.SHIKASHI_DARK_CONDITIONS,
 };
 
 export function getEquipmentSlotIcon(

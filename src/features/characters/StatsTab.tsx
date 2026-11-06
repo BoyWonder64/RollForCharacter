@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
 import {
   ABILITY_LABELS,
@@ -17,6 +18,8 @@ import {
   isSavingThrowProficient,
   isSkillProficient,
   parseLanguages,
+  isCustomLanguageId,
+  customLanguageName,
   passiveSkillScore,
   racialTraitsForCharacter,
 } from "./characterCalculations";
@@ -44,6 +47,7 @@ import { LevelUpModal } from "../../components/LevelUpModal";
 import { XpModal } from "../../components/XpModal";
 import type { LevelUpChoices } from "./characterRepo";
 import type { AbilityScoreKey, Character, CharacterClass } from "../../types/models";
+import { PixelBanner, PixelFrameOverlay } from "../../components/PixelFrame";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 
@@ -207,7 +211,11 @@ export function StatsTab({
   const weaponProficiencies = effectiveWeaponProficienciesForCharacter(character);
   const racialTraits = racialTraitsForCharacter(character);
   const knownLanguages = parseLanguages(character)
-    .map((id) => catalog.languages?.find((l) => l.id === id))
+    .map((id) =>
+      isCustomLanguageId(id)
+        ? { id, name: customLanguageName(id), typicalSpeakers: "A custom language." }
+        : catalog.languages?.find((l) => l.id === id)
+    )
     .filter((l): l is NonNullable<typeof l> => !!l);
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
@@ -309,6 +317,7 @@ export function StatsTab({
           {isMulticlassed(classRows) ? ` (${formatMulticlassLabel(classRows, character.className)})` : ""}
         </Text>
         <Pressable style={styles.levelUpButton} onPress={() => setLevelUpModalOpen(true)}>
+          <PixelFrameOverlay />
           <Text style={styles.levelUpButtonText}>
             Level Up{xpReadyToLevelUp ? " ✓" : ""}
           </Text>
@@ -386,7 +395,11 @@ export function StatsTab({
       </View>
 
       <View style={styles.currencyHeaderRow}>
-        <Text style={[styles.sectionTitle, styles.sectionTitleInline]}>Currency</Text>
+        {theme.pixel ? (
+          <PixelBanner title="Currency" style={styles.currencyBanner} />
+        ) : (
+          <Text style={[styles.sectionTitle, styles.sectionTitleInline]}>Currency</Text>
+        )}
         <Pressable onPress={() => setCurrencyModalOpen(true)}>
           <Text style={styles.currencyEditLink}>Add / Spend</Text>
         </Pressable>
@@ -398,6 +411,7 @@ export function StatsTab({
             style={styles.currencyCard}
             onPress={() => Alert.alert(field.fullName, `${field.label} stands for ${field.fullName}.`)}
           >
+            <PixelFrameOverlay />
             <Text style={styles.currencyValue}>{character[field.column] as number}</Text>
             <Text style={styles.currencyLabel}>{field.label}</Text>
           </Pressable>
@@ -420,6 +434,7 @@ export function StatsTab({
               style={styles.abilityCard}
               onPress={() => Alert.alert(ABILITY_LABELS[key], ABILITY_DESCRIPTIONS[key])}
             >
+              <PixelFrameOverlay />
               <Text style={styles.abilityLabel}>{ABILITY_LABELS[key]}</Text>
               <Text style={styles.abilityScore}>{score}</Text>
               <Text style={styles.abilityModifier}>{formatModifier(modifier)}</Text>
@@ -502,6 +517,7 @@ export function StatsTab({
               style={styles.summaryCard}
               onPress={() => Alert.alert(label, PASSIVE_SCORE_DESCRIPTION)}
             >
+              <PixelFrameOverlay />
               <Text style={styles.summaryValue}>{passiveSkillScore(character, skill, feats)}</Text>
               <Text style={styles.summaryLabel}>{label}</Text>
             </Pressable>
@@ -592,6 +608,13 @@ export function StatsTab({
         <FeatsList character={character} />
       </View>
 
+      {character.alignment ? (
+        <>
+          <SectionTitle title="Alignment" />
+          <Text style={styles.flavorLine}>{character.alignment}</Text>
+        </>
+      ) : null}
+
       {knownLanguages.length > 0 && (
         <>
           <SectionTitle title="Languages" />
@@ -675,7 +698,11 @@ function SectionTitle({ title }: { title: string }) {
 
   return (
     <View style={styles.sectionTitleRow}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      {theme.pixel ? (
+        <PixelBanner title={title} style={styles.sectionBanner} />
+      ) : (
+        <Text style={styles.sectionTitle}>{title}</Text>
+      )}
     </View>
   );
 }
@@ -690,6 +717,7 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
       style={styles.summaryCard}
       onPress={() => description && Alert.alert(label, description)}
     >
+      <PixelFrameOverlay />
       <Text style={styles.summaryValue}>{value}</Text>
       <Text style={styles.summaryLabel}>{label}</Text>
     </Pressable>
@@ -748,7 +776,7 @@ function createStyles(theme: Theme) {
       flexBasis: "47%",
       flexGrow: 1,
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,
@@ -770,6 +798,8 @@ function createStyles(theme: Theme) {
       marginTop: 20,
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+    sectionBanner: { marginTop: 14, marginBottom: 8 },
+    currencyBanner: { marginBottom: 8 },
     sectionTitleInline: { marginTop: 0, marginBottom: 0 },
     currencyHeaderRow: {
       flexDirection: "row",
@@ -794,8 +824,6 @@ function createStyles(theme: Theme) {
     currencyCard: {
       flex: 1,
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingVertical: 10,
       alignItems: "center",
@@ -820,7 +848,7 @@ function createStyles(theme: Theme) {
     abilityCard: {
       width: "31%",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingVertical: 14,

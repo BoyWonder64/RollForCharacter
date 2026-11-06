@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "./AppText";
 import { longRest, shortRest } from "../features/characters/characterRepo";
 import type { Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";

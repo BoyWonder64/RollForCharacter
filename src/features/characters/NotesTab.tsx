@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
 import {
   addCampaignItem,

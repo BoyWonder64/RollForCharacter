@@ -1,8 +1,10 @@
 import { Stack } from "expo-router";
 import { useTheme } from "../../../theme/ThemeContext";
+import { useFontScale } from "../../../features/settings/FontScaleContext";
 
 export default function CharactersStackLayout() {
   const theme = useTheme();
+  const { fontScale } = useFontScale();
 
   return (
     <Stack
@@ -10,7 +12,7 @@ export default function CharactersStackLayout() {
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
-          fontSize: 20,
+          fontSize: 20 * fontScale,
           ...(theme.displayFontFamily ? { fontFamily: theme.displayFontFamily } : null),
         },
         headerShadowVisible: false,

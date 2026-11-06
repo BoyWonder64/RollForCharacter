@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Image, Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
@@ -27,7 +28,6 @@ export function CampaignItemModal({ visible, onClose, onConfirm }: CampaignItemM
         <View style={styles.backdrop}>
           {visible && <CampaignItemModalForm onClose={onClose} onConfirm={onConfirm} />}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -51,7 +51,7 @@ function CampaignItemModalForm({ onClose, onConfirm }: Omit<CampaignItemModalPro
     <View style={styles.card}>
       <Text style={styles.title}>Add Item</Text>
 
-      <KeyboardAwareScrollView bottomOffset={60}>
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" bottomOffset={60}>
         <Text style={styles.fieldLabel}>Icon</Text>
         <View style={styles.iconGrid}>
           {CAMPAIGN_ITEM_ICON_IDS.map((id) => {

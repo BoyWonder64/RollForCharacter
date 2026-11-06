@@ -6,14 +6,14 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getCampaignItemIcon } from "../features/icons/iconAssets";
+import { DoneAccessory } from "./DoneAccessory";
 
 export type CurrencyDenomination = "copper" | "silver" | "electrum" | "gold" | "platinum";
 
@@ -37,6 +37,7 @@ export function CurrencyModal({ visible, onClose, onConfirm }: CurrencyModalProp
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-CurrencyModal" />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -88,7 +89,7 @@ function CurrencyModalForm({ onClose, onConfirm }: Omit<CurrencyModalProps, "vis
         onChangeText={setAmountText}
         placeholder="0"
         placeholderTextColor={theme.colors.textMuted}
-        keyboardType="number-pad"
+        keyboardType="number-pad" inputAccessoryViewID="done-CurrencyModal"
         autoFocus
       />
       <View style={styles.buttonRow}>

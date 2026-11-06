@@ -4,6 +4,7 @@ import {
   armorClassBaseline,
   averageHpGain,
   calculateMaxHp,
+  calculateMaxHpFromRolls,
   proficiencyBonusForLevel,
   roll4d6DropLowest,
   rollHpGain,
@@ -27,6 +28,25 @@ describe("proficiencyBonusForLevel", () => {
     [20, 6],
   ])("level %i -> +%i", (level, expected) => {
     expect(proficiencyBonusForLevel(level)).toBe(expected);
+  });
+});
+
+describe("calculateMaxHpFromRolls", () => {
+  it("is max die + CON at level 1 with no rolls", () => {
+    expect(calculateMaxHpFromRolls(8, [], 2)).toBe(10);
+  });
+
+  it("adds each rolled die plus CON per later level", () => {
+    // 8+2 at level 1, then (5+2) and (3+2).
+    expect(calculateMaxHpFromRolls(8, [5, 3], 2)).toBe(22);
+  });
+
+  it("matches calculateMaxHp when every roll equals the average", () => {
+    expect(calculateMaxHpFromRolls(8, [5, 5], 2)).toBe(calculateMaxHp(8, 3, 2));
+  });
+
+  it("gains at least 1 HP per level and adds the racial bonus per level", () => {
+    expect(calculateMaxHpFromRolls(6, [1, 1], -5, 1)).toBe(Math.max(3, 1 + 1 + 1) + 3);
   });
 });
 

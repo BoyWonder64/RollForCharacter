@@ -4,10 +4,9 @@ import {
   Alert,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
+import { Text, TextInput } from "../../components/AppText";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import { useAuth, type OAuthProvider } from "./AuthContext";

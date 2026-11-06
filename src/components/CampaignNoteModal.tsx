@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Image, Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
@@ -27,7 +28,6 @@ export function CampaignNoteModal({ visible, initial, onClose, onConfirm }: Camp
             <CampaignNoteModalForm initial={initial} onClose={onClose} onConfirm={onConfirm} />
           )}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -61,7 +61,7 @@ function CampaignNoteModalForm({
         <Text style={styles.title}>{initial ? "Edit Note" : "Add Note"}</Text>
       </View>
 
-      <KeyboardAwareScrollView bottomOffset={60}>
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" bottomOffset={60}>
         <Text style={styles.fieldLabel}>Subject</Text>
         <TextInput
           style={styles.input}

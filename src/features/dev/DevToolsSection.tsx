@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
+import { Text } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { RULESETS } from "../../data/rulesets";
 import { useTheme } from "../../theme/ThemeContext";

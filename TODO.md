@@ -97,3 +97,6 @@ Found in the 2026-11-02 class and race review against open5e v2 (srd-2014) and d
 - [ ] Developer mode ideas not built yet: sync inspector with force push/pull, character JSON export/import, feature-flag toggles, in-app error log (many `.catch(() => {})` swallow failures), theme/font preview sheet, reset tools, hiding the toggle behind a hidden gesture, and gating other destructive actions (homebrew delete, character reset) the same way as character delete.
 
 - [x] Profile picture not saving (fixed 2026-11-05, needs a device check): sprite/upload portraits now persist via `persistPortrait` for non-`file://` URIs, the Edit screen saves a changed/removed portrait immediately, and the wizard alerts if the portrait save fails. Check: new character with a sprite and with an upload, then change it from Edit; it should show on the list, sheet header and after restart.
+
+
+Look into the game center 

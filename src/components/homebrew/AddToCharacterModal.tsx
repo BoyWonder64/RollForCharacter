@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from "react-native";
+import { Text } from "../AppText";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import type { Character } from "../../types/models";

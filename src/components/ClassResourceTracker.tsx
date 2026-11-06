@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { useFocusEffect } from "expo-router";
 import {
   addCustomResource,
@@ -26,6 +27,7 @@ import { getCampaignItemIcon, type CampaignItemIconId } from "../features/icons/
 import type { Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
+import { DoneAccessory } from "./DoneAccessory";
 
 /**
  * Shows every limited-use class resource the character has gained so far
@@ -216,9 +218,10 @@ export function ClassResourceTracker({
           {manualEntryOpen && (
             <View style={styles.manualEntryRow}>
               <Text style={styles.description}>You rolled a d{hitDie} of</Text>
+              <DoneAccessory id="done-ClassResourceTracker" />
               <TextInput
                 style={styles.manualInput}
-                keyboardType="number-pad"
+                keyboardType="number-pad" inputAccessoryViewID="done-ClassResourceTracker"
                 value={manualValue}
                 onChangeText={setManualValue}
                 placeholder={`1-${hitDie}`}

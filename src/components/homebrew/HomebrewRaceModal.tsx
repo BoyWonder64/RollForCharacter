@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, View } from "react-native";
+import { Text, TextInput } from "../AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import type { AbilityScoreKey } from "../../types/models";
@@ -11,6 +12,7 @@ import {
 } from "../../features/characters/homebrewRepo";
 import { getRulesetCatalog } from "../../data/rulesets";
 import { TraitListEditor, type NamedTrait } from "./TraitListEditor";
+import { DoneAccessory } from "../DoneAccessory";
 
 export type HomebrewRaceRow = { id: number } & HomebrewRaceInput;
 
@@ -87,12 +89,12 @@ export function HomebrewRaceModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-HomebrewRaceModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{initial ? "Edit Race" : "New Homebrew Race"}</Text>
-            <KeyboardAwareScrollView
-              keyboardShouldPersistTaps="handled"
+            <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
               style={{ maxHeight: 440 }}
               bottomOffset={60}
             >
@@ -169,7 +171,7 @@ export function HomebrewRaceModal({
                 style={styles.input}
                 value={speedText}
                 onChangeText={setSpeedText}
-                keyboardType="number-pad"
+                keyboardType="number-pad" inputAccessoryViewID="done-HomebrewRaceModal"
                 placeholder="30"
                 placeholderTextColor={theme.colors.textMuted}
               />
@@ -193,7 +195,6 @@ export function HomebrewRaceModal({
             </View>
           </View>
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "../../components/AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { listSpellCatalog } from "./spellRepo";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
@@ -38,7 +39,6 @@ export function LevelUpSpellsModal({ visible, onClose, ...rest }: LevelUpSpellsM
           {/* Only mounted while visible, so search/filter state always starts fresh on open. */}
           {visible && <LevelUpSpellsForm onClose={onClose} {...rest} />}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -72,7 +72,7 @@ function LevelUpSpellsForm({
       <Text style={styles.title}>Level Up</Text>
       <Text style={styles.hint}>Bump your spell slots and add any spells you just learned.</Text>
 
-      <KeyboardAwareScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} bottomOffset={60}>
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.scroll} contentContainerStyle={styles.scrollContent} bottomOffset={60}>
         <Text style={styles.sectionLabel}>Spell Slots</Text>
         {SLOT_LEVELS.map((level) => {
           const total = slotTotals.find((s) => s.level === level)?.total ?? 0;

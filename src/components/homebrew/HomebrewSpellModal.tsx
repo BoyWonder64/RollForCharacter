@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, View } from "react-native";
+import { Text, TextInput } from "../AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import { getRulesetCatalog } from "../../data/rulesets";
@@ -71,8 +72,7 @@ export function HomebrewSpellModal({
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{initial ? "Edit Spell" : "New Homebrew Spell"}</Text>
-            <KeyboardAwareScrollView
-              keyboardShouldPersistTaps="handled"
+            <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
               style={{ maxHeight: 440 }}
               bottomOffset={60}
             >
@@ -183,7 +183,6 @@ export function HomebrewSpellModal({
             </View>
           </View>
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );

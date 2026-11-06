@@ -5,12 +5,12 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
+import { DoneAccessory } from "./DoneAccessory";
 
 export type ResourceOverrideChange = { hidden: boolean; maxOverride: number | null };
 
@@ -34,6 +34,7 @@ export function ResourceOverrideModal(props: ResourceOverrideModalProps) {
   const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <Modal visible={props.visible} transparent animationType="fade" onRequestClose={props.onClose}>
+<DoneAccessory id="done-ResourceOverrideModal" />
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <View style={styles.backdrop}>{props.visible && <OverrideForm {...props} />}</View>
       </KeyboardAvoidingView>
@@ -60,7 +61,7 @@ function OverrideForm({ name, defaultMax, overrideMax, hidden, onClose, onSave, 
         style={[styles.input, !valid && styles.inputInvalid]}
         value={maxText}
         onChangeText={setMaxText}
-        keyboardType="number-pad"
+        keyboardType="number-pad" inputAccessoryViewID="done-ResourceOverrideModal"
         placeholder={String(defaultMax)}
         placeholderTextColor={theme.colors.textMuted}
       />

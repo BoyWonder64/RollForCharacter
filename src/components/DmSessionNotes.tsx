@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { useFocusEffect } from "expo-router";
 import {
   addDmNote,
@@ -206,7 +207,7 @@ export function DmSessionNotes() {
         <Text style={styles.sectionTitle}>Welcome, Dungeon Master</Text>
         <Text style={[styles.hint, { marginVertical: 8 }]}>
           Notes and your timeline are kept per campaign, so you can run more than one. Name your
-          first campaign to get started. You can rename it or add more any time.
+          first campaign to get started.
         </Text>
         <TextInput
           style={styles.input}

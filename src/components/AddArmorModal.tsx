@@ -5,17 +5,17 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import type { ArmorCategory, ArmorDefinition } from "../data/rulesets";
 import { describeArmorAc, type CustomArmorInput } from "../features/characters/gearRepo";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getCampaignItemIcon } from "../features/icons/iconAssets";
+import { DoneAccessory } from "./DoneAccessory";
 
 const CATEGORY_FILTERS: ("All" | ArmorCategory)[] = ["All", "Light", "Medium", "Heavy", "Shield"];
 const DEX_MODIFIERS = ["full", "max2", "none"] as const;
@@ -45,6 +45,7 @@ export function AddArmorModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-AddArmorModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && (
@@ -56,7 +57,6 @@ export function AddArmorModal({
             />
           )}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -182,7 +182,7 @@ function AddArmorModalForm({
           </ScrollView>
         </>
       ) : (
-        <KeyboardAwareScrollView style={styles.customForm} bottomOffset={60}>
+        <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.customForm} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Name</Text>
           <TextInput
             style={styles.input}
@@ -217,7 +217,7 @@ function AddArmorModalForm({
                 onChangeText={setBaseAcText}
                 placeholder="11"
                 placeholderTextColor={theme.colors.textMuted}
-                keyboardType="number-pad"
+                keyboardType="number-pad" inputAccessoryViewID="done-AddArmorModal"
               />
             </View>
             <View style={styles.rowField}>
@@ -228,7 +228,7 @@ function AddArmorModalForm({
                 onChangeText={setWeightText}
                 placeholder="10"
                 placeholderTextColor={theme.colors.textMuted}
-                keyboardType="decimal-pad"
+                keyboardType="decimal-pad" inputAccessoryViewID="done-AddArmorModal"
               />
             </View>
           </View>
@@ -269,7 +269,7 @@ function AddArmorModalForm({
                 onChangeText={setStrengthText}
                 placeholder="13"
                 placeholderTextColor={theme.colors.textMuted}
-                keyboardType="number-pad"
+                keyboardType="number-pad" inputAccessoryViewID="done-AddArmorModal"
               />
             </View>
           </View>
@@ -305,7 +305,7 @@ function AddArmorModalForm({
                 onChangeText={setMagicBonusText}
                 placeholder="e.g. 1 for a +1 armor"
                 placeholderTextColor={theme.colors.textMuted}
-                keyboardType="number-pad"
+                keyboardType="number-pad" inputAccessoryViewID="done-AddArmorModal"
               />
             </>
           )}

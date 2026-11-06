@@ -1,6 +1,7 @@
 import { SubclassPicker } from "./SubclassPicker";
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { CUSTOM_OPTION_ID, getRulesetCatalog } from "../data/rulesets";
 import type { ClassDefinition } from "../data/rulesets/types";
@@ -150,7 +151,7 @@ export function MulticlassModalForm({
           Pick a new class to take your first level in. This is a permanent character choice --
           see the Player&apos;s Handbook multiclassing rules before committing.
         </Text>
-        <KeyboardAwareScrollView style={styles.scroll} showsVerticalScrollIndicator={false} bottomOffset={60}>
+        <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.scroll} showsVerticalScrollIndicator={false} bottomOffset={60}>
           <View style={styles.buttonColumn}>
             {availableClasses.map((c) => (
               <Pressable
@@ -510,7 +511,7 @@ function StepCard({
   return (
     <View style={styles.card}>
       {scroll ? (
-        <KeyboardAwareScrollView showsVerticalScrollIndicator={false} bottomOffset={60}>
+        <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} bottomOffset={60}>
           {content}
         </KeyboardAwareScrollView>
       ) : (

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "../../../../components/AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   Stack,
   router,
@@ -20,7 +21,7 @@ import { StatsTab } from "../../../../features/characters/StatsTab";
 import { SpellsTab } from "../../../../features/spells/SpellsTab";
 import { EquipmentTab } from "../../../../features/characters/EquipmentTab";
 import { NotesTab } from "../../../../features/characters/NotesTab";
-import { CharacterPreviewTab } from "../../../../features/characters/CharacterPreviewTab";
+import { PixelBanner, PixelFrameOverlay } from "../../../../components/PixelFrame";
 import { HealthBar } from "../../../../components/HealthBar";
 import { HpDeltaModal } from "../../../../components/HpDeltaModal";
 import { DeathSaveTracker } from "../../../../components/DeathSaveTracker";
@@ -37,7 +38,7 @@ import { useTheme } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
 import type { Theme } from "../../../../theme/colors";
 
-type TabKey = "stats" | "spells" | "equipment" | "notes" | "preview";
+type TabKey = "stats" | "spells" | "equipment" | "notes";
 
 const FIXED_DAMAGE_COLOR = "#B3261E";
 const FIXED_HEAL_COLOR = "#2E7D32";
@@ -186,12 +187,16 @@ function CharacterSheetBody({
     );
   }
 
+  const identityText = `${character.race || "Unknown race"} · ${formatMulticlassLabel(
+    classRows,
+    character.className || "No class"
+  )} · Level ${character.level}`;
+
   const tabs: { key: TabKey; label: string }[] = [
     { key: "stats", label: "Stats" },
     { key: "spells", label: "Spells" },
     { key: "equipment", label: "Equipment" },
     { key: "notes", label: "Notes" },
-    { key: "preview", label: "Dress Up" },
   ];
 
   return (
@@ -228,15 +233,22 @@ function CharacterSheetBody({
 
       <View style={styles.header}>
         <View style={styles.identityRow}>
-          {character.portraitUri && (
-            <Image source={{ uri: character.portraitUri }} style={styles.headerPortrait} />
+          {character.portraitUri &&
+            (theme.pixel ? (
+              <View style={styles.portraitFrame}>
+                <Image source={{ uri: character.portraitUri }} style={styles.framedPortrait} />
+                <PixelFrameOverlay scale={0.75} />
+              </View>
+            ) : (
+              <Image source={{ uri: character.portraitUri }} style={styles.headerPortrait} />
+            ))}
+          {theme.pixel ? (
+            <View style={styles.bannerWrap}>
+              <PixelBanner title={identityText} variant="ribbon" fullWidth textStyle={styles.bannerText} />
+            </View>
+          ) : (
+            <Text style={styles.subtitle}>{identityText}</Text>
           )}
-          <Text style={styles.subtitle}>
-            {character.race || "Unknown race"} ·{" "}
-            {formatMulticlassLabel(classRows, character.className || "No class")} · Level{" "}
-            {character.level}
-            {character.alignment ? ` · ${character.alignment}` : ""}
-          </Text>
         </View>
 
         <View style={styles.hpRow}>
@@ -309,7 +321,7 @@ function CharacterSheetBody({
         ))}
       </View>
 
-      <KeyboardAwareScrollView
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
         style={styles.tabContent}
         contentContainerStyle={{ padding: 16 }}
         bottomOffset={24}
@@ -320,9 +332,7 @@ function CharacterSheetBody({
         )}
         {activeTab === "equipment" && <EquipmentTab character={character} onChanged={refresh} />}
         {activeTab === "notes" && <NotesTab character={character} />}
-        {activeTab === "preview" && <CharacterPreviewTab characterId={characterId} />}
       </KeyboardAwareScrollView>
-      <KeyboardToolbar />
     </View>
   );
 }
@@ -344,7 +354,11 @@ function createStyles(theme: Theme) {
       borderBottomColor: theme.colors.border,
     },
     identityRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+    portraitFrame: { width: 56, height: 56, padding: 8 },
+    framedPortrait: { width: 40, height: 40 },
     headerPortrait: { width: 36, height: 36, borderRadius: theme.radius },
+    bannerWrap: { flex: 1 },
+    bannerText: { fontSize: 14 },
     subtitle: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily, flexShrink: 1 },
     hpRow: {
       flexDirection: "row",

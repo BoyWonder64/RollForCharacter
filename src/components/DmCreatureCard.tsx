@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text, TextInput } from "./AppText";
 import { CONDITIONS } from "../data/conditions";
 import { abilityModifier, ABILITY_LABELS } from "../features/characters/characterCalculations";
 import { InvalidDiceExpressionError, rollExpression } from "../features/dice/diceEngine";
@@ -39,6 +40,7 @@ import type { RollSink } from "../features/dm/rollLog";
 import type { AbilityScoreKey } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "./dmStyles";
+import { DoneAccessory } from "./DoneAccessory";
 
 const ADVANTAGE_OPTIONS: { key: AdvantageMode; label: string }[] = [
   { key: "disadvantage", label: "Disadv" },
@@ -428,13 +430,14 @@ export function DmCreatureCard({
 
       <View style={styles.row}>
         <Text style={styles.hint}>Amount</Text>
+        <DoneAccessory id="done-DmCreatureCard" />
         <TextInput
           style={styles.smallInput}
           value={hpAmount}
           onChangeText={setHpAmount}
           placeholder="1"
           placeholderTextColor={theme.colors.textMuted}
-          keyboardType="number-pad"
+          keyboardType="number-pad" inputAccessoryViewID="done-DmCreatureCard"
         />
         <Pressable style={styles.dangerButton} onPress={() => applyHp(-1)}>
           <Text style={styles.dangerButtonText}>Damage</Text>

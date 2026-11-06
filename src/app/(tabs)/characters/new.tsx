@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "../../../components/AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { router } from "expo-router";
 import {
   ALIGNMENTS,
@@ -25,13 +26,20 @@ import {
 import { applyStartingGear } from "../../../features/characters/startingGearRepo";
 import { StartingEquipmentStep } from "../../../components/StartingEquipmentStep";
 import {
+  appendHomebrewFeatures,
   applyRaceAbilityBonuses,
   calculateMaxHp,
+  calculateMaxHpFromRolls,
+  describeFeatEffect,
+  type ResolvedFeatPick,
   effectiveArmorProficiencies,
   effectiveWeaponProficiencies,
   findSubclass,
   getClassProgression,
   languageGrantForRace,
+  customLanguageId,
+  isCustomLanguageId,
+  customLanguageName,
   proficiencyBonusForLevel,
   roll4d6DropLowest,
   STANDARD_ARRAY,
@@ -40,8 +48,13 @@ import {
   ABILITY_LABELS,
   abilityModifier,
   createCharacterFromOnboarding,
+  getCharacter,
   updateCharacter,
 } from "../../../features/characters/characterRepo";
+import { addResolvedFeat } from "../../../features/characters/featRepo";
+import { rollDie } from "../../../features/dice/diceEngine";
+import { FeatPickerModal } from "../../../components/FeatPickerModal";
+import { CreatingOverlay } from "../../../components/CreatingOverlay";
 import {
   addCatalogSpellToCharacter,
   setSpellSlot,
@@ -50,7 +63,10 @@ import {
 import { getSpellLimits } from "../../../features/characters/spellLimits";
 import { PortraitPicker, type PortraitChoice } from "../../../components/PortraitPicker";
 import { findSpritePortrait } from "../../../data/spritePortraits";
-import { persistBundledPortrait, persistPortrait } from "../../../features/characters/portraitStorage";
+import {
+  persistBundledPortrait,
+  persistPortrait,
+} from "../../../features/characters/portraitStorage";
 import { SubclassPicker } from "../../../components/SubclassPicker";
 import { xpThresholdForLevel } from "../../../features/characters/xpTable";
 import type { AbilityScoreKey } from "../../../types/models";
@@ -58,6 +74,7 @@ import { useTheme } from "../../../theme/ThemeContext";
 import type { Theme } from "../../../theme/colors";
 import { useIconSettings } from "../../../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../../../features/icons/iconAssets";
+import { DoneAccessory } from "../../../components/DoneAccessory";
 
 const ALL_STEPS = [
   "ruleset",
@@ -73,15 +90,30 @@ const ALL_STEPS = [
   "subclass",
   "experience",
   "abilities",
+  // Levels above 1 only: the Ability Score Improvements / feats the character
+  // would have taken on the way up, then HP for every level gained. Both come
+  // after abilities because they depend on the final scores (CON for HP).
+  "asi",
+  "hp",
   "skills",
   // After abilities and subclass so the Armor Class preview uses real scores
   // and any subclass proficiencies are already known.
   "equipment",
   "spells",
+  // Homebrew classes only, levels above 1: a catalog class's features are
+  // derived from its level on the sheet, a custom one has to be told.
+  "features",
   "portrait",
   "review",
 ] as const;
 type Step = (typeof ALL_STEPS)[number];
+
+type AsiChoice =
+  | { kind: "ability"; mode: "one" | "two"; abilities: AbilityScoreKey[] }
+  | { kind: "feat"; feat: ResolvedFeatPick | null };
+
+/** 5e's standard Ability Score Improvement levels, used for homebrew classes (which have no progression table). */
+const CUSTOM_CLASS_ASI_LEVELS = [4, 8, 12, 16, 19];
 
 type CatalogRow = Awaited<ReturnType<typeof listSpellCatalog>>[number];
 const SPELL_RESULT_PAGE_SIZE = 30;
@@ -94,22 +126,6 @@ const ABILITY_KEYS: AbilityScoreKey[] = [
   "wisdom",
   "charisma",
 ];
-
-/** PHB-style "Quick Build" suggestion: highest score, then second-highest, by class id. Shared across rulesets since class ids match. */
-const QUICK_BUILD_ABILITIES: Record<string, [AbilityScoreKey, AbilityScoreKey]> = {
-  barbarian: ["strength", "constitution"],
-  bard: ["charisma", "dexterity"],
-  cleric: ["wisdom", "constitution"],
-  druid: ["wisdom", "constitution"],
-  fighter: ["strength", "constitution"],
-  monk: ["dexterity", "wisdom"],
-  paladin: ["strength", "charisma"],
-  ranger: ["dexterity", "wisdom"],
-  rogue: ["dexterity", "intelligence"],
-  sorcerer: ["charisma", "constitution"],
-  warlock: ["charisma", "constitution"],
-  wizard: ["intelligence", "constitution"],
-};
 
 function clampLevel(value: string): number {
   const parsed = parseInt(value, 10);
@@ -188,29 +204,39 @@ export default function NewCharacterScreen() {
   const [backgroundAbilityBonuses, setBackgroundAbilityBonuses] = useState<
     Partial<Record<AbilityScoreKey, number>>
   >({});
-  const [alignment, setAlignment] = useState<string | null>(null);
   const [personalityTraits, setPersonalityTraits] = useState("");
   const [ideals, setIdeals] = useState("");
   const [bonds, setBonds] = useState("");
   const [flaws, setFlaws] = useState("");
+  const [alignment, setAlignment] = useState<string | null>(null);
   const [otherProficiencies, setOtherProficiencies] = useState("");
   const [featuresAndTraits, setFeaturesAndTraits] = useState("");
   const [level, setLevel] = useState("1");
   const [usesXp, setUsesXp] = useState<boolean | null>(null);
 
+  // Levels above 1 -- see the "asi", "hp" and "features" steps.
+  const [asiChoices, setAsiChoices] = useState<Record<number, AsiChoice>>({});
+  const [featPickerLevel, setFeatPickerLevel] = useState<number | null>(null);
+  const [hpMethod, setHpMethod] = useState<"average" | "roll">("average");
+  // One raw hit-die roll per level after the first. Only trusted while its
+  // length is `level - 1` (picking a different level clears it).
+  const [hpRolls, setHpRolls] = useState<number[]>([]);
+  const [homebrewFeatures, setHomebrewFeatures] = useState<
+    { level: number; name: string; description: string }[]
+  >([]);
+  const [newFeatureName, setNewFeatureName] = useState("");
+  const [newFeatureDescription, setNewFeatureDescription] = useState("");
+  const [newFeatureLevel, setNewFeatureLevel] = useState(2);
+
   const [abilityMethod, setAbilityMethod] = useState<"standard" | "roll">("standard");
-  const [assignments, setAssignments] = useState<
-    Partial<Record<AbilityScoreKey, number>>
-  >({});
+  const [assignments, setAssignments] = useState<Partial<Record<AbilityScoreKey, number>>>({});
   // Per-ability roll detail (the 4 dice + which was dropped), "roll" method only -- kept
   // separately from `assignments` (the actual score, which both methods write into) so the
   // UI can show "4, 3, 2 (dropped 1)" alongside the total and support rerolling one ability.
   const [rolledDetails, setRolledDetails] = useState<
     Partial<Record<AbilityScoreKey, { dice: number[]; dropped: number }>>
   >({});
-  const [chosenBonusAbilities, setChosenBonusAbilities] = useState<
-    AbilityScoreKey[]
-  >([]);
+  const [chosenBonusAbilities, setChosenBonusAbilities] = useState<AbilityScoreKey[]>([]);
 
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set());
 
@@ -235,14 +261,14 @@ export default function NewCharacterScreen() {
           speed: parseInt(customRaceSpeed, 10) || 30,
           traits: customRaceTraits,
         }
-      : catalog.races.find((r) => r.id === raceId) ?? null;
+      : (catalog.races.find((r) => r.id === raceId) ?? null);
 
   // Only meaningful once a language catalog exists for this ruleset (5e,
   // 5e-2024) -- 3.5e has none yet, so its "languages" step is filtered out
   // below and this stays unused for it.
   const languageGrant = languageGrantForRace(ruleset, selectedRace);
   const languageChoiceOptions = (catalog.languages ?? []).filter(
-    (l) => !languageGrant.granted.includes(l.id)
+    (l) => !languageGrant.granted.includes(l.id),
   );
 
   // What's granted and how many extra choices are available depends on the
@@ -256,9 +282,31 @@ export default function NewCharacterScreen() {
     setBackgroundAbilityBonuses({});
   }
 
+  // Tapping the already-selected race/class row collapses its detail panel; tapping again re-opens it.
+  const [collapsedDetail, setCollapsedDetail] = useState<string | null>(null);
+
   function selectRace(id: string) {
+    if (id === raceId) {
+      setCollapsedDetail((c) => (c === `race:${id}` ? null : `race:${id}`));
+      return;
+    }
+    setCollapsedDetail(null);
     setRaceId(id);
     setSelectedExtraLanguageIds(new Set());
+  }
+
+  const [customLanguageText, setCustomLanguageText] = useState("");
+  // Custom (typed) languages are bonus picks: they never count against the race's "choose N" limit.
+  const listedPickCount = (ids: Set<string>) =>
+    Array.from(ids).filter((id) => !isCustomLanguageId(id)).length;
+  function addCustomLanguage() {
+    const id = customLanguageId(customLanguageText);
+    if (!id) return;
+    setSelectedExtraLanguageIds((prev) => {
+      if (prev.has(id)) return prev;
+      return new Set(prev).add(id);
+    });
+    setCustomLanguageText("");
   }
 
   function toggleExtraLanguage(languageId: string) {
@@ -267,7 +315,8 @@ export default function NewCharacterScreen() {
       if (next.has(languageId)) {
         next.delete(languageId);
       } else {
-        if (next.size >= languageGrant.chooseCount) return prev;
+        if (!isCustomLanguageId(languageId) && listedPickCount(prev) >= languageGrant.chooseCount)
+          return prev;
         next.add(languageId);
       }
       return next;
@@ -293,7 +342,7 @@ export default function NewCharacterScreen() {
               .map((s) => s.trim())
               .filter(Boolean),
           }
-        : catalog.classes.find((c) => c.id === classId) ?? null,
+        : (catalog.classes.find((c) => c.id === classId) ?? null),
     [
       classId,
       catalog,
@@ -301,18 +350,18 @@ export default function NewCharacterScreen() {
       customClassSavingThrows,
       customClassArmorProficiencies,
       customClassWeaponProficiencies,
-    ]
+    ],
   );
 
   const raceNameValue =
     raceId === CUSTOM_OPTION_ID
       ? customRaceName.trim() || "Custom Race"
-      : selectedRace?.name ?? "";
+      : (selectedRace?.name ?? "");
 
   const classNameValue =
     classId === CUSTOM_OPTION_ID
       ? customClassName.trim() || "Custom Class"
-      : selectedClass?.name ?? "";
+      : (selectedClass?.name ?? "");
 
   const levelNum = clampLevel(level);
 
@@ -346,8 +395,7 @@ export default function NewCharacterScreen() {
   // until character level 2 (first-level spell slots), unlike full casters
   // who get cantrips/spells starting at level 1.
   const HALF_CASTER_IDS = ["paladin", "ranger"];
-  const spellcastingMinLevel =
-    selectedClass && HALF_CASTER_IDS.includes(selectedClass.id) ? 2 : 1;
+  const spellcastingMinLevel = selectedClass && HALF_CASTER_IDS.includes(selectedClass.id) ? 2 : 1;
 
   const isSpellcaster =
     classId !== null &&
@@ -358,7 +406,29 @@ export default function NewCharacterScreen() {
   const hasEquipmentChoices =
     classId !== null && classId !== CUSTOM_OPTION_ID && !!selectedClass?.startingEquipment;
 
+  // Levels (2 and up) at which the character gets an Ability Score
+  // Improvement / feat. Level 1 never asks, so a level 1 character's flow is
+  // unchanged. Homebrew classes have no table, so they get 5e's standard
+  // levels as an optional default.
+  const isCustomClass = classId === CUSTOM_OPTION_ID;
+  const asiLevels: number[] = Array.from(
+    new Set(
+      isCustomClass
+        ? CUSTOM_CLASS_ASI_LEVELS
+        : [
+            ...(subclassProgression?.asiLevels ?? []),
+            ...(subclassProgression?.featLevels ?? []),
+            ...(subclassProgression?.abilityScoreIncreaseLevels ?? []),
+          ],
+    ),
+  )
+    .filter((l) => l >= 2 && l <= levelNum)
+    .sort((a, b) => a - b);
+
   const steps: Step[] = ALL_STEPS.filter((s) => {
+    if (s === "asi") return asiLevels.length > 0;
+    if (s === "hp") return levelNum > 1 && selectedClass !== null;
+    if (s === "features") return isCustomClass && levelNum > 1;
     if (s === "spells") return isSpellcaster;
     if (s === "equipment") return hasEquipmentChoices;
     if (s === "subclass") return offersSubclass;
@@ -377,7 +447,7 @@ export default function NewCharacterScreen() {
       classId: onlySpellClass ? selectedClass.id : undefined,
       search: spellSearch.trim() || undefined,
     }).then((rows) =>
-      setSpellCatalogResults(rows.filter((r) => r.level <= maxOnboardingSpellLevel))
+      setSpellCatalogResults(rows.filter((r) => r.level <= maxOnboardingSpellLevel)),
     );
   }, [step, selectedClass, spellSearch, maxOnboardingSpellLevel, onlySpellClass]);
 
@@ -394,7 +464,9 @@ export default function NewCharacterScreen() {
   // same free-text-fallback spirit as the race/class pickers' "Custom..."
   // option.
   const classSkillIds = new Set(
-    classId !== null && classId !== CUSTOM_OPTION_ID ? selectedClass?.skillChoices?.options ?? [] : []
+    classId !== null && classId !== CUSTOM_OPTION_ID
+      ? (selectedClass?.skillChoices?.options ?? [])
+      : [],
   );
   const groupedSkillOptions =
     classSkillIds.size > 0
@@ -418,10 +490,25 @@ export default function NewCharacterScreen() {
   }
 
   function selectClass(id: string) {
+    if (id === classId) {
+      setCollapsedDetail((c) => (c === `class:${id}` ? null : `class:${id}`));
+      return;
+    }
+    setCollapsedDetail(null);
     setClassId(id);
     setSubclass("");
     setSelectedSkillIds(new Set());
     setEquipmentSelection(EMPTY_SELECTION);
+    // ASI levels, hit die and features all belong to the old class.
+    setAsiChoices({});
+    setHpRolls([]);
+    setHomebrewFeatures([]);
+  }
+
+  function selectLevel(n: number) {
+    setLevel(String(n));
+    setHpRolls([]);
+    setHpMethod("average");
   }
 
   /** One-line kit summary for a class, with the given choices applied (default = each line's first option). */
@@ -429,11 +516,17 @@ export default function NewCharacterScreen() {
     return (klass.startingEquipment ?? [])
       .map((line, i) => {
         const optionIndex = selection.optionIndex[i] ?? 0;
-        return describeOption(line[optionIndex] ?? line[0] ?? [], i, optionIndex, selection, catalog, klass);
+        return describeOption(
+          line[optionIndex] ?? line[0] ?? [],
+          i,
+          optionIndex,
+          selection,
+          catalog,
+          klass,
+        );
       })
       .join("; ");
   }
-
 
   function toggleSpellSelection(spell: CatalogRow) {
     setSelectedSpellIds((prev) => {
@@ -445,7 +538,7 @@ export default function NewCharacterScreen() {
       if (spellLimits) {
         const isCantrip = spell.level === 0;
         const countOfType = spellCatalogResults.filter(
-          (s) => next.has(s.id) && (s.level === 0) === isCantrip
+          (s) => next.has(s.id) && (s.level === 0) === isCantrip,
         ).length;
         const limit = isCantrip ? spellLimits.cantrips : spellLimits.spells;
         if (countOfType >= limit) return prev;
@@ -490,6 +583,76 @@ export default function NewCharacterScreen() {
     return result;
   })();
 
+  // What gets written to the character row: race/background bonuses plus the
+  // chosen ability-score increases. Feat-granted increases are NOT in here --
+  // `addResolvedFeat` applies those itself once the character exists.
+  const scoresForCreate: Record<AbilityScoreKey, number> = (() => {
+    const result = { ...finalAbilityScores };
+    for (const lvl of asiLevels) {
+      const choice = asiChoices[lvl];
+      if (choice?.kind !== "ability") continue;
+      const amount = choice.mode === "one" ? 2 : 1;
+      for (const key of choice.abilities) {
+        // Capped at 20, but never pulled down if a score already starts higher.
+        result[key] = Math.max(result[key], Math.min(20, result[key] + amount));
+      }
+    }
+    return result;
+  })();
+  // The end result the sheet will show: everything above plus feat increases.
+  // Drives HP (CON), AC (DEX), spell limits and the review screen.
+  const adjustedScores: Record<AbilityScoreKey, number> = (() => {
+    const result = { ...scoresForCreate };
+    for (const lvl of asiLevels) {
+      const choice = asiChoices[lvl];
+      if (choice?.kind !== "feat" || !choice.feat) continue;
+      for (const effect of choice.feat.effects) {
+        if (effect.kind !== "abilityScoreIncrease") continue;
+        result[effect.ability] = Math.min(effect.max, result[effect.ability] + effect.amount);
+      }
+    }
+    return result;
+  })();
+
+  function asiChoiceComplete(lvl: number): boolean {
+    const choice = asiChoices[lvl];
+    if (!choice) return false;
+    if (choice.kind === "feat") return choice.feat !== null;
+    return choice.abilities.length === (choice.mode === "one" ? 1 : 2);
+  }
+
+  function setAsiKind(lvl: number, kind: AsiChoice["kind"]) {
+    setAsiChoices((prev) => {
+      const current = prev[lvl];
+      if (current?.kind === kind) return prev;
+      return {
+        ...prev,
+        [lvl]:
+          kind === "ability"
+            ? { kind: "ability", mode: "one", abilities: [] }
+            : { kind: "feat", feat: null },
+      };
+    });
+  }
+
+  function setAsiMode(lvl: number, mode: "one" | "two") {
+    setAsiChoices((prev) => ({ ...prev, [lvl]: { kind: "ability", mode, abilities: [] } }));
+  }
+
+  function toggleAsiAbility(lvl: number, key: AbilityScoreKey) {
+    setAsiChoices((prev) => {
+      const choice = prev[lvl];
+      if (choice?.kind !== "ability") return prev;
+      const limit = choice.mode === "one" ? 1 : 2;
+      let abilities: AbilityScoreKey[];
+      if (choice.abilities.includes(key)) abilities = choice.abilities.filter((k) => k !== key);
+      else if (choice.abilities.length < limit) abilities = [...choice.abilities, key];
+      else if (limit === 1) abilities = [key];
+      else return prev;
+      return { ...prev, [lvl]: { ...choice, abilities } };
+    });
+  }
+
   /** Combined race + background ability-score bonus for one ability, for display while assigning scores -- doesn't include the base assigned value. */
   function totalBonusFor(key: AbilityScoreKey): number {
     const fixed = selectedRace?.abilityBonuses[key] ?? 0;
@@ -501,37 +664,72 @@ export default function NewCharacterScreen() {
     return fixed + chosen + background;
   }
 
-  const quickBuildAbilities: [AbilityScoreKey, AbilityScoreKey] | undefined =
+  // Suggest abilities to raise, derived only from SRD class data (spellcasting ability + saving throw proficiencies).
+  const suggestedAbilities: AbilityScoreKey[] =
     selectedClass && classId !== CUSTOM_OPTION_ID
-      ? QUICK_BUILD_ABILITIES[selectedClass.id] ??
-        (selectedClass.spellcastingAbility
-          ? [selectedClass.spellcastingAbility, "constitution"]
-          : undefined)
-      : undefined;
+      ? Array.from(
+          new Set<AbilityScoreKey>([
+            ...(selectedClass.spellcastingAbility ? [selectedClass.spellcastingAbility] : []),
+            ...(selectedClass.savingThrows ?? []),
+          ]),
+        )
+      : [];
 
   const spellLimits =
     selectedClass && selectedClass.spellcastingAbility
       ? getSpellLimits(
           selectedClass.id,
           levelNum,
-          abilityModifier(finalAbilityScores[selectedClass.spellcastingAbility]),
-          ruleset
+          abilityModifier(adjustedScores[selectedClass.spellcastingAbility]),
+          ruleset,
         )
       : undefined;
 
+  const racialHpBonus = selectedRace?.hitPointBonusPerLevel ?? 0;
+  const hpRollsValid = hpMethod === "roll" && hpRolls.length === levelNum - 1;
   const derivedMaxHp = selectedClass
-    ? calculateMaxHp(
-        selectedClass.hitDie,
-        levelNum,
-        abilityModifier(finalAbilityScores.constitution),
-        selectedRace?.hitPointBonusPerLevel ?? 0
-      )
+    ? hpRollsValid
+      ? calculateMaxHpFromRolls(
+          selectedClass.hitDie,
+          hpRolls,
+          abilityModifier(adjustedScores.constitution),
+          racialHpBonus,
+        )
+      : calculateMaxHp(
+          selectedClass.hitDie,
+          levelNum,
+          abilityModifier(adjustedScores.constitution),
+          racialHpBonus,
+        )
     : 10;
+
+  function rollAllHp() {
+    if (!selectedClass) return;
+    setHpRolls(Array.from({ length: levelNum - 1 }, () => rollDie(selectedClass.hitDie)));
+  }
+
+  function rerollHpLevel(index: number) {
+    if (!selectedClass) return;
+    setHpRolls((prev) => prev.map((r, i) => (i === index ? rollDie(selectedClass.hitDie) : r)));
+  }
+
+  function selectHpMethod(method: "average" | "roll") {
+    setHpMethod(method);
+    if (method === "roll") rollAllHp();
+  }
   // What the starting-equipment step resolved to (empty for a custom class, which has no kit).
   const resolvedGear = selectedClass
-    ? resolveStartingGear(selectedClass.startingEquipment ?? [], equipmentSelection, catalog, selectedClass)
+    ? resolveStartingGear(
+        selectedClass.startingEquipment ?? [],
+        equipmentSelection,
+        catalog,
+        selectedClass,
+      )
     : null;
-  const derivedArmorClass = computeArmorClass(finalAbilityScores.dexterity, resolvedGear?.armor ?? []);
+  const derivedArmorClass = computeArmorClass(
+    adjustedScores.dexterity,
+    resolvedGear?.armor ?? [],
+  );
   const derivedSpeed = selectedRace?.speed ?? 30;
   const derivedProficiencyBonus = proficiencyBonusForLevel(levelNum);
 
@@ -544,25 +742,18 @@ export default function NewCharacterScreen() {
       case "portrait":
         return true;
       case "race":
-        return (
-          raceId !== null &&
-          (raceId !== CUSTOM_OPTION_ID || customRaceName.trim().length > 0)
-        );
+        return raceId !== null && (raceId !== CUSTOM_OPTION_ID || customRaceName.trim().length > 0);
       case "languages":
-        return selectedExtraLanguageIds.size === languageGrant.chooseCount;
+        return listedPickCount(selectedExtraLanguageIds) === languageGrant.chooseCount;
       case "class":
         return (
-          classId !== null &&
-          (classId !== CUSTOM_OPTION_ID || customClassName.trim().length > 0)
+          classId !== null && (classId !== CUSTOM_OPTION_ID || customClassName.trim().length > 0)
         );
       case "equipment":
         return true;
       case "background": {
         if (!catalog.backgroundAbilityBonus) return true;
-        const total = Object.values(backgroundAbilityBonuses).reduce(
-          (a, b) => a + (b ?? 0),
-          0
-        );
+        const total = Object.values(backgroundAbilityBonuses).reduce((a, b) => a + (b ?? 0), 0);
         return total === catalog.backgroundAbilityBonus.totalPoints;
       }
       case "alignment":
@@ -585,6 +776,14 @@ export default function NewCharacterScreen() {
         }
         return true;
       }
+      case "asi":
+        // Homebrew classes' levels are a guess at 5e's defaults, so every
+        // choice is optional there; catalog classes need each one made.
+        return isCustomClass || asiLevels.every(asiChoiceComplete);
+      case "hp":
+        return hpMethod === "average" || hpRollsValid;
+      case "features":
+        return true;
       case "skills":
         return true;
       case "spells":
@@ -634,9 +833,7 @@ export default function NewCharacterScreen() {
   }
 
   function isValueUsedByOther(value: number, ability: AbilityScoreKey): boolean {
-    return Object.entries(assignments).some(
-      ([key, used]) => key !== ability && used === value
-    );
+    return Object.entries(assignments).some(([key, used]) => key !== ability && used === value);
   }
 
   function toggleBonusAbility(key: AbilityScoreKey) {
@@ -657,7 +854,7 @@ export default function NewCharacterScreen() {
   async function applyStartingSpellSlots(characterId: number) {
     if (!selectedClass || classId === CUSTOM_OPTION_ID) return;
     const row = getClassProgression(ruleset, selectedClass.id)?.spellProgression?.find(
-      (r) => r.level === levelNum
+      (r) => r.level === levelNum,
     );
     if (!row) return;
     for (const [index, total] of row.slots.entries()) {
@@ -682,6 +879,13 @@ export default function NewCharacterScreen() {
   }
 
   async function createNow() {
+    let featuresText = featuresAndTraits.trim();
+    if (isCustomClass) {
+      for (const feature of [...homebrewFeatures].sort((a, b) => a.level - b.level)) {
+        if (feature.level > levelNum) continue;
+        featuresText = appendHomebrewFeatures(featuresText, feature.level, [feature]);
+      }
+    }
     const created = await createCharacterFromOnboarding({
       name: name.trim(),
       ruleset,
@@ -695,7 +899,7 @@ export default function NewCharacterScreen() {
       bonds: bonds.trim(),
       flaws: flaws.trim(),
       otherProficiencies: otherProficiencies.trim(),
-      featuresAndTraits: featuresAndTraits.trim(),
+      featuresAndTraits: featuresText,
       languages: catalog.languages
         ? [...languageGrant.granted, ...Array.from(selectedExtraLanguageIds)]
         : [],
@@ -704,12 +908,12 @@ export default function NewCharacterScreen() {
       armorClass: derivedArmorClass,
       speed: derivedSpeed,
       proficiencyBonus: derivedProficiencyBonus,
-      strength: finalAbilityScores.strength,
-      dexterity: finalAbilityScores.dexterity,
-      constitution: finalAbilityScores.constitution,
-      intelligence: finalAbilityScores.intelligence,
-      wisdom: finalAbilityScores.wisdom,
-      charisma: finalAbilityScores.charisma,
+      strength: scoresForCreate.strength,
+      dexterity: scoresForCreate.dexterity,
+      constitution: scoresForCreate.constitution,
+      intelligence: scoresForCreate.intelligence,
+      wisdom: scoresForCreate.wisdom,
+      charisma: scoresForCreate.charisma,
       skillProficiencies: Array.from(selectedSkillIds),
       notes: "",
       usesXp: usesXp ?? false,
@@ -741,7 +945,8 @@ export default function NewCharacterScreen() {
     // Portrait is cosmetic: a failure to save it shouldn't lose the character.
     try {
       let portraitUri: string | null = null;
-      if (portraitChoice?.kind === "upload") portraitUri = await persistPortrait(portraitChoice.uri);
+      if (portraitChoice?.kind === "upload")
+        portraitUri = await persistPortrait(portraitChoice.uri);
       else if (portraitChoice?.kind === "sprite") {
         const sprite = findSpritePortrait(portraitChoice.id);
         if (sprite) portraitUri = await persistBundledPortrait(sprite.source);
@@ -749,12 +954,24 @@ export default function NewCharacterScreen() {
       if (portraitUri) await updateCharacter(created.id, { portraitUri });
     } catch (error) {
       console.warn("Portrait save failed", error);
-      Alert.alert("Portrait not saved", "Your character was created, but the portrait couldn't be saved. You can add it from the Edit screen.");
+      Alert.alert(
+        "Portrait not saved",
+        "Your character was created, but the portrait couldn't be saved. You can add it from the Edit screen.",
+      );
     }
     if (resolvedGear) await applyStartingGear(created.id, ruleset, resolvedGear);
     await applyStartingSpellSlots(created.id);
     for (const spellId of selectedSpellIds) {
       await addCatalogSpellToCharacter(created.id, spellId);
+    }
+    // Feats last: they apply their own ability increases on top of the saved
+    // scores and recompute AC from the gear that's now on the character.
+    // Re-read the character each time so a second feat sees the first's changes.
+    for (const lvl of asiLevels) {
+      const choice = asiChoices[lvl];
+      if (choice?.kind !== "feat" || !choice.feat) continue;
+      const fresh = await getCharacter(created.id);
+      if (fresh) await addResolvedFeat(fresh, choice.feat);
     }
     router.replace({
       pathname: "/(tabs)/characters/[characterId]",
@@ -778,17 +995,17 @@ export default function NewCharacterScreen() {
       )}
 
       <KeyboardAwareScrollView
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
         style={styles.body}
         contentContainerStyle={styles.bodyContent}
         bottomOffset={60}
-        keyboardShouldPersistTaps="handled"
       >
         {step === "ruleset" && (
           <View>
             <Text style={styles.title}>Which rules are you playing with?</Text>
             <Text style={styles.hint}>
-              This determines the races, classes, spells, and skills available for this
-              character.
+              This determines the races, classes, spells, and skills available for this character.
             </Text>
             {Object.values(RULESETS).map((rs) => (
               <ChoiceRow
@@ -837,7 +1054,7 @@ export default function NewCharacterScreen() {
                   selected={raceId === race.id}
                   onPress={() => selectRace(race.id)}
                 />
-                {raceId === race.id && (
+                {raceId === race.id && collapsedDetail !== `race:${race.id}` && (
                   <View style={styles.detailPanel}>
                     <Text style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Speed: </Text>
@@ -853,7 +1070,7 @@ export default function NewCharacterScreen() {
                         {Object.entries(race.abilityBonuses)
                           .map(
                             ([key, value]) =>
-                              `${value >= 0 ? "+" : ""}${value} ${ABILITY_LABELS[key as AbilityScoreKey]}`
+                              `${value >= 0 ? "+" : ""}${value} ${ABILITY_LABELS[key as AbilityScoreKey]}`,
                           )
                           .join(", ")}
                       </Text>
@@ -864,7 +1081,8 @@ export default function NewCharacterScreen() {
                         <Text style={styles.detailRow}>
                           <Text style={styles.detailLabel}>Ability Bonuses: </Text>
                           None from {race.name}. Your ability score increases come from your
-                          background: +{catalog.backgroundAbilityBonus.maxPerAbility} to one score and +
+                          background: +{catalog.backgroundAbilityBonus.maxPerAbility} to one score
+                          and +
                           {catalog.backgroundAbilityBonus.totalPoints -
                             catalog.backgroundAbilityBonus.maxPerAbility}{" "}
                           to another, or +1 to three scores.
@@ -872,10 +1090,10 @@ export default function NewCharacterScreen() {
                       )}
                     {race.chooseAbilityBonus && (
                       <Text style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Choice Bonus: </Text>
-                        +{race.chooseAbilityBonus.amount} to {race.chooseAbilityBonus.count}{" "}
-                        ability score{race.chooseAbilityBonus.count > 1 ? "s" : ""} of your
-                        choice
+                        <Text style={styles.detailLabel}>Choice Bonus: </Text>+
+                        {race.chooseAbilityBonus.amount} to {race.chooseAbilityBonus.count} ability
+                        score
+                        {race.chooseAbilityBonus.count > 1 ? "s" : ""} of your choice
                         {race.chooseAbilityBonus.excluding &&
                         race.chooseAbilityBonus.excluding.length > 0
                           ? ` (not ${race.chooseAbilityBonus.excluding
@@ -931,9 +1149,7 @@ export default function NewCharacterScreen() {
                         >
                           <Text style={styles.stepperButtonText}>−</Text>
                         </Pressable>
-                        <Text style={styles.stepperValue}>
-                          {value > 0 ? `+${value}` : value}
-                        </Text>
+                        <Text style={styles.stepperValue}>{value > 0 ? `+${value}` : value}</Text>
                         <Pressable
                           style={styles.stepperButton}
                           onPress={() =>
@@ -975,7 +1191,7 @@ export default function NewCharacterScreen() {
                   style={styles.input}
                   value={customRaceSpeed}
                   onChangeText={setCustomRaceSpeed}
-                  keyboardType="number-pad"
+                  keyboardType="number-pad" inputAccessoryViewID="done-new"
                   placeholder="30"
                   placeholderTextColor={theme.colors.textMuted}
                 />
@@ -1014,12 +1230,18 @@ export default function NewCharacterScreen() {
                   multiline
                 />
                 <Pressable
-                  style={[styles.smallAddButton, !newTraitName.trim() && styles.smallAddButtonDisabled]}
+                  style={[
+                    styles.smallAddButton,
+                    !newTraitName.trim() && styles.smallAddButtonDisabled,
+                  ]}
                   disabled={!newTraitName.trim()}
                   onPress={() => {
                     setCustomRaceTraits((prev) => [
                       ...prev,
-                      { name: newTraitName.trim(), description: newTraitDescription.trim() },
+                      {
+                        name: newTraitName.trim(),
+                        description: newTraitDescription.trim(),
+                      },
                     ]);
                     setNewTraitName("");
                     setNewTraitDescription("");
@@ -1038,7 +1260,11 @@ export default function NewCharacterScreen() {
             <Text style={styles.hint}>
               {languageGrant.granted.length > 0
                 ? `You automatically know: ${languageGrant.granted
-                    .map((id) => catalog.languages?.find((l) => l.id === id)?.name ?? id)
+                    .map((id) =>
+                      isCustomLanguageId(id)
+                        ? customLanguageName(id)
+                        : (catalog.languages?.find((l) => l.id === id)?.name ?? id),
+                    )
                     .join(", ")}.`
                 : ""}{" "}
               {languageChoiceOptions.length > 0 && languageGrant.chooseCount > 0
@@ -1061,9 +1287,7 @@ export default function NewCharacterScreen() {
                         >
                           {lang.name}
                         </Text>
-                        <Text
-                          style={[styles.skillCardSub, selected && styles.skillCardTextActive]}
-                        >
+                        <Text style={[styles.skillCardSub, selected && styles.skillCardTextActive]}>
                           {lang.rare ? "Rare" : "Standard"}
                         </Text>
                       </Pressable>
@@ -1071,10 +1295,38 @@ export default function NewCharacterScreen() {
                   })}
                 </View>
                 <Text style={styles.hint}>
-                  {selectedExtraLanguageIds.size} / {languageGrant.chooseCount} selected.
+                  {listedPickCount(selectedExtraLanguageIds)} / {languageGrant.chooseCount}{" "}
+                  selected.
                 </Text>
               </>
             )}
+            <View style={styles.skillGrid}>
+              {Array.from(selectedExtraLanguageIds)
+                .filter(isCustomLanguageId)
+                .map((id) => (
+                  <Pressable
+                    key={id}
+                    onPress={() => toggleExtraLanguage(id)}
+                    style={[styles.skillCard, styles.skillCardActive]}
+                  >
+                    <Text style={[styles.skillCardText, styles.skillCardTextActive]}>
+                      {customLanguageName(id)}
+                    </Text>
+                    <Text style={[styles.skillCardSub, styles.skillCardTextActive]}>
+                      Custom
+                    </Text>
+                  </Pressable>
+                ))}
+            </View>
+            <TextInput
+              style={styles.input}
+              value={customLanguageText}
+              onChangeText={setCustomLanguageText}
+              onSubmitEditing={addCustomLanguage}
+              placeholder="Custom language, e.g. Satyr"
+              placeholderTextColor={theme.colors.textMuted}
+              returnKeyType="done"
+            />
           </View>
         )}
 
@@ -1089,7 +1341,7 @@ export default function NewCharacterScreen() {
                   selected={classId === klass.id}
                   onPress={() => selectClass(klass.id)}
                 />
-                {classId === klass.id && (
+                {classId === klass.id && collapsedDetail !== `class:${klass.id}` && (
                   <View style={styles.detailPanel}>
                     <Text style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Hit Die: </Text>d{klass.hitDie}
@@ -1269,7 +1521,10 @@ export default function NewCharacterScreen() {
                   onPress={() => {
                     setCustomClassTraits((prev) => [
                       ...prev,
-                      { name: newClassTraitName.trim(), description: newClassTraitDescription.trim() },
+                      {
+                        name: newClassTraitName.trim(),
+                        description: newClassTraitDescription.trim(),
+                      },
                     ]);
                     setNewClassTraitName("");
                     setNewClassTraitDescription("");
@@ -1286,7 +1541,7 @@ export default function NewCharacterScreen() {
           <StartingEquipmentStep
             classDef={classDefForEquipment}
             catalog={catalog}
-            dexterity={finalAbilityScores.dexterity}
+            dexterity={adjustedScores.dexterity}
             selection={equipmentSelection}
             onChange={setEquipmentSelection}
             customInputProps={(key, value, setValue) => ({
@@ -1304,30 +1559,27 @@ export default function NewCharacterScreen() {
               style={styles.input}
               value={background}
               onChangeText={setBackground}
-              placeholder="e.g. Soldier, Sage, Criminal…"
+              placeholder="e.g. Acolyte…"
               placeholderTextColor={theme.colors.textMuted}
             />
             {catalog.backgroundAbilityBonus && (
               <View style={styles.customBuilderSection}>
                 <Text style={styles.customBuilderLabel}>Background Ability Scores</Text>
                 <Text style={styles.hint}>
-                  2024 rules grant ability score increases from your background rather than
-                  your species. Distribute {catalog.backgroundAbilityBonus.totalPoints} points
-                  across your abilities ({catalog.backgroundAbilityBonus.maxPerAbility} max
-                  each) — e.g. +2/+1 to two abilities, or +1/+1/+1 to three.
+                  2024 rules grant ability score increases from your background rather than your
+                  species. Distribute {catalog.backgroundAbilityBonus.totalPoints} points across
+                  your abilities ({catalog.backgroundAbilityBonus.maxPerAbility} max each) — e.g.
+                  +2/+1 to two abilities, or +1/+1/+1 to three.
                 </Text>
                 <Text style={styles.hint}>
-                  {Object.values(backgroundAbilityBonuses).reduce(
-                    (a, b) => a + (b ?? 0),
-                    0
-                  )}{" "}
-                  / {catalog.backgroundAbilityBonus.totalPoints} points allocated
+                  {Object.values(backgroundAbilityBonuses).reduce((a, b) => a + (b ?? 0), 0)} /{" "}
+                  {catalog.backgroundAbilityBonus.totalPoints} points allocated
                 </Text>
                 {ABILITY_KEYS.map((key) => {
                   const value = backgroundAbilityBonuses[key] ?? 0;
                   const total = Object.values(backgroundAbilityBonuses).reduce(
                     (a, b) => a + (b ?? 0),
-                    0
+                    0,
                   );
                   const maxPerAbility = catalog.backgroundAbilityBonus!.maxPerAbility;
                   const totalPoints = catalog.backgroundAbilityBonus!.totalPoints;
@@ -1347,9 +1599,7 @@ export default function NewCharacterScreen() {
                         >
                           <Text style={styles.stepperButtonText}>−</Text>
                         </Pressable>
-                        <Text style={styles.stepperValue}>
-                          {value > 0 ? `+${value}` : value}
-                        </Text>
+                        <Text style={styles.stepperValue}>{value > 0 ? `+${value}` : value}</Text>
                         <Pressable
                           style={styles.stepperButton}
                           disabled={value >= maxPerAbility || total >= totalPoints}
@@ -1393,8 +1643,7 @@ export default function NewCharacterScreen() {
           <View>
             <Text style={styles.title}>Personality (optional)</Text>
             <Text style={styles.hint}>
-              The four roleplay prompts from the standard character sheet. Skip any of
-              these for now — they&apos;re easy to fill in later from Edit.
+              The four roleplay prompts from the standard character sheet.
             </Text>
             <Text style={styles.fieldLabel}>Personality Traits</Text>
             <TextInput
@@ -1439,8 +1688,7 @@ export default function NewCharacterScreen() {
           <View>
             <Text style={styles.title}>Proficiencies &amp; Traits (optional)</Text>
             <Text style={styles.hint}>
-              Anything else from the sheet that doesn&apos;t fit elsewhere — tool
-              proficiencies
+              Anything else from the sheet that doesn&apos;t fit elsewhere — tool proficiencies
               {catalog.languages ? "" : ", languages you speak"}
               {selectedRace?.traits ? "" : ", racial traits"}, or your background feature.
               {selectedRace?.traits
@@ -1454,7 +1702,9 @@ export default function NewCharacterScreen() {
               style={[styles.input, styles.multilineInput]}
               value={otherProficiencies}
               onChangeText={setOtherProficiencies}
-              placeholder={catalog.languages ? "e.g. Thieves' tools" : "e.g. Thieves' tools, Common, Elvish…"}
+              placeholder={
+                catalog.languages ? "e.g. Thieves' tools" : "e.g. Thieves' tools, Common, Elvish…"
+              }
               placeholderTextColor={theme.colors.textMuted}
               multiline
             />
@@ -1479,22 +1729,33 @@ export default function NewCharacterScreen() {
         {step === "level" && (
           <View>
             <Text style={styles.title}>Starting level</Text>
-            <TextInput
-              style={styles.input}
-              value={level}
-              onChangeText={setLevel}
-              keyboardType="number-pad"
-              placeholder="1"
-              placeholderTextColor={theme.colors.textMuted}
-            />
+            <Text style={styles.hint}>
+              Level 1 is a brand-new adventurer. Pick a higher level to bring in an existing
+              character — the steps ahead will also cover everything gained along the way: hit
+              points for each level, ability score improvements or feats, spell slots, and any
+              subclass.
+            </Text>
+            <View style={styles.skillGrid}>
+              {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+                <Pressable
+                  key={n}
+                  onPress={() => selectLevel(n)}
+                  style={[styles.skillCard, levelNum === n && styles.skillCardActive]}
+                >
+                  <Text style={[styles.skillCardText, levelNum === n && styles.skillCardTextActive]}>
+                    {n}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
             {subclassProgression?.subclassLevel !== undefined &&
               (subclassProgression.subclasses?.length ?? 0) > 0 &&
               levelNum < subclassProgression.subclassLevel && (
                 <Text style={styles.hint}>
                   A {classNameValue} chooses their {subclassProgression.subclassLabel ?? "subclass"}{" "}
-                  at level {subclassProgression.subclassLevel}, so you won&apos;t be asked for one at
-                  level {levelNum}. Start at level {subclassProgression.subclassLevel} or higher to
-                  pick it now, or choose it when you level up.
+                  at level {subclassProgression.subclassLevel}, so you won&apos;t be asked for one
+                  at level {levelNum}. Start at level {subclassProgression.subclassLevel} or higher
+                  to pick it now, or choose it when you level up.
                 </Text>
               )}
           </View>
@@ -1519,10 +1780,10 @@ export default function NewCharacterScreen() {
           <View>
             <Text style={styles.title}>Track Experience Points?</Text>
             <Text style={styles.hint}>
-              Some tables track XP from quests and monsters to determine when you level up;
-              others just have the DM call for a level-up at a good story moment
-              (&quot;milestone&quot; leveling). Either is fine — this only changes what shows
-              up on this character&apos;s sheet.
+              Some tables track XP from quests and monsters to determine when you level up; others
+              just have the DM call for a level-up at a good story moment (&quot;milestone&quot;
+              leveling). Either is fine — this only changes what shows up on this character&apos;s
+              sheet.
             </Text>
             <View style={styles.advantageRow}>
               {([true, false] as const).map((value) => (
@@ -1551,18 +1812,24 @@ export default function NewCharacterScreen() {
         {step === "abilities" && (
           <View>
             <Text style={styles.title}>Assign ability scores</Text>
-            {quickBuildAbilities && (
+            {suggestedAbilities.length > 0 && (
               <Text style={[styles.hint, { marginBottom: 8 }]}>
-                In a hurry? Quick build for a {classNameValue}: put your highest score in{" "}
-                {ABILITY_LABELS[quickBuildAbilities[0]]} and your next-highest in{" "}
-                {ABILITY_LABELS[quickBuildAbilities[1]]}, then fill in the rest in any order.
+                Tip: a {classNameValue} leans on{" "}
+                {suggestedAbilities.map((k) => ABILITY_LABELS[k]).join(" and ")} (its{" "}
+                {selectedClass?.spellcastingAbility
+                  ? "spellcasting ability and saving throws"
+                  : "saving throws"}
+                ), so consider putting your higher scores there.
               </Text>
             )}
             <View style={styles.advantageRow}>
               {(["standard", "roll"] as const).map((method) => (
                 <Pressable
                   key={method}
-                  style={[styles.advantageButton, abilityMethod === method && styles.advantageButtonActive]}
+                  style={[
+                    styles.advantageButton,
+                    abilityMethod === method && styles.advantageButtonActive,
+                  ]}
                   onPress={() => selectAbilityMethod(method)}
                 >
                   <Text
@@ -1590,9 +1857,7 @@ export default function NewCharacterScreen() {
                       {bonus !== 0 && (
                         <Text style={styles.rollAbilityDetail}>
                           {bonus > 0 ? `+${bonus}` : bonus} racial/background bonus
-                          {assignments[key] !== undefined
-                            ? ` → ${assignments[key]! + bonus}`
-                            : ""}
+                          {assignments[key] !== undefined ? ` → ${assignments[key]! + bonus}` : ""}
                         </Text>
                       )}
                       <View style={styles.abilityValues}>
@@ -1629,8 +1894,8 @@ export default function NewCharacterScreen() {
             ) : (
               <>
                 <Text style={styles.hint}>
-                  Roll each ability independently — 4d6, dropping the lowest die. Reroll any
-                  of them as many times as you like.
+                  Roll each ability independently — 4d6, dropping the lowest die. Reroll any of them
+                  as many times as you like.
                 </Text>
                 {ABILITY_KEYS.map((key) => {
                   const detail = rolledDetails[key];
@@ -1677,7 +1942,7 @@ export default function NewCharacterScreen() {
                 </Text>
                 <View style={styles.bonusRow}>
                   {ABILITY_KEYS.filter(
-                    (key) => !selectedRace.chooseAbilityBonus?.excluding?.includes(key)
+                    (key) => !selectedRace.chooseAbilityBonus?.excluding?.includes(key),
                   ).map((key) => {
                     const chosen = chosenBonusAbilities.includes(key);
                     return (
@@ -1686,9 +1951,7 @@ export default function NewCharacterScreen() {
                         onPress={() => toggleBonusAbility(key)}
                         style={[styles.bonusChip, chosen && styles.bonusChipActive]}
                       >
-                        <Text
-                          style={[styles.bonusChipText, chosen && styles.bonusChipTextActive]}
-                        >
+                        <Text style={[styles.bonusChipText, chosen && styles.bonusChipTextActive]}>
                           {ABILITY_LABELS[key]}
                         </Text>
                       </Pressable>
@@ -1697,6 +1960,252 @@ export default function NewCharacterScreen() {
                 </View>
               </View>
             )}
+          </View>
+        )}
+
+        {step === "asi" && (
+          <View>
+            <Text style={styles.title}>Ability Score Improvements</Text>
+            <Text style={styles.hint}>
+              A level {levelNum} {classNameValue} has earned {asiLevels.length} of these. At each
+              one, raise your ability scores (max 20) or take a feat.
+              {isCustomClass
+                ? " Homebrew classes use the standard 5e levels as a guess — skip any your class doesn't have."
+                : ""}
+            </Text>
+            {asiLevels.map((lvl) => {
+              const choice = asiChoices[lvl];
+              return (
+                <View key={lvl} style={styles.customBuilderSection}>
+                  <Text style={styles.customBuilderLabel}>Level {lvl}</Text>
+                  <View style={styles.advantageRow}>
+                    {(["ability", "feat"] as const).map((kind) => (
+                      <Pressable
+                        key={kind}
+                        style={[
+                          styles.advantageButton,
+                          choice?.kind === kind && styles.advantageButtonActive,
+                        ]}
+                        onPress={() => setAsiKind(lvl, kind)}
+                      >
+                        <Text
+                          style={[
+                            styles.advantageText,
+                            choice?.kind === kind && styles.advantageTextActive,
+                          ]}
+                        >
+                          {kind === "ability" ? "Ability Scores" : "Take a Feat"}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  {choice?.kind === "ability" && (
+                    <>
+                      <View style={styles.advantageRow}>
+                        {(["one", "two"] as const).map((mode) => (
+                          <Pressable
+                            key={mode}
+                            style={[
+                              styles.advantageButton,
+                              choice.mode === mode && styles.advantageButtonActive,
+                            ]}
+                            onPress={() => setAsiMode(lvl, mode)}
+                          >
+                            <Text
+                              style={[
+                                styles.advantageText,
+                                choice.mode === mode && styles.advantageTextActive,
+                              ]}
+                            >
+                              {mode === "one" ? "+2 to one" : "+1 to two"}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                      <View style={styles.bonusRow}>
+                        {ABILITY_KEYS.map((key) => {
+                          const chosen = choice.abilities.includes(key);
+                          return (
+                            <Pressable
+                              key={key}
+                              onPress={() => toggleAsiAbility(lvl, key)}
+                              style={[styles.bonusChip, chosen && styles.bonusChipActive]}
+                            >
+                              <Text
+                                style={[styles.bonusChipText, chosen && styles.bonusChipTextActive]}
+                              >
+                                {ABILITY_LABELS[key]}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </>
+                  )}
+
+                  {choice?.kind === "feat" && (
+                    <>
+                      {choice.feat && (
+                        <View style={styles.traitRow}>
+                          <View style={styles.traitInfo}>
+                            <Text style={styles.traitName}>{choice.feat.name}</Text>
+                            {choice.feat.effects.map((effect, idx) => (
+                              <Text key={idx} style={styles.traitDescription}>
+                                {describeFeatEffect(effect, ruleset)}
+                              </Text>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                      <Pressable style={styles.smallAddButton} onPress={() => setFeatPickerLevel(lvl)}>
+                        <Text style={styles.smallAddButtonText}>
+                          {choice.feat ? "Change Feat" : "Browse Feat Catalog"}
+                        </Text>
+                      </Pressable>
+                    </>
+                  )}
+                </View>
+              );
+            })}
+            <FeatPickerModal
+              visible={featPickerLevel !== null}
+              character={{ ruleset, ...adjustedScores }}
+              onClose={() => setFeatPickerLevel(null)}
+              onPick={(feat) => {
+                const lvl = featPickerLevel;
+                setFeatPickerLevel(null);
+                if (lvl === null) return;
+                setAsiChoices((prev) => ({ ...prev, [lvl]: { kind: "feat", feat } }));
+              }}
+            />
+          </View>
+        )}
+
+        {step === "hp" && selectedClass && (
+          <View>
+            <Text style={styles.title}>Hit points</Text>
+            <Text style={styles.hint}>
+              Level 1 gives the maximum of your d{selectedClass.hitDie} plus Constitution. For each
+              of the {levelNum - 1} levels after that, take the average or roll the die.
+            </Text>
+            <View style={styles.advantageRow}>
+              {(["average", "roll"] as const).map((method) => (
+                <Pressable
+                  key={method}
+                  style={[styles.advantageButton, hpMethod === method && styles.advantageButtonActive]}
+                  onPress={() => selectHpMethod(method)}
+                >
+                  <Text
+                    style={[styles.advantageText, hpMethod === method && styles.advantageTextActive]}
+                  >
+                    {method === "average" ? "Take Average" : "Roll Hit Dice"}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            {hpRollsValid && (
+              <View style={styles.customBuilderSection}>
+                {hpRolls.map((roll, i) => {
+                  const gained =
+                    Math.max(1, roll + abilityModifier(adjustedScores.constitution)) + racialHpBonus;
+                  return (
+                    <View key={i} style={styles.stepperRow}>
+                      <Text style={styles.stepperLabel}>
+                        Level {i + 2}: rolled {roll} → +{gained}
+                      </Text>
+                      <Pressable style={styles.rollAbilityButton} onPress={() => rerollHpLevel(i)}>
+                        <Text style={styles.rollAbilityButtonText}>Reroll</Text>
+                      </Pressable>
+                    </View>
+                  );
+                })}
+                <Pressable style={styles.smallAddButton} onPress={rollAllHp}>
+                  <Text style={styles.smallAddButtonText}>Reroll All</Text>
+                </Pressable>
+              </View>
+            )}
+            <Text style={styles.hint}>
+              Max HP: {derivedMaxHp} (Constitution {adjustedScores.constitution}, modifier{" "}
+              {abilityModifier(adjustedScores.constitution) >= 0 ? "+" : ""}
+              {abilityModifier(adjustedScores.constitution)} per level).
+            </Text>
+          </View>
+        )}
+
+        {step === "features" && (
+          <View>
+            <Text style={styles.title}>Class features</Text>
+            <Text style={styles.hint}>
+              This is a homebrew class, so there&apos;s no catalog of what it gains. Add the
+              features it has earned by level {levelNum} (optional) — they&apos;re saved to the
+              sheet&apos;s Features &amp; Traits.
+            </Text>
+            {homebrewFeatures.map((feature, i) => (
+              <View key={`${feature.name}-${i}`} style={styles.traitRow}>
+                <View style={styles.traitInfo}>
+                  <Text style={styles.traitName}>
+                    Level {feature.level}: {feature.name}
+                  </Text>
+                  {feature.description.length > 0 && (
+                    <Text style={styles.traitDescription}>{feature.description}</Text>
+                  )}
+                </View>
+                <Pressable onPress={() => setHomebrewFeatures((prev) => prev.filter((_, idx) => idx !== i))}>
+                  <Text style={styles.traitRemove}>×</Text>
+                </Pressable>
+              </View>
+            ))}
+            <Text style={styles.customBuilderLabel}>Gained at level</Text>
+            <View style={styles.skillGrid}>
+              {Array.from({ length: levelNum - 1 }, (_, i) => i + 2).map((n) => {
+                const active = Math.min(newFeatureLevel, levelNum) === n;
+                return (
+                  <Pressable
+                    key={n}
+                    onPress={() => setNewFeatureLevel(n)}
+                    style={[styles.skillCard, active && styles.skillCardActive]}
+                  >
+                    <Text style={[styles.skillCardText, active && styles.skillCardTextActive]}>
+                      {n}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <TextInput
+              style={styles.input}
+              value={newFeatureName}
+              onChangeText={setNewFeatureName}
+              placeholder="Feature name"
+              placeholderTextColor={theme.colors.textMuted}
+            />
+            <TextInput
+              style={[styles.input, styles.multilineInput]}
+              value={newFeatureDescription}
+              onChangeText={setNewFeatureDescription}
+              placeholder="What does it do?"
+              placeholderTextColor={theme.colors.textMuted}
+              multiline
+            />
+            <Pressable
+              style={[styles.smallAddButton, !newFeatureName.trim() && styles.smallAddButtonDisabled]}
+              disabled={!newFeatureName.trim()}
+              onPress={() => {
+                setHomebrewFeatures((prev) => [
+                  ...prev,
+                  {
+                    level: Math.min(newFeatureLevel, levelNum),
+                    name: newFeatureName.trim(),
+                    description: newFeatureDescription.trim(),
+                  },
+                ]);
+                setNewFeatureName("");
+                setNewFeatureDescription("");
+              }}
+            >
+              <Text style={styles.smallAddButtonText}>Add Feature</Text>
+            </Pressable>
           </View>
         )}
 
@@ -1710,8 +2219,8 @@ export default function NewCharacterScreen() {
               {groupedSkillOptions.classSkills.length > 0
                 ? `${selectedClass?.name}'s usual skills are grouped first for reference.`
                 : ""}{" "}
-              Background-granted skills aren&apos;t tracked separately yet, so include those
-              here too if you know them.
+              Background-granted skills aren&apos;t tracked separately yet, so include those here
+              too if you know them.
             </Text>
             {groupedSkillOptions.classSkills.length > 0 && (
               <>
@@ -1725,7 +2234,9 @@ export default function NewCharacterScreen() {
                         onPress={() => toggleSkillSelection(skill.id)}
                         style={[styles.skillCard, selected && styles.skillCardActive]}
                       >
-                        <Text style={[styles.skillCardText, selected && styles.skillCardTextActive]}>
+                        <Text
+                          style={[styles.skillCardText, selected && styles.skillCardTextActive]}
+                        >
                           {skill.name}
                         </Text>
                         <Text style={[styles.skillCardSub, selected && styles.skillCardTextActive]}>
@@ -1752,9 +2263,7 @@ export default function NewCharacterScreen() {
                     <Text style={[styles.skillCardText, selected && styles.skillCardTextActive]}>
                       {skill.name}
                     </Text>
-                    <Text
-                      style={[styles.skillCardSub, selected && styles.skillCardTextActive]}
-                    >
+                    <Text style={[styles.skillCardSub, selected && styles.skillCardTextActive]}>
                       {ABILITY_LABELS[skill.ability]}
                     </Text>
                   </Pressable>
@@ -1771,23 +2280,29 @@ export default function NewCharacterScreen() {
           <View>
             <Text style={styles.title}>Starting Spells</Text>
             <Text style={styles.hint}>
-              Shows spells up to level {maxOnboardingSpellLevel} (an approximation of what a
-              level {levelNum} {selectedClass.name} can access — not exact slot-by-slot
-              scaling). Tap a spell to pick it; tap the ⓘ to read what it does.
+              Shows spells up to level {maxOnboardingSpellLevel} (an approximation of what a level{" "}
+              {levelNum} {selectedClass.name} can access — not exact slot-by-slot scaling). Tap a
+              spell to pick it; tap the ⓘ to read what it does.
             </Text>
             {spellLimits && (
               <View style={styles.spellLimitRow}>
                 {spellLimits.cantrips > 0 && (
                   <Text style={styles.spellLimitText}>
-                    Cantrips: {selectedSpellIds.size > 0
-                      ? spellCatalogResults.filter((s) => selectedSpellIds.has(s.id) && s.level === 0).length
+                    Cantrips:{" "}
+                    {selectedSpellIds.size > 0
+                      ? spellCatalogResults.filter(
+                          (s) => selectedSpellIds.has(s.id) && s.level === 0,
+                        ).length
                       : 0}{" "}
                     / {spellLimits.cantrips}
                   </Text>
                 )}
                 <Text style={styles.spellLimitText}>
                   {spellLimits.mode === "prepared" ? "Prepared" : "Known"} spells:{" "}
-                  {spellCatalogResults.filter((s) => selectedSpellIds.has(s.id) && s.level > 0).length}{" "}
+                  {
+                    spellCatalogResults.filter((s) => selectedSpellIds.has(s.id) && s.level > 0)
+                      .length
+                  }{" "}
                   / {spellLimits.spells}
                 </Text>
               </View>
@@ -1823,7 +2338,11 @@ export default function NewCharacterScreen() {
               return (
                 <Pressable
                   key={spell.id}
-                  style={[styles.choiceRow, styles.spellChoiceRow, selected && styles.choiceRowActive]}
+                  style={[
+                    styles.choiceRow,
+                    styles.spellChoiceRow,
+                    selected && styles.choiceRowActive,
+                  ]}
                   onPress={() => toggleSpellSelection(spell)}
                 >
                   {icon && (
@@ -1845,9 +2364,7 @@ export default function NewCharacterScreen() {
                     <Text style={styles.choiceRowSub}>
                       {spell.level === 0 ? "Cantrip" : `Level ${spell.level}`} · {spell.school}
                     </Text>
-                    {expanded && (
-                      <Text style={styles.spellDescription}>{spell.description}</Text>
-                    )}
+                    {expanded && <Text style={styles.spellDescription}>{spell.description}</Text>}
                   </View>
                 </Pressable>
               );
@@ -1886,17 +2403,34 @@ export default function NewCharacterScreen() {
                   .join(", ")}
               </Text>
             )}
-            {equipmentSummaryText() !== "" && (
-              <Text style={styles.reviewSub}>{equipmentSummaryText()}</Text>
-            )}
-            {catalog.languages && languageGrant.granted.length + selectedExtraLanguageIds.size > 0 && (
+            {asiLevels.some((lvl) => {
+              const c = asiChoices[lvl];
+              return c?.kind === "feat" && c.feat;
+            }) && (
               <Text style={styles.reviewSub}>
-                Languages:{" "}
-                {[...languageGrant.granted, ...Array.from(selectedExtraLanguageIds)]
-                  .map((id) => catalog.languages?.find((l) => l.id === id)?.name ?? id)
+                Feats:{" "}
+                {asiLevels
+                  .map((lvl) => asiChoices[lvl])
+                  .flatMap((c) => (c?.kind === "feat" && c.feat ? [c.feat.name] : []))
                   .join(", ")}
               </Text>
             )}
+            {equipmentSummaryText() !== "" && (
+              <Text style={styles.reviewSub}>{equipmentSummaryText()}</Text>
+            )}
+            {catalog.languages &&
+              languageGrant.granted.length + selectedExtraLanguageIds.size > 0 && (
+                <Text style={styles.reviewSub}>
+                  Languages:{" "}
+                  {[...languageGrant.granted, ...Array.from(selectedExtraLanguageIds)]
+                    .map((id) =>
+                      isCustomLanguageId(id)
+                        ? customLanguageName(id)
+                        : (catalog.languages?.find((l) => l.id === id)?.name ?? id),
+                    )
+                    .join(", ")}
+                </Text>
+              )}
             <Text style={styles.reviewSub}>
               {usesXp
                 ? `Tracking XP (starting at ${xpThresholdForLevel(ruleset, levelNum)})`
@@ -1914,23 +2448,28 @@ export default function NewCharacterScreen() {
               {ABILITY_KEYS.map((key) => (
                 <View key={key} style={styles.abilityCard}>
                   <Text style={styles.abilityCardLabel}>{ABILITY_LABELS[key]}</Text>
-                  <Text style={styles.abilityCardScore}>{finalAbilityScores[key]}</Text>
+                  <Text style={styles.abilityCardScore}>{adjustedScores[key]}</Text>
                 </View>
               ))}
             </View>
           </View>
         )}
       </KeyboardAwareScrollView>
+      <DoneAccessory id="done-new" />
 
       <View style={styles.navRow}>
         <Pressable style={styles.navButtonSecondary} onPress={goBack}>
-          <Text style={styles.navButtonSecondaryText}>
-            {stepIndex === 0 ? "Cancel" : "Back"}
-          </Text>
+          <Text style={styles.navButtonSecondaryText}>{stepIndex === 0 ? "Cancel" : "Back"}</Text>
         </Pressable>
         {step === "review" ? (
-          <Pressable style={[styles.navButtonPrimary, creating && styles.navButtonDisabled]} disabled={creating} onPress={handleCreate}>
-            <Text style={styles.navButtonPrimaryText}>{creating ? "Creating..." : "Create Character"}</Text>
+          <Pressable
+            style={[styles.navButtonPrimary, creating && styles.navButtonDisabled]}
+            disabled={creating}
+            onPress={handleCreate}
+          >
+            <Text style={styles.navButtonPrimaryText}>
+              {creating ? "Creating..." : "Create Character"}
+            </Text>
           </Pressable>
         ) : (
           <Pressable
@@ -1942,7 +2481,7 @@ export default function NewCharacterScreen() {
           </Pressable>
         )}
       </View>
-      <KeyboardToolbar />
+      <CreatingOverlay visible={creating} />
     </View>
   );
 }
@@ -1962,10 +2501,7 @@ function ChoiceRow({
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
-    <Pressable
-      style={[styles.choiceRow, selected && styles.choiceRowActive]}
-      onPress={onPress}
-    >
+    <Pressable style={[styles.choiceRow, selected && styles.choiceRowActive]} onPress={onPress}>
       <Text style={styles.choiceRowLabel}>{label}</Text>
       <Text style={styles.choiceRowSub}>{sublabel}</Text>
     </Pressable>
@@ -2037,7 +2573,11 @@ function createStyles(theme: Theme) {
       paddingVertical: 10,
       marginTop: 8,
     },
-    multilineInput: { minHeight: 70, textAlignVertical: "top", marginBottom: 12 },
+    multilineInput: {
+      minHeight: 70,
+      textAlignVertical: "top",
+      marginBottom: 12,
+    },
     fieldLabel: {
       color: theme.colors.textMuted,
       fontSize: 12,
@@ -2068,7 +2608,11 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "space-between",
     },
-    spellInfoToggle: { color: theme.colors.accent, fontSize: 14, paddingLeft: 8 },
+    spellInfoToggle: {
+      color: theme.colors.accent,
+      fontSize: 14,
+      paddingLeft: 8,
+    },
     spellDescription: {
       color: theme.colors.text,
       fontSize: 12,
@@ -2143,7 +2687,10 @@ function createStyles(theme: Theme) {
       paddingVertical: 8,
       alignItems: "center",
     },
-    advantageButtonActive: { backgroundColor: theme.colors.accent, borderColor: theme.colors.accent },
+    advantageButtonActive: {
+      backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accent,
+    },
     advantageText: {
       color: theme.colors.textMuted,
       fontWeight: "600",
@@ -2234,7 +2781,10 @@ function createStyles(theme: Theme) {
       paddingVertical: 10,
       alignItems: "center",
     },
-    skillCardActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    skillCardActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
     skillCardText: {
       color: theme.colors.text,
       fontSize: 12,
@@ -2250,8 +2800,17 @@ function createStyles(theme: Theme) {
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
     },
-    reviewSub: { color: theme.colors.textMuted, marginTop: 4, marginBottom: 16 },
-    summaryRow: { flexDirection: "row", gap: 8, marginBottom: 20, flexWrap: "wrap" },
+    reviewSub: {
+      color: theme.colors.textMuted,
+      marginTop: 4,
+      marginBottom: 16,
+    },
+    summaryRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 20,
+      flexWrap: "wrap",
+    },
     summaryCard: {
       flex: 1,
       minWidth: "22%",
@@ -2340,7 +2899,11 @@ function createStyles(theme: Theme) {
       justifyContent: "space-between",
       paddingVertical: 6,
     },
-    stepperLabel: { color: theme.colors.text, fontSize: 13, fontFamily: theme.displayFontFamily },
+    stepperLabel: {
+      color: theme.colors.text,
+      fontSize: 13,
+      fontFamily: theme.displayFontFamily,
+    },
     stepperControls: { flexDirection: "row", alignItems: "center", gap: 10 },
     stepperButton: {
       width: 28,
@@ -2352,7 +2915,11 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "center",
     },
-    stepperButtonText: { color: theme.colors.text, fontSize: 16, fontWeight: "700" },
+    stepperButtonText: {
+      color: theme.colors.text,
+      fontSize: 16,
+      fontWeight: "700",
+    },
     stepperValue: {
       color: theme.colors.text,
       fontSize: 14,
@@ -2393,7 +2960,15 @@ function createStyles(theme: Theme) {
       fontSize: 13,
       fontFamily: theme.displayFontFamily,
     },
-    traitDescription: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
-    traitRemove: { color: theme.colors.accent, fontSize: 16, paddingHorizontal: 4 },
+    traitDescription: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    traitRemove: {
+      color: theme.colors.accent,
+      fontSize: 16,
+      paddingHorizontal: 4,
+    },
   });
 }

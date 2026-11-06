@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { listFeatCatalog } from "../features/characters/featRepo";
@@ -13,12 +14,14 @@ import {
   type ResolvedFeatPick,
 } from "../features/characters/characterCalculations";
 import type { AbilityScoreKey, Character } from "../types/models";
+import { DoneAccessory } from "./DoneAccessory";
 
 type CatalogRow = Awaited<ReturnType<typeof listFeatCatalog>>[number];
 
 type FeatPickerModalProps = {
   visible: boolean;
-  character: Character;
+  /** Only the ruleset and current ability scores are read, so onboarding can pass these before a character row exists. */
+  character: Pick<Character, "ruleset" | AbilityScoreKey>;
   onClose: () => void;
   onPick: (feat: ResolvedFeatPick) => void;
 };
@@ -29,11 +32,11 @@ export function FeatPickerModal({ visible, character, onClose, onPick }: FeatPic
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-FeatPickerModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           {visible && <FeatPickerModalForm character={character} onClose={onClose} onPick={onPick} />}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -413,7 +416,7 @@ function FeatPickerModalForm({
           </ScrollView>
         </>
       ) : (
-        <KeyboardAwareScrollView style={styles.catalogList} bottomOffset={60}>
+        <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.catalogList} bottomOffset={60}>
           <Text style={styles.fieldLabel}>Feat Name</Text>
           <TextInput
             style={styles.input}
@@ -504,7 +507,7 @@ function FeatPickerModalForm({
                       style={styles.input}
                       value={builderAmount}
                       onChangeText={setBuilderAmount}
-                      keyboardType="number-pad"
+                      keyboardType="number-pad" inputAccessoryViewID="done-FeatPickerModal"
                     />
                   </View>
                   <View style={{ flex: 1 }}>
@@ -513,7 +516,7 @@ function FeatPickerModalForm({
                       style={styles.input}
                       value={builderMax}
                       onChangeText={setBuilderMax}
-                      keyboardType="number-pad"
+                      keyboardType="number-pad" inputAccessoryViewID="done-FeatPickerModal"
                     />
                   </View>
                 </View>
@@ -528,7 +531,7 @@ function FeatPickerModalForm({
                     style={styles.input}
                     value={builderAmount}
                     onChangeText={setBuilderAmount}
-                    keyboardType="number-pad"
+                    keyboardType="number-pad" inputAccessoryViewID="done-FeatPickerModal"
                   />
                 </>
               )}

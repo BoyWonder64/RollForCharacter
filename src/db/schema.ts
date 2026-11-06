@@ -240,25 +240,6 @@ export const characterSpells = sqliteTable("character_spells", {
   prepared: integer("prepared", { mode: "boolean" }).notNull().default(false),
 });
 
-export const equipmentItems = sqliteTable("equipment_items", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  slot: text("slot").notNull(),
-  packId: text("pack_id").notNull().default("base"),
-  imageAsset: text("image_asset").notNull(),
-});
-
-export const characterEquipment = sqliteTable("character_equipment", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  characterId: integer("character_id")
-    .notNull()
-    .references(() => characters.id, { onDelete: "cascade" }),
-  equipmentItemId: integer("equipment_item_id")
-    .notNull()
-    .references(() => equipmentItems.id, { onDelete: "cascade" }),
-  slot: text("slot").notNull(),
-});
-
 // A weapon in a character's inventory -- either copied from a ruleset's
 // `WeaponDefinition` catalog (via `catalogId`) or typed in by hand (`catalogId`
 // null), same free-text-fallback spirit as the race/class pickers.
@@ -369,8 +350,7 @@ export const campaignNotes = sqliteTable("campaign_notes", {
     .default(sql`(current_timestamp)`),
 });
 
-// A "special item" the campaign notes mention -- narrative, not tied to the
-// equipped-gear system (`equipmentItems`/`characterEquipment` above).
+// A "special item" the campaign notes mention -- narrative.
 export const campaignItems = sqliteTable("campaign_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   characterId: integer("character_id")

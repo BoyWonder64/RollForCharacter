@@ -15,6 +15,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { setAudioModeAsync } from "expo-audio";
 import { ThemeProvider, useTheme } from "../theme/ThemeContext";
+import { FontScaleProvider, useFontScale } from "../features/settings/FontScaleContext";
 import { KeepAwakeProvider } from "../features/settings/KeepAwakeContext";
 import { DmModeProvider } from "../features/settings/DmModeContext";
 import { DeveloperModeProvider } from "../features/settings/DeveloperModeContext";
@@ -32,6 +33,7 @@ setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "mixWithOthers" }
 
 function ThemedRoot() {
   const theme = useTheme();
+  const { fontScale } = useFontScale();
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.backdrop ? theme.colors.border : theme.colors.background }}>
@@ -49,7 +51,7 @@ function ThemedRoot() {
           headerStyle: { backgroundColor: theme.colors.surface },
           headerTintColor: theme.colors.text,
           headerTitleStyle: {
-            fontSize: 20,
+            fontSize: 20 * fontScale,
             ...(theme.displayFontFamily ? { fontFamily: theme.displayFontFamily } : null),
           },
           headerShadowVisible: false,
@@ -87,6 +89,7 @@ export default function RootLayout() {
       <KeyboardProvider statusBarTranslucent navigationBarTranslucent preserveEdgeToEdge>
         <SafeAreaProvider>
           <ThemeProvider>
+            <FontScaleProvider>
             <KeepAwakeProvider>
               <DeveloperModeProvider>
                 <DmModeProvider>
@@ -104,6 +107,7 @@ export default function RootLayout() {
                 </DmModeProvider>
               </DeveloperModeProvider>
             </KeepAwakeProvider>
+            </FontScaleProvider>
           </ThemeProvider>
         </SafeAreaProvider>
       </KeyboardProvider>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, View } from "react-native";
+import { Text, TextInput } from "../AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../../theme/ThemeContext";
 import { createDmStyles } from "../dmStyles";
 import {
@@ -9,6 +10,7 @@ import {
   type HomebrewMonsterInput,
 } from "../../features/dm/dmCreatureRepo";
 import { TraitListEditor, type NamedTrait } from "./TraitListEditor";
+import { DoneAccessory } from "../DoneAccessory";
 
 export type HomebrewMonsterRow = { id: number } & HomebrewMonsterInput;
 
@@ -95,12 +97,12 @@ export function HomebrewMonsterModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-HomebrewMonsterModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{initial ? "Edit Monster" : "New Homebrew Monster"}</Text>
-            <KeyboardAwareScrollView
-              keyboardShouldPersistTaps="handled"
+            <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
               style={{ maxHeight: 460 }}
               bottomOffset={60}
             >
@@ -137,7 +139,7 @@ export function HomebrewMonsterModal({
               <View style={[styles.row, { marginTop: 8 }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hint}>Armor Class</Text>
-                  <TextInput style={styles.input} value={armorClassText} onChangeText={setArmorClassText} keyboardType="number-pad" />
+                  <TextInput style={styles.input} value={armorClassText} onChangeText={setArmorClassText} keyboardType="number-pad" inputAccessoryViewID="done-HomebrewMonsterModal" />
                 </View>
                 <View style={{ flex: 2 }}>
                   <Text style={styles.hint}>AC Detail (optional)</Text>
@@ -148,7 +150,7 @@ export function HomebrewMonsterModal({
               <View style={[styles.row, { marginTop: 8 }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hint}>Hit Points</Text>
-                  <TextInput style={styles.input} value={hitPointsText} onChangeText={setHitPointsText} keyboardType="number-pad" />
+                  <TextInput style={styles.input} value={hitPointsText} onChangeText={setHitPointsText} keyboardType="number-pad" inputAccessoryViewID="done-HomebrewMonsterModal" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hint}>Hit Dice</Text>
@@ -174,7 +176,7 @@ export function HomebrewMonsterModal({
                       style={[styles.input, { textAlign: "center" }]}
                       value={abilities[a.key as string]}
                       onChangeText={(text) => setAbilities((prev) => ({ ...prev, [a.key]: text }))}
-                      keyboardType="number-pad"
+                      keyboardType="number-pad" inputAccessoryViewID="done-HomebrewMonsterModal"
                     />
                   </View>
                 ))}
@@ -187,7 +189,7 @@ export function HomebrewMonsterModal({
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hint}>XP</Text>
-                  <TextInput style={styles.input} value={xpText} onChangeText={setXpText} keyboardType="number-pad" />
+                  <TextInput style={styles.input} value={xpText} onChangeText={setXpText} keyboardType="number-pad" inputAccessoryViewID="done-HomebrewMonsterModal" />
                 </View>
               </View>
 
@@ -239,7 +241,6 @@ export function HomebrewMonsterModal({
             </View>
           </View>
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );

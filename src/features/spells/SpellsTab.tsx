@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
 import {
   addCatalogSpellToCharacter,
@@ -26,6 +27,7 @@ import {
 import { ABILITY_LABELS } from "../../features/characters/characterCalculations";
 import { endConcentration, startConcentration } from "../../features/characters/characterRepo";
 import { saveRoll } from "../../features/dice/diceRepo";
+import { PixelBanner, PixelFrameOverlay } from "../../components/PixelFrame";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import type { Character } from "../../types/models";
@@ -178,11 +180,13 @@ export function SpellsTab({
   return (
     <View>
       <View style={styles.dcBanner}>
+        <PixelFrameOverlay />
         <Text style={styles.dcBannerLabel}>Spell Save DC</Text>
         <Text style={styles.dcBannerValue}>{dc}</Text>
       </View>
 
       <View style={styles.concentrationBanner}>
+        <PixelFrameOverlay />
         {character.concentratingSpellName ? (
           <>
             <View style={styles.concentrationInfo}>
@@ -190,6 +194,7 @@ export function SpellsTab({
               <Text style={styles.concentrationValue}>{character.concentratingSpellName}</Text>
             </View>
             <Pressable style={styles.concentrationEndButton} onPress={handleEndConcentration}>
+              <PixelFrameOverlay scale={0.5} />
               <Text style={styles.concentrationEndButtonText}>End</Text>
             </Pressable>
           </>
@@ -198,7 +203,11 @@ export function SpellsTab({
         )}
       </View>
 
-      <Text style={styles.sectionTitle}>Spell Slots</Text>
+      {theme.pixel ? (
+        <PixelBanner title="Spell Slots" style={styles.banner} />
+      ) : (
+        <Text style={styles.sectionTitle}>Spell Slots</Text>
+      )}
       <View style={styles.slotGrid}>
         {SLOT_LEVELS.map((level) => {
           const slot = slots.find((s) => s.level === level);
@@ -208,6 +217,7 @@ export function SpellsTab({
           }
           return (
             <View key={level} style={styles.slotCard}>
+              <PixelFrameOverlay />
               <Text style={styles.slotLevel}>Lvl {level}</Text>
               <Text style={styles.slotCount}>
                 {slot ? slot.used : 0}/{total}
@@ -217,12 +227,14 @@ export function SpellsTab({
                   onPress={() => slot && handleSlotUse(slot.id, 1)}
                   style={styles.slotButton}
                 >
+                  <PixelFrameOverlay scale={0.5} />
                   <Text style={styles.slotButtonText}>Use</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => slot && handleSlotUse(slot.id, -1)}
                   style={styles.slotButton}
                 >
+                  <PixelFrameOverlay scale={0.5} />
                   <Text style={styles.slotButtonText}>Free</Text>
                 </Pressable>
               </View>
@@ -233,23 +245,30 @@ export function SpellsTab({
 
       <View style={styles.actionRow}>
         <Pressable style={styles.actionButton} onPress={() => setSlotsModalOpen(true)}>
+          <PixelFrameOverlay />
           <Text style={styles.actionButtonText} numberOfLines={1}>
             Slots
           </Text>
         </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setManageSpellsOpen(true)}>
+          <PixelFrameOverlay />
           <Text style={styles.actionButtonText} numberOfLines={1}>
             Spells
           </Text>
         </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setLevelUpOpen(true)}>
+          <PixelFrameOverlay />
           <Text style={styles.actionButtonText} numberOfLines={1}>
             Level Up
           </Text>
         </Pressable>
       </View>
 
-      <Text style={styles.sectionTitle}>Spells</Text>
+      {theme.pixel ? (
+        <PixelBanner title="Spells" style={styles.banner} />
+      ) : (
+        <Text style={styles.sectionTitle}>Spells</Text>
+      )}
       {spellRows.length === 0 ? (
         <Text style={styles.empty}>No spells added yet.</Text>
       ) : (
@@ -264,6 +283,7 @@ export function SpellsTab({
               style={styles.spellRow}
               onPress={() => handleToggle(spell.characterSpellId, spell.prepared)}
             >
+              <PixelFrameOverlay />
               <View style={styles.spellTopRow}>
                 {icon && <Image source={icon} style={styles.schoolIcon} resizeMode="contain" />}
                 <View style={styles.spellInfo}>
@@ -287,6 +307,7 @@ export function SpellsTab({
               </View>
               <View style={styles.spellBottomRow}>
                 <Pressable style={styles.detailButton} onPress={() => setDetailSpell(spell)}>
+                  <PixelFrameOverlay scale={0.5} />
                   <Text style={styles.detailButtonText}>Details</Text>
                 </Pressable>
                 {spell.concentration && (
@@ -297,6 +318,7 @@ export function SpellsTab({
                     ]}
                     onPress={() => handleToggleConcentration(spell)}
                   >
+                    <PixelFrameOverlay scale={0.5} />
                     <Text
                       style={[
                         styles.concentrateButtonText,
@@ -312,6 +334,7 @@ export function SpellsTab({
                     style={styles.rollSpellButton}
                     onPress={() => handleRollSpell(spell)}
                   >
+                    <PixelFrameOverlay scale={0.5} />
                     <Text style={styles.rollSpellButtonText}>Roll</Text>
                   </Pressable>
                 )}
@@ -374,6 +397,7 @@ function createStyles(theme: Theme) {
       marginBottom: 10,
       marginTop: 4,
     },
+    banner: { marginTop: 4, marginBottom: 8 },
     dcBanner: {
       backgroundColor: theme.colors.primary,
       borderRadius: theme.radius,
@@ -402,7 +426,7 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingVertical: 10,
@@ -445,7 +469,7 @@ function createStyles(theme: Theme) {
     slotGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
     slotCard: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 10,
@@ -480,7 +504,7 @@ function createStyles(theme: Theme) {
     empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily },
     spellRow: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,

@@ -6,7 +6,6 @@ import {
   characterArmor,
   characterClasses,
   characterCustomResources,
-  characterEquipment,
   characterFeats,
   characterGearItems,
   characterMagicItems,
@@ -15,7 +14,6 @@ import {
   characterSpells,
   characterWeapons,
   characters,
-  equipmentItems,
   feats,
   magicItems,
   spellSlots,
@@ -28,7 +26,7 @@ import type { Character } from "../../types/models";
  * document for cloud sync -- see the sync plan's rationale: local child
  * tables have no per-row updatedAt to diff against, so sync happens at
  * whole-character granularity rather than a relational row-by-row mirror.
- * Catalog-linked rows (spells/feats/magic items/equipment) carry the
+ * Catalog-linked rows (spells/feats/magic items) carry the
  * catalog's stable `slug`/identity fields rather than the local
  * autoincrement id, since that id isn't portable across devices.
  */
@@ -37,7 +35,6 @@ export type CharacterDocument = {
   classes: { classId: string; className: string; level: number; subclass: string; sortOrder: number }[];
   spellSlots: { level: number; total: number; used: number }[];
   spells: { slug: string | null; name: string; level: number; prepared: boolean }[];
-  equipment: { slot: string; imageAsset: string }[];
   weapons: {
     catalogId: string | null;
     name: string;
@@ -119,7 +116,6 @@ export async function buildCharacterDocument(characterId: number): Promise<Chara
     classRows,
     slotRows,
     spellRows,
-    equipmentRows,
     weaponRows,
     gearRows,
     armorRows,
@@ -143,11 +139,6 @@ export async function buildCharacterDocument(characterId: number): Promise<Chara
       .from(characterSpells)
       .innerJoin(spells, eq(characterSpells.spellId, spells.id))
       .where(eq(characterSpells.characterId, characterId)),
-    db
-      .select({ slot: characterEquipment.slot, imageAsset: equipmentItems.imageAsset })
-      .from(characterEquipment)
-      .innerJoin(equipmentItems, eq(characterEquipment.equipmentItemId, equipmentItems.id))
-      .where(eq(characterEquipment.characterId, characterId)),
     db.select().from(characterWeapons).where(eq(characterWeapons.characterId, characterId)),
     db.select().from(characterGearItems).where(eq(characterGearItems.characterId, characterId)),
     db.select().from(characterArmor).where(eq(characterArmor.characterId, characterId)),
@@ -196,7 +187,6 @@ export async function buildCharacterDocument(characterId: number): Promise<Chara
     })),
     spellSlots: slotRows.map((r) => ({ level: r.level, total: r.total, used: r.used })),
     spells: spellRows,
-    equipment: equipmentRows,
     weapons: weaponRows.map((r) => ({
       catalogId: r.catalogId,
       name: r.name,
@@ -284,13 +274,6 @@ async function resolveMagicItemCatalogId(slug: string | null): Promise<number | 
   return row?.id ?? null;
 }
 
-async function resolveEquipmentItemId(slot: string, imageAsset: string): Promise<number | null> {
-  // (slot, imageAsset) is the catalog's dedupe key (see
-  // migrateHandSlotCrossList) -- filter in JS rather than a 2-column `and()`.
-  const rows = await db.select().from(equipmentItems).where(eq(equipmentItems.slot, slot));
-  return rows.find((r) => r.imageAsset === imageAsset)?.id ?? null;
-}
-
 /**
  * Writes a cloud document as a brand-new local character (first pull of a
  * character this device has never seen) and returns its new local id.
@@ -325,7 +308,6 @@ export async function applyCharacterDocument(characterId: number, doc: Character
     db.delete(characterClasses).where(eq(characterClasses.characterId, characterId)),
     db.delete(spellSlots).where(eq(spellSlots.characterId, characterId)),
     db.delete(characterSpells).where(eq(characterSpells.characterId, characterId)),
-    db.delete(characterEquipment).where(eq(characterEquipment.characterId, characterId)),
     db.delete(characterWeapons).where(eq(characterWeapons.characterId, characterId)),
     db.delete(characterGearItems).where(eq(characterGearItems.characterId, characterId)),
     db.delete(characterArmor).where(eq(characterArmor.characterId, characterId)),
@@ -351,12 +333,6 @@ async function writeCharacterChildren(characterId: number, doc: CharacterDocumen
   for (const spell of doc.spells) {
     const spellId = await resolveSpellId(spell.slug, spell.name, spell.level);
     await db.insert(characterSpells).values({ characterId, spellId, prepared: spell.prepared });
-  }
-  for (const item of doc.equipment) {
-    const equipmentItemId = await resolveEquipmentItemId(item.slot, item.imageAsset);
-    if (equipmentItemId) {
-      await db.insert(characterEquipment).values({ characterId, slot: item.slot, equipmentItemId });
-    }
   }
   if (doc.weapons.length > 0) {
     await db.insert(characterWeapons).values(doc.weapons.map((w) => ({ characterId, ...w })));

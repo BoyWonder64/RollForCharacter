@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, TextInput, View, type TextInputProps } from "react-native";
+import { Pressable, StyleSheet, Switch, View, type TextInputProps } from "react-native";
+import { Text, TextInput } from "./AppText";
 import type {
   ArmorDefinition,
   ClassDefinition,

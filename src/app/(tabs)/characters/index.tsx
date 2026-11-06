@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Image, Pressable, StyleSheet, View } from "react-native";
+import { Text } from "../../../components/AppText";
 import { router, useFocusEffect } from "expo-router";
 import { AdBanner } from "../../../components/ads/AdBanner";
 import { deleteCharacter, listCharacters } from "../../../features/characters/characterRepo";

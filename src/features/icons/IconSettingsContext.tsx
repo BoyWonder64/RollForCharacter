@@ -35,7 +35,10 @@ export function IconSettingsProvider({ children }: { children: React.ReactNode }
       if (stored === "false") setIconsEnabledState(false);
     });
     AsyncStorage.getItem(STYLE_STORAGE_KEY).then((stored) => {
-      if (stored) setIconStyleState(stored as IconStylePreference);
+      // "shikashi-dark" was removed; stale values fall back to auto.
+      if (stored === "auto" || stored === "pixel" || stored === "shikashi") {
+        setIconStyleState(stored);
+      }
     });
   }, []);
 

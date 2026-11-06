@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "./dmStyles";
 import type { DmTimelineEventInput } from "../features/dm/dmNotesRepo";
@@ -29,7 +30,6 @@ export function DmTimelineEventModal({
             <DmTimelineEventModalForm initial={initial} onClose={onClose} onConfirm={onConfirm} />
           )}
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );
@@ -57,7 +57,7 @@ function DmTimelineEventModalForm({
 
   return (
     <View style={styles.modalCard}>
-      <KeyboardAwareScrollView bottomOffset={60}>
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" bottomOffset={60}>
         <Text style={styles.modalTitle}>{initial ? "Edit Event" : "Add Timeline Event"}</Text>
 
         <Text style={[styles.subTitle, { marginTop: 0 }]}>Event</Text>

@@ -113,21 +113,6 @@ export const CREATE_TABLES_SQL = `
     prepared INTEGER NOT NULL DEFAULT 0
   );
 
-  CREATE TABLE IF NOT EXISTS equipment_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    slot TEXT NOT NULL,
-    pack_id TEXT NOT NULL DEFAULT 'base',
-    image_asset TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS character_equipment (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    equipment_item_id INTEGER NOT NULL REFERENCES equipment_items(id) ON DELETE CASCADE,
-    slot TEXT NOT NULL
-  );
-
   CREATE TABLE IF NOT EXISTS character_weapons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,

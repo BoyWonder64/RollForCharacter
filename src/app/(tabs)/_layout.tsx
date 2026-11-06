@@ -1,6 +1,8 @@
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
+import { Text } from "../../components/AppText";
 import { Tabs } from "expo-router";
 import { useTheme } from "../../theme/ThemeContext";
+import { useFontScale } from "../../features/settings/FontScaleContext";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
@@ -23,6 +25,7 @@ function TabIcon({ tabName, focused }: { tabName: string; focused: boolean }) {
 
 export default function TabLayout() {
   const theme = useTheme();
+  const { fontScale } = useFontScale();
   const { iconsEnabled } = useIconSettings();
   const { dmMode } = useDmMode();
   const { partyMode } = usePartyMode();
@@ -47,12 +50,13 @@ export default function TabLayout() {
               tabBarLabelPosition: "below-icon" as const,
               tabBarItemStyle: { justifyContent: "center" as const },
               tabBarIconStyle: { width: 0, height: 0, margin: 0 },
-              tabBarLabelStyle: { marginTop: 0 },
+              tabBarLabelStyle: { marginTop: 0, fontSize: 11 * fontScale },
             }),
+        tabBarLabelStyle: { fontSize: 11 * fontScale },
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
-          fontSize: 20,
+          fontSize: 20 * fontScale,
           ...(theme.displayFontFamily ? { fontFamily: theme.displayFontFamily } : null),
         },
         headerShadowVisible: false,
@@ -113,7 +117,7 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          headerTitleStyle: { fontSize: 20 },
+          headerTitleStyle: { fontSize: 20 * fontScale },
           tabBarIcon: ({ focused }) => <TabIcon tabName="settings" focused={focused} />,
         }}
       />

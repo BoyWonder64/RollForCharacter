@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "../../components/AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { listSpellCatalog } from "./spellRepo";
 import { SpellDetailModal, type SpellDetailData } from "./SpellDetailModal";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import type { ClassDefinition } from "../../data/rulesets/types";
+import { DoneAccessory } from "../../components/DoneAccessory";
 
 type KnownSpell = SpellDetailData & { characterSpellId: number; id: number };
 type CatalogSpell = Awaited<ReturnType<typeof listSpellCatalog>>[number];
@@ -62,13 +64,14 @@ export function ManageSpellsModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-ManageSpellsModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
         {visible && (
           <View style={styles.card}>
             <Text style={styles.title}>Manage Spells</Text>
 
-            <KeyboardAwareScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} bottomOffset={60}>
+            <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.scroll} contentContainerStyle={styles.scrollContent} bottomOffset={60}>
               <Text style={styles.sectionLabel}>Known Spells</Text>
               {knownSpells.length === 0 ? (
                 <Text style={styles.empty}>No spells added yet.</Text>
@@ -167,7 +170,7 @@ export function ManageSpellsModal({
                   style={[styles.input, { width: 48 }]}
                   placeholder="Lvl"
                   placeholderTextColor={theme.colors.textMuted}
-                  keyboardType="number-pad"
+                  keyboardType="number-pad" inputAccessoryViewID="done-ManageSpellsModal"
                   value={customLevel}
                   onChangeText={setCustomLevel}
                 />
@@ -183,7 +186,6 @@ export function ManageSpellsModal({
           </View>
         )}
         </View>
-        <KeyboardToolbar />
       </View>
 
       <SpellDetailModal

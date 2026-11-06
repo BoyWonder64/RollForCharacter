@@ -7,13 +7,12 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   type ImageStyle,
   type StyleProp,
 } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Text, TextInput } from "../../components/AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button } from "../../components/Button";
@@ -45,6 +44,7 @@ import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
+import { useDeveloperMode } from "../../features/settings/DeveloperModeContext";
 import { useDmMode } from "../../features/settings/DmModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
 import { useSoundEffects } from "../../features/sound/useSoundEffects";
@@ -138,6 +138,7 @@ export default function DiceRollerScreen() {
   const theme = useTheme();
   const { iconsEnabled, iconStyle } = useIconSettings();
   const { dmMode } = useDmMode();
+  const { developerMode } = useDeveloperMode();
   const { historyEnabled } = useRollHistorySetting();
   const playSound = useSoundEffects();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -550,7 +551,7 @@ export default function DiceRollerScreen() {
         ))}
       </View>
 
-      <KeyboardAwareScrollView contentContainerStyle={styles.scrollContent} bottomOffset={24}>
+      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent} bottomOffset={24}>
         {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Character</Text>
@@ -600,9 +601,11 @@ export default function DiceRollerScreen() {
                 onSubmitEditing={() => rollFreeform(expression)}
               />
             </View>
-            <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 6 }}>
-              2d20kh1 advantage · 2d20kl1 disadvantage · 4d6dl1 drop lowest · 1d6r&lt;=2 reroll 1s and 2s
-            </Text>
+            {developerMode && (
+              <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 6 }}>
+                2d20kh1 advantage · 2d20kl1 disadvantage · 4d6dl1 drop lowest · 1d6r&lt;=2 reroll 1s and 2s
+              </Text>
+            )}
             <View style={styles.quickRow}>
               {DIE_TYPES.map((die) => (
                 <Pressable
@@ -1097,7 +1100,6 @@ export default function DiceRollerScreen() {
 
         <Text style={styles.realDiceNote}>Rolling real dice at the table is always better.</Text>
       </KeyboardAwareScrollView>
-      <KeyboardToolbar />
 
       <Animated.View
         pointerEvents="none"

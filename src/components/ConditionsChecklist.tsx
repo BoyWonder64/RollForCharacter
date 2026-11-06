@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "./AppText";
 import { CONDITIONS, EXHAUSTION_DESCRIPTION, MAX_EXHAUSTION_LEVEL } from "../data/conditions";
 import {
   setExhaustionLevel,
@@ -45,57 +46,59 @@ export function ConditionsChecklist({
 
   return (
     <View>
-      <View style={styles.chipRow}>
-        {activeConditions.map((condition) => {
-          const icon = iconsEnabled ? getConditionIcon(iconStyle, condition.id) : undefined;
-          return (
+      <View style={styles.conditionsRow}>
+        <View style={styles.chipRow}>
+          {activeConditions.map((condition) => {
+            const icon = iconsEnabled ? getConditionIcon(iconStyle, condition.id) : undefined;
+            return (
+              <Pressable
+                key={condition.id}
+                style={styles.chip}
+                onPress={() => handleToggle(condition.id)}
+                onLongPress={() => Alert.alert(condition.name, condition.description)}
+              >
+                {icon && (
+                  <Image source={icon} style={styles.chipIcon} resizeMode="contain" />
+                )}
+                <Text style={styles.chipText}>{condition.name}</Text>
+                <Text style={styles.chipRemove}>×</Text>
+              </Pressable>
+            );
+          })}
+          <Pressable style={styles.addChip} onPress={() => setPickerOpen(true)}>
+            <Text style={styles.addChipText}>
+              {activeConditions.length === 0 ? "+ Add Condition" : "+ Edit"}
+            </Text>
+          </Pressable>
+          <View style={styles.exhaustionBlock}>
             <Pressable
-              key={condition.id}
-              style={styles.chip}
-              onPress={() => handleToggle(condition.id)}
-              onLongPress={() => Alert.alert(condition.name, condition.description)}
+              style={styles.exhaustionLabelRow}
+              onPress={() => Alert.alert("Exhaustion", EXHAUSTION_DESCRIPTION)}
             >
-              {icon && (
-                <Image source={icon} style={styles.chipIcon} resizeMode="contain" />
-              )}
-              <Text style={styles.chipText}>{condition.name}</Text>
-              <Text style={styles.chipRemove}>×</Text>
+              <Text style={styles.exhaustionLabel}>Exhaustion</Text>
             </Pressable>
-          );
-        })}
-        <Pressable style={styles.addChip} onPress={() => setPickerOpen(true)}>
-          <Text style={styles.addChipText}>
-            {activeConditions.length === 0 ? "+ Add Condition" : "+ Edit"}
-          </Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.exhaustionRow}>
-        <Pressable
-          style={styles.exhaustionLabelRow}
-          onPress={() => Alert.alert("Exhaustion", EXHAUSTION_DESCRIPTION)}
-        >
-          <Text style={styles.exhaustionLabel}>Exhaustion</Text>
-        </Pressable>
-        <View style={styles.exhaustionControls}>
-          <Pressable
-            style={[styles.exhaustionButton, character.exhaustionLevel <= 0 && styles.exhaustionButtonDisabled]}
-            disabled={character.exhaustionLevel <= 0}
-            onPress={() => handleExhaustionChange(-1)}
-          >
-            <Text style={styles.exhaustionButtonText}>−</Text>
-          </Pressable>
-          <Text style={styles.exhaustionValue}>{character.exhaustionLevel}</Text>
-          <Pressable
-            style={[
-              styles.exhaustionButton,
-              character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL && styles.exhaustionButtonDisabled,
-            ]}
-            disabled={character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL}
-            onPress={() => handleExhaustionChange(1)}
-          >
-            <Text style={styles.exhaustionButtonText}>+</Text>
-          </Pressable>
+            <View style={styles.exhaustionControls}>
+              <Pressable
+                style={[styles.exhaustionButton, character.exhaustionLevel <= 0 && styles.exhaustionButtonDisabled]}
+                disabled={character.exhaustionLevel <= 0}
+                onPress={() => handleExhaustionChange(-1)}
+              >
+                <View style={styles.glyphBar} />
+              </Pressable>
+              <Text style={styles.exhaustionValue}>{character.exhaustionLevel}</Text>
+              <Pressable
+                style={[
+                  styles.exhaustionButton,
+                  character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL && styles.exhaustionButtonDisabled,
+                ]}
+                disabled={character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL}
+                onPress={() => handleExhaustionChange(1)}
+              >
+                <View style={styles.glyphBar} />
+              <View style={[styles.glyphBar, styles.glyphBarVertical]} />
+              </Pressable>
+            </View>
+          </View>
         </View>
       </View>
 
@@ -189,23 +192,30 @@ function createStyles(theme: Theme) {
       fontWeight: "600",
       fontFamily: theme.displayFontFamily,
     },
-    exhaustionRow: {
+    // The exhaustion stepper is the last item in the chip row, right beside the add/edit chip.
+    conditionsRow: {},
+    exhaustionBlock: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      marginTop: 10,
+      gap: 8,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
     },
     exhaustionLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     exhaustionLabel: {
       color: theme.colors.text,
       fontWeight: "600",
-      fontSize: 13,
+      fontSize: 11,
       fontFamily: theme.displayFontFamily,
     },
-    exhaustionControls: { flexDirection: "row", alignItems: "center", gap: 10 },
+    exhaustionControls: { flexDirection: "row", alignItems: "center", gap: 6 },
     exhaustionButton: {
-      width: 28,
-      height: 28,
+      width: 24,
+      height: 24,
       borderRadius: theme.radius,
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
@@ -214,7 +224,9 @@ function createStyles(theme: Theme) {
       justifyContent: "center",
     },
     exhaustionButtonDisabled: { opacity: 0.4 },
-    exhaustionButtonText: { color: theme.colors.text, fontWeight: "700", fontSize: 16 },
+    // +/- drawn as bars so they centre exactly, whatever the theme font's baseline does.
+    glyphBar: { width: 10, height: 2, backgroundColor: theme.colors.text },
+    glyphBarVertical: { position: "absolute", width: 2, height: 10 },
     exhaustionValue: {
       color: theme.colors.text,
       fontWeight: "700",

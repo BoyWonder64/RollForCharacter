@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   ABILITY_LABELS,
   describeFeatEffect,
@@ -77,7 +78,6 @@ function ModalBackdrop({ children }: { children: React.ReactNode }) {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.backdrop}>{children}</View>
-      <KeyboardToolbar />
     </View>
   );
 }
@@ -781,7 +781,7 @@ function StepCard({
   return (
     <View style={styles.card}>
       {scroll ? (
-        <KeyboardAwareScrollView style={styles.scroll} showsVerticalScrollIndicator={false} bottomOffset={60}>
+        <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={styles.scroll} showsVerticalScrollIndicator={false} bottomOffset={60}>
           {content}
         </KeyboardAwareScrollView>
       ) : (

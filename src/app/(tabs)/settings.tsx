@@ -14,15 +14,20 @@ import {
   Share,
   StyleSheet,
   Switch,
-  Text,
-  TextInput,
   View,
 } from "react-native";
+import { Text, TextInput } from "../../components/AppText";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { Button } from "../../components/Button";
 import { useThemeContext, type ThemePreference } from "../../theme/ThemeContext";
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../theme/colors";
+import {
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STEP,
+  useFontScale,
+} from "../../features/settings/FontScaleContext";
 import { FONT_CHOICE_ORDER, FONT_CHOICES } from "../../theme/fonts";
 import { useKeepAwakeSetting } from "../../features/settings/KeepAwakeContext";
 import { DM_EDITION_OPTIONS, useDmMode } from "../../features/settings/DmModeContext";
@@ -40,6 +45,7 @@ import {
 import { DevToolsSection } from "../../features/dev/DevToolsSection";
 import { useAuth } from "../../features/auth/AuthContext";
 import { AccountSection } from "../../features/auth/AccountSection";
+import { DoneAccessory } from "../../components/DoneAccessory";
 
 const MODE_OPTIONS: { key: ThemePreference; label: string }[] = [
   { key: "system", label: "System" },
@@ -85,6 +91,7 @@ const DONATE_URL = "";
 export default function SettingsScreen() {
   const { theme, preference, setPreference, family, setFamily, fontChoice, setFontChoice } =
     useThemeContext();
+  const { fontScale, setFontScale } = useFontScale();
   const { keepScreenOn, setKeepScreenOn } = useKeepAwakeSetting();
   const { dmMode, setDmMode, dmEdition, setDmEdition } = useDmMode();
   const { developerMode, setDeveloperMode } = useDeveloperMode();
@@ -246,6 +253,30 @@ export default function SettingsScreen() {
         );
       })}
 
+      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Accessibility</Text>
+      <Text style={styles.toggleLabel}>Text size: {Math.round(fontScale * 100)}%</Text>
+      <Text style={styles.hint}>Scales text throughout the app.</Text>
+      <View style={styles.optionRow}>
+        <Button
+          title="A−"
+          style={styles.optionButtonWrap}
+          disabled={fontScale <= FONT_SCALE_MIN}
+          onPress={() => setFontScale(fontScale - FONT_SCALE_STEP)}
+        />
+        <Button
+          title="Reset"
+          style={styles.optionButtonWrap}
+          disabled={fontScale === 1}
+          onPress={() => setFontScale(1)}
+        />
+        <Button
+          title="A+"
+          style={styles.optionButtonWrap}
+          disabled={fontScale >= FONT_SCALE_MAX}
+          onPress={() => setFontScale(fontScale + FONT_SCALE_STEP)}
+        />
+      </View>
+
       <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Icons & Sound</Text>
       <View style={styles.toggleRow}>
         <Text style={styles.toggleLabel}>Show icons</Text>
@@ -268,10 +299,12 @@ export default function SettingsScreen() {
                 style={[styles.familyRow, active && styles.familyRowActive]}
                 onPress={() => setIconStyle(styleId)}
               >
-                <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
-                  {option.label}
-                </Text>
-                <Text style={styles.iconStyleDescription}>{option.description}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
+                    {option.label}
+                  </Text>
+                  <Text style={styles.iconStyleDescription}>{option.description}</Text>
+                </View>
               </Pressable>
             );
           })}
@@ -458,11 +491,12 @@ export default function SettingsScreen() {
           </View>
           {diceMode === "seeded" && (
             <View style={styles.seedRow}>
+              <DoneAccessory id="done-settings" />
               <TextInput
                 style={styles.seedInput}
                 value={seedText}
                 onChangeText={setSeedText}
-                keyboardType="number-pad"
+                keyboardType="number-pad" inputAccessoryViewID="done-settings"
                 placeholder="Seed"
                 placeholderTextColor={theme.colors.textMuted}
               />

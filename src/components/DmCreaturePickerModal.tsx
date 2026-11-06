@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
+import { Modal, Pressable, ScrollView, Switch, View } from "react-native";
+import { Text, TextInput } from "./AppText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "../theme/ThemeContext";
 import {
   addCustomDmCreature,
@@ -10,6 +11,7 @@ import {
 } from "../features/dm/dmCreatureRepo";
 import { matchesDmEdition, useDmMode } from "../features/settings/DmModeContext";
 import { createDmStyles } from "./dmStyles";
+import { DoneAccessory } from "./DoneAccessory";
 
 const PAGE_SIZE = 40;
 
@@ -140,6 +142,7 @@ export function DmCreaturePickerModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+<DoneAccessory id="done-DmCreaturePickerModal" />
       <View style={{ flex: 1 }}>
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
@@ -177,7 +180,7 @@ export function DmCreaturePickerModal({
             </View>
 
             {tab === "catalog" ? (
-              <KeyboardAwareScrollView style={{ maxHeight: 460 }} bottomOffset={60}>
+              <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={{ maxHeight: 460 }} bottomOffset={60}>
                 <TextInput
                   style={styles.input}
                   value={search}
@@ -273,7 +276,7 @@ export function DmCreaturePickerModal({
                 </View>
               </KeyboardAwareScrollView>
             ) : (
-              <KeyboardAwareScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ gap: 8 }} bottomOffset={60}>
+              <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" style={{ maxHeight: 460 }} contentContainerStyle={{ gap: 8 }} bottomOffset={60}>
                 <TextInput
                   style={styles.input}
                   value={customName}
@@ -293,7 +296,7 @@ export function DmCreaturePickerModal({
                         style={[styles.input, { textAlign: "center" }]}
                         value={field.value}
                         onChangeText={field.set}
-                        keyboardType="number-pad"
+                        keyboardType="number-pad" inputAccessoryViewID="done-DmCreaturePickerModal"
                       />
                     </View>
                   ))}
@@ -320,7 +323,6 @@ export function DmCreaturePickerModal({
             </Pressable>
           </View>
         </View>
-        <KeyboardToolbar />
       </View>
     </Modal>
   );

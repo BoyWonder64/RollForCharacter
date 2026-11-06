@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "../components/AppText";
 import { Stack } from "expo-router";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "../components/dmStyles";
