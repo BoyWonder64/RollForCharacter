@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { PixelFrameOverlay } from "../../../components/PixelFrame";
 import { Alert, FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "../../../components/AppText";
 import { router, useFocusEffect } from "expo-router";
@@ -115,6 +116,7 @@ export default function CharacterListScreen() {
               }
               onLongPress={developerMode ? () => handleDeveloperMenu(item) : undefined}
             >
+              <PixelFrameOverlay scale={0.75} />
               {item.portraitUri ? (
                 <Image source={{ uri: item.portraitUri }} style={styles.rowPortrait} />
               ) : (
@@ -177,7 +179,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 14,

@@ -194,7 +194,6 @@ export function SpellsTab({
               <Text style={styles.concentrationValue}>{character.concentratingSpellName}</Text>
             </View>
             <Pressable style={styles.concentrationEndButton} onPress={handleEndConcentration}>
-              <PixelFrameOverlay scale={0.5} />
               <Text style={styles.concentrationEndButtonText}>End</Text>
             </Pressable>
           </>
@@ -227,14 +226,12 @@ export function SpellsTab({
                   onPress={() => slot && handleSlotUse(slot.id, 1)}
                   style={styles.slotButton}
                 >
-                  <PixelFrameOverlay scale={0.5} />
                   <Text style={styles.slotButtonText}>Use</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => slot && handleSlotUse(slot.id, -1)}
                   style={styles.slotButton}
                 >
-                  <PixelFrameOverlay scale={0.5} />
                   <Text style={styles.slotButtonText}>Free</Text>
                 </Pressable>
               </View>
@@ -245,19 +242,16 @@ export function SpellsTab({
 
       <View style={styles.actionRow}>
         <Pressable style={styles.actionButton} onPress={() => setSlotsModalOpen(true)}>
-          <PixelFrameOverlay />
           <Text style={styles.actionButtonText} numberOfLines={1}>
             Slots
           </Text>
         </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setManageSpellsOpen(true)}>
-          <PixelFrameOverlay />
           <Text style={styles.actionButtonText} numberOfLines={1}>
             Spells
           </Text>
         </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setLevelUpOpen(true)}>
-          <PixelFrameOverlay />
           <Text style={styles.actionButtonText} numberOfLines={1}>
             Level Up
           </Text>
@@ -307,7 +301,6 @@ export function SpellsTab({
               </View>
               <View style={styles.spellBottomRow}>
                 <Pressable style={styles.detailButton} onPress={() => setDetailSpell(spell)}>
-                  <PixelFrameOverlay scale={0.5} />
                   <Text style={styles.detailButtonText}>Details</Text>
                 </Pressable>
                 {spell.concentration && (
@@ -318,7 +311,6 @@ export function SpellsTab({
                     ]}
                     onPress={() => handleToggleConcentration(spell)}
                   >
-                    <PixelFrameOverlay scale={0.5} />
                     <Text
                       style={[
                         styles.concentrateButtonText,
@@ -334,7 +326,6 @@ export function SpellsTab({
                     style={styles.rollSpellButton}
                     onPress={() => handleRollSpell(spell)}
                   >
-                    <PixelFrameOverlay scale={0.5} />
                     <Text style={styles.rollSpellButtonText}>Roll</Text>
                   </Pressable>
                 )}

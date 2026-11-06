@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "./PixelFrame";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "./AppText";
 import { useFocusEffect } from "expo-router";
@@ -81,7 +82,7 @@ export function FeatsList({ character }: { character: Character }) {
   return (
     <View>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Feats</Text>
+        <SectionHeading title="Feats" textStyle={styles.sectionTitle} />
         <Pressable style={styles.addButton} onPress={() => setPickerVisible(true)}>
           <Text style={styles.addButtonText}>+ Add Feat</Text>
         </Pressable>
@@ -93,6 +94,7 @@ export function FeatsList({ character }: { character: Character }) {
         const expanded = expandedId === feat.id;
         return (
           <View key={feat.id} style={[styles.row, !feat.enabled && styles.rowDisabled]}>
+            <PixelFrameOverlay scale={0.75} />
             <Pressable
               style={[styles.toggle, feat.enabled && styles.toggleOn]}
               onPress={() => handleToggle(feat)}
@@ -136,13 +138,13 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     addButton: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.mode === "light" ? theme.colors.surfaceAlt : theme.colors.primary,
       borderRadius: theme.radius,
       paddingHorizontal: 12,
       paddingVertical: 6,
     },
     addButtonText: {
-      color: theme.colors.primaryText,
+      color: theme.mode === "light" ? "#0A0A0A" : theme.colors.primaryText,
       fontSize: 12,
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
@@ -157,7 +159,7 @@ function createStyles(theme: Theme) {
       alignItems: "flex-start",
       gap: 10,
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 10,

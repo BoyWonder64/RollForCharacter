@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "../../../../components/PixelFrame";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text, TextInput } from "../../../../components/AppText";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -517,13 +518,14 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
 
       {isCustomRace && (
         <View style={styles.homebrewSection}>
-          <Text style={styles.sectionTitle}>Homebrew Race Traits</Text>
+          <SectionHeading title="Homebrew Race Traits" textStyle={styles.sectionTitle} />
           <Text style={styles.hint}>
             Darkvision, Trance, Breath Weapon, etc -- shown on the sheet the same way a catalog
             race&apos;s traits are.
           </Text>
           {form.customRaceTraits.map((trait, i) => (
             <View key={`${trait.name}-${i}`} style={styles.traitRow}>
+              <PixelFrameOverlay scale={0.75} />
               <View style={styles.traitInfo}>
                 <Text style={styles.traitName}>{trait.name}</Text>
                 {trait.description.length > 0 && (
@@ -551,7 +553,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
 
       {isCustomClass && (
         <View style={styles.homebrewSection}>
-          <Text style={styles.sectionTitle}>Homebrew Class Details</Text>
+          <SectionHeading title="Homebrew Class Details" textStyle={styles.sectionTitle} />
           <Text style={styles.hint}>Hit Die</Text>
           <View style={styles.skillGrid}>
             {([6, 8, 10, 12] as const).map((die) => {
@@ -610,6 +612,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
           <Text style={styles.hint}>Traits</Text>
           {form.customClassTraits.map((trait, i) => (
             <View key={`${trait.name}-${i}`} style={styles.traitRow}>
+              <PixelFrameOverlay scale={0.75} />
               <View style={styles.traitInfo}>
                 <Text style={styles.traitName}>{trait.name}</Text>
                 {trait.description.length > 0 && (
@@ -676,7 +679,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         />
       </View>
 
-      <Text style={styles.sectionTitle}>Ability Scores</Text>
+      <SectionHeading title="Ability Scores" textStyle={styles.sectionTitle} />
       <View style={styles.abilityGrid}>
         {ABILITY_FIELDS.map(({ key, label }) => (
           <Field
@@ -690,7 +693,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Skill Proficiencies</Text>
+      <SectionHeading title="Skill Proficiencies" textStyle={styles.sectionTitle} />
       <View style={styles.skillGrid}>
         {catalog.skills.map((skill) => {
           const selected = skillIds.has(skill.id);
@@ -708,7 +711,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         })}
       </View>
 
-      <Text style={styles.sectionTitle}>Saving Throw Proficiencies</Text>
+      <SectionHeading title="Saving Throw Proficiencies" textStyle={styles.sectionTitle} />
       <View style={styles.skillGrid}>
         {ABILITY_FIELDS.map(({ key, label }) => {
           const fromClass = classSavingThrows.includes(key);
@@ -735,7 +738,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
 
       {catalog.languages && (
         <>
-          <Text style={styles.sectionTitle}>Languages</Text>
+          <SectionHeading title="Languages" textStyle={styles.sectionTitle} />
           <View style={styles.skillGrid}>
             {catalog.languages.map((lang) => {
               const selected = languageIds.has(lang.id);
@@ -777,7 +780,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         </>
       )}
 
-      <Text style={styles.sectionTitle}>Alignment</Text>
+      <SectionHeading title="Alignment" textStyle={styles.sectionTitle} />
       <View style={styles.skillGrid}>
         {ALIGNMENTS.map((option) => {
           const selected = form.alignment === option;
@@ -795,7 +798,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         })}
       </View>
 
-      <Text style={styles.sectionTitle}>Personality</Text>
+      <SectionHeading title="Personality" textStyle={styles.sectionTitle} />
       <Field
         label="Personality Traits"
         value={form.personalityTraits}
@@ -821,7 +824,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         multiline
       />
 
-      <Text style={styles.sectionTitle}>Other Proficiencies &amp; Traits</Text>
+      <SectionHeading title="Other Proficiencies & Traits" textStyle={styles.sectionTitle} />
       <Field
         label="Other Proficiencies & Languages"
         value={form.otherProficiencies}
@@ -835,7 +838,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         multiline
       />
 
-      <Text style={styles.sectionTitle}>Experience</Text>
+      <SectionHeading title="Experience" textStyle={styles.sectionTitle} />
       <Pressable
         style={styles.xpToggle}
         onPress={() => updateField("usesXp", !form.usesXp)}
@@ -856,7 +859,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         style={styles.collapsibleHeader}
         onPress={() => setAppearanceExpanded((prev) => !prev)}
       >
-        <Text style={styles.sectionTitle}>Appearance</Text>
+        <SectionHeading title="Appearance" textStyle={styles.sectionTitle} />
         <Text style={styles.collapsibleChevron}>{appearanceExpanded ? "▾" : "▸"}</Text>
       </Pressable>
       {appearanceExpanded && (
@@ -1159,7 +1162,7 @@ function createStyles(theme: Theme) {
       alignItems: "flex-start",
       justifyContent: "space-between",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 10,

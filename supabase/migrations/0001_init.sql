@@ -123,9 +123,19 @@ create policy "party_snapshots_update_own" on public.party_snapshots
     party_member_id in (select id from public.party_members where user_id = auth.uid())
   );
 
+-- party_snapshots uses `updated_at` (not `server_updated_at`), so it needs its
+-- own trigger function; reusing touch_server_updated_at() errors on update.
+create or replace function public.touch_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
 create trigger party_snapshots_touch_updated_at
   before update on public.party_snapshots
-  for each row execute function public.touch_server_updated_at();
+  for each row execute function public.touch_updated_at();
 
 -- Create a party: generates a unique invite code server-side (retrying on
 -- collision) and inserts the creator as its DM member, atomically.

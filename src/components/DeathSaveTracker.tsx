@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PixelFrameOverlay } from "./PixelFrame";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "./AppText";
 import {
@@ -86,6 +87,7 @@ export function DeathSaveTracker({
 
   return (
     <View style={styles.container}>
+      <PixelFrameOverlay />
       <View style={styles.headerRow}>
         {skullIcon && (
           <Image source={skullIcon} style={styles.skullIcon} resizeMode="contain" />
@@ -158,7 +160,7 @@ function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.danger,
       borderRadius: theme.radius,
       padding: 14,

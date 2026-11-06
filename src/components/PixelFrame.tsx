@@ -174,7 +174,7 @@ export function PixelBanner({
         <Text
           numberOfLines={1}
           style={[
-            { color: "#10243A", fontSize: 15, fontWeight: "700", fontFamily: theme.displayFontFamily },
+            { color: spec.textColor, fontSize: 15, fontWeight: "700", fontFamily: theme.displayFontFamily },
             textStyle,
           ]}
         >
@@ -182,5 +182,35 @@ export function PixelBanner({
         </Text>
       </View>
     </View>
+  );
+}
+
+/**
+ * Standard section heading: a scroll banner on pixel themes, the screen's own
+ * plain title style everywhere else. Pass the screen's existing title style as
+ * `textStyle`; its vertical margins carry over to the banner.
+ */
+export function SectionHeading({
+  title,
+  textStyle,
+  centered = false,
+}: {
+  title: string;
+  textStyle?: StyleProp<TextStyle>;
+  /** Centre the heading horizontally (banner or plain text). */
+  centered?: boolean;
+}) {
+  const { pixel } = useTheme();
+  if (!pixel) return <Text style={[textStyle, centered && { textAlign: "center" }]}>{title}</Text>;
+  const flat = StyleSheet.flatten(textStyle) ?? {};
+  return (
+    <PixelBanner
+      title={title}
+      style={{
+        alignSelf: centered ? "center" : "flex-start",
+        marginTop: typeof flat.marginTop === "number" ? flat.marginTop : 0,
+        marginBottom: typeof flat.marginBottom === "number" ? flat.marginBottom : 0,
+      }}
+    />
   );
 }

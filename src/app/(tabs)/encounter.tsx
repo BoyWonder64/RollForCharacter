@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { SectionHeading } from "../../components/PixelFrame";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
@@ -241,7 +242,7 @@ export default function EncounterScreen() {
             ) : (
               <>
                 <View style={styles.headerRow}>
-                  <Text style={styles.sectionTitle}>Roll log</Text>
+                  <SectionHeading title="Roll log" textStyle={styles.sectionTitle} />
                   <Pressable onPress={() => setLog([])}>
                     <Text style={styles.bad}>Clear</Text>
                   </Pressable>

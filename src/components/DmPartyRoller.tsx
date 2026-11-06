@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { SectionHeading } from "./PixelFrame";
 import { Pressable, ScrollView, View } from "react-native";
 import { Text, TextInput } from "./AppText";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -164,7 +165,7 @@ export function DmPartyRoller({
   return (
     <View style={styles.section}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Party roller</Text>
+        <SectionHeading title="Party roller" textStyle={styles.sectionTitle} />
         <View style={styles.row}>
           <Pressable style={styles.chip} onPress={() => persist(characters.map((c) => c.id))}>
             <Text style={styles.chipText}>All</Text>

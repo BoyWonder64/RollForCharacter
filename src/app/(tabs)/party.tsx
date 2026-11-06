@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import {
   ActivityIndicator,
   Alert,
@@ -48,7 +49,7 @@ function SignedOutNotice({ styles }: { styles: ReturnType<typeof createDmStyles>
       style={{ flex: 1, backgroundColor: theme.screenBackground }}
       contentContainerStyle={{ padding: 16 }}
     >
-      <Text style={styles.sectionTitle}>Sign in to use Party mode</Text>
+      <SectionHeading title="Sign in to use Party mode" textStyle={styles.sectionTitle} />
       <Text style={[styles.hint, { marginBottom: 12 }]}>
         Party mode connects your characters with other players over the cloud so a DM can
         review the party remotely. Sign in from Settings to turn it on.
@@ -135,7 +136,7 @@ function createLocalStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,
@@ -288,7 +289,7 @@ export default function PartyScreen() {
           <>
             <View style={styles.section}>
               <View style={styles.headerRow}>
-                <Text style={styles.sectionTitle}>{partyView.party.name}</Text>
+                <SectionHeading title={partyView.party.name} textStyle={styles.sectionTitle} />
                 <Pressable style={styles.dangerButton} onPress={handleLeave}>
                   <Text style={styles.dangerButtonText}>
                     {partyView.role === "dm" ? "Disband" : "Leave"}
@@ -307,7 +308,7 @@ export default function PartyScreen() {
 
             {partyView.role === "player" && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Share your character</Text>
+                <SectionHeading title="Share your character" textStyle={styles.sectionTitle} />
                 <Text style={styles.hint}>
                   Pick which character represents you, then choose what the DM can see.
                 </Text>
@@ -337,8 +338,9 @@ export default function PartyScreen() {
                   <View style={{ marginTop: 12, gap: 8 }}>
                     {PARTY_VISIBILITY_SECTIONS.map((section) => (
                       <View key={section.key} style={localStyles.toggleRow}>
+                        <PixelFrameOverlay scale={0.75} />
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.sectionTitle}>{section.label}</Text>
+                          <SectionHeading title={section.label} textStyle={styles.sectionTitle} />
                           <Text style={styles.hint}>{section.hint}</Text>
                         </View>
                         <Switch
@@ -356,7 +358,7 @@ export default function PartyScreen() {
 
             {partyView.role === "dm" ? (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Party</Text>
+                <SectionHeading title="Party" textStyle={styles.sectionTitle} />
                 {players.length === 0 ? (
                   <Text style={styles.hint}>
                     No players have joined yet — share the invite code above.
@@ -375,7 +377,7 @@ export default function PartyScreen() {
             ) : (
               teammates.length > 0 && (
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Party</Text>
+                  <SectionHeading title="Party" textStyle={styles.sectionTitle} />
                   {teammates.map((member) => (
                     <MemberCard key={member.memberId} member={member} styles={styles} />
                   ))}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PixelFrameOverlay } from "../components/PixelFrame";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "../components/AppText";
 import { Stack } from "expo-router";
@@ -361,6 +362,7 @@ export default function HomebrewLibraryScreen() {
               onPress={() => setCategory(c.key)}
               style={[styles.categoryCard, category === c.key && styles.categoryCardActive]}
             >
+              <PixelFrameOverlay />
               <Text
                 style={[styles.categoryCardText, category === c.key && styles.categoryCardTextActive]}
               >
@@ -382,6 +384,7 @@ export default function HomebrewLibraryScreen() {
         )}
         {rows.map((row) => (
           <View key={row.id} style={styles.card}>
+            <PixelFrameOverlay />
             <Text style={styles.cardName}>{row.name}</Text>
             <Text style={styles.cardSummary}>{row.summary}</Text>
             <View style={styles.cardActions}>
@@ -581,7 +584,7 @@ function createStyles(theme: Theme) {
     categoryCard: {
       width: "31%",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingVertical: 10,
@@ -598,7 +601,7 @@ function createStyles(theme: Theme) {
     categoryCardTextActive: { color: theme.colors.primaryText },
     card: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 14,

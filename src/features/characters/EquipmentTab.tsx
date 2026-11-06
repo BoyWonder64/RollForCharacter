@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text, TextInput } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
@@ -234,7 +235,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
           {swordIcon && <Image source={swordIcon} style={styles.sectionIcon} resizeMode="contain" />}
-          <Text style={styles.sectionTitle}>Weapons</Text>
+          <SectionHeading title="Weapons" textStyle={styles.sectionTitle} />
         </View>
         <Pressable style={styles.actionLink} onPress={() => setAddWeaponOpen(true)}>
           <Text style={styles.actionLinkText}>+ Add Weapon</Text>
@@ -264,6 +265,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
               style={[styles.itemRow, weapon.equipped && styles.itemRowEquipped]}
               onPress={() => handleToggleWeaponEquipped(weapon)}
             >
+              <PixelFrameOverlay scale={0.75} />
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>
                   {weapon.isMagic ? "✨ " : ""}
@@ -309,7 +311,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
           {shieldIcon && <Image source={shieldIcon} style={styles.sectionIcon} resizeMode="contain" />}
-          <Text style={styles.sectionTitle}>Armor</Text>
+          <SectionHeading title="Armor" textStyle={styles.sectionTitle} />
         </View>
         <Pressable style={styles.actionLink} onPress={() => setAddArmorOpen(true)}>
           <Text style={styles.actionLinkText}>+ Add Armor</Text>
@@ -325,6 +327,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
             style={[styles.itemRow, item.equipped && styles.itemRowEquipped]}
             onPress={() => handleToggleArmorEquipped(item)}
           >
+            <PixelFrameOverlay scale={0.75} />
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>
                 {item.isMagic ? "✨ " : ""}
@@ -364,7 +367,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
 
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
-          <Text style={styles.sectionTitle}>Gear & Supplies</Text>
+          <SectionHeading title="Gear & Supplies" textStyle={styles.sectionTitle} />
         </View>
       </View>
 
@@ -373,6 +376,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
       ) : (
         gearItems.map((item) => (
           <View key={item.id} style={styles.itemRow}>
+            <PixelFrameOverlay scale={0.75} />
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>
                 {item.name}
@@ -413,7 +417,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
 
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
-          <Text style={styles.sectionTitle}>Magic Items</Text>
+          <SectionHeading title="Magic Items" textStyle={styles.sectionTitle} />
         </View>
         <Pressable style={styles.actionLink} onPress={() => setAddMagicItemOpen(true)}>
           <Text style={styles.actionLinkText}>+ Add Magic Item</Text>
@@ -425,6 +429,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
       ) : (
         magicItems.map((item) => (
           <View key={item.id} style={[styles.itemRow, item.equipped && styles.itemRowEquipped]}>
+            <PixelFrameOverlay scale={0.75} />
             <Pressable style={styles.itemInfo} onPress={() => handleToggleMagicItemEquipped(item)}>
               <Text style={styles.itemName}>
                 {item.name}
@@ -478,13 +483,13 @@ function createStyles(theme: Theme) {
       marginBottom: 10,
     },
     actionLink: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.mode === "light" ? theme.colors.surfaceAlt : theme.colors.primary,
       borderRadius: theme.radius,
       paddingHorizontal: 12,
       paddingVertical: 6,
     },
     actionLinkText: {
-      color: theme.colors.primaryText,
+      color: theme.mode === "light" ? "#0A0A0A" : theme.colors.primaryText,
       fontWeight: "700",
       fontSize: 12,
       fontFamily: theme.displayFontFamily,
@@ -494,7 +499,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,

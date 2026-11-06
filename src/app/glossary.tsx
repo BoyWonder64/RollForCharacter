@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { SectionHeading } from "../components/PixelFrame";
 import { ScrollView, View } from "react-native";
 import { Text } from "../components/AppText";
 import { Stack } from "expo-router";
@@ -76,7 +77,7 @@ export default function GlossaryScreen() {
         </Text>
         {SECTIONS.map((section) => (
           <View key={section.title} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <SectionHeading title={section.title} textStyle={styles.sectionTitle} />
             {section.entries.map((entry) => (
               <View key={entry.term} style={styles.card}>
                 <View style={styles.row}>

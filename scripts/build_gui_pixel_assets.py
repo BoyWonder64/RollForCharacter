@@ -14,6 +14,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GUI = os.path.join(ROOT, "pixel assets", "Second Icon Set", "GUI")
 OUT = os.path.join(ROOT, "assets", "ui", "pixel-gui")
 BAKE = 4
+# Banners (ribbon + scroll) are multiplied by this brightness; 1.0 = original art.
+# Alpha is untouched and the black outlines stay black.
+BANNER_BRIGHTNESS = 0.7
+# Banner text is black everywhere, so fills must stay light enough for it
+# (>= 4.5:1). These themes' ribbons are too dark at 0.7 and bake at full brightness.
+FULL_BRIGHT = 1.0
 os.makedirs(OUT, exist_ok=True)
 
 
@@ -48,7 +54,7 @@ def frame(sheet_no, row, col, name):
     save(hollow_centre(crop_to_content(cell)), name)
 
 
-def banner(sheet_no, box, name, cap):
+def banner(sheet_no, box, name, cap, brightness=None):
     """Cut a sprite into left cap / stretchy middle / right cap. The middle is
     taken 1 source pixel wider on each side; the app overlaps the pieces by that
     much so no hairline seam shows between them."""
@@ -56,6 +62,9 @@ def banner(sheet_no, box, name, cap):
         os.path.join(GUI, "Retro Pixel Ribbons, Banners and Frames 2", f"{sheet_no:02d}.png")
     ).convert("RGBA")
     im = crop_to_content(sheet.crop(box))
+    r, g, b, a = im.split()
+    r, g, b = (c.point(lambda v: int(v * (BANNER_BRIGHTNESS if brightness is None else brightness))) for c in (r, g, b))
+    im = Image.merge("RGBA", (r, g, b, a))
     w, h = im.size
     print(name, "source", im.size)
     save(im.crop((0, 0, cap, h)), f"{name}-left.png")
@@ -63,9 +72,55 @@ def banner(sheet_no, box, name, cap):
     save(im.crop((w - cap, 0, w, h)), f"{name}-right.png")
 
 
-# Journal: Border All 14 (sky blue), plain notched frame (row 1, col 1).
+RIBBON_BOX = (0, 84, 80, 113)  # straight ribbon with tails (top banner)
+SCROLL_BOX = (176, 5, 225, 26)  # 5th sprite on the top row: rod-ended scroll (headers)
+
+# Journal: Border All 14 (sky blue) + ribbons 08 (blue).
 frame(14, 1, 1, "journal-frame.png")
-# Ribbon 08 (matching blue): straight ribbon with tails (top banner).
-banner(8, (0, 84, 80, 113), "journal-banner", 26)
-# 5th sprite on the top row of ribbon sheet 08: rod-ended scroll (section headers).
-banner(8, (176, 5, 225, 26), "journal-scroll", 5)
+banner(8, RIBBON_BOX, "journal-banner", 26)
+banner(8, SCROLL_BOX, "journal-scroll", 5)
+
+# Crimson: Border All 7 (dusty rose, dark) + ribbons 16 (muted salmon).
+frame(7, 1, 1, "crimson-frame.png")
+banner(16, RIBBON_BOX, "crimson-banner", 26)
+banner(16, SCROLL_BOX, "crimson-scroll", 5)
+
+# forest: Border All 12 + ribbons 15.
+frame(12, 1, 1, "forest-frame.png")
+banner(15, RIBBON_BOX, "forest-banner", 26)
+banner(15, SCROLL_BOX, "forest-scroll", 5)
+
+# manuscript: Border All 9 + ribbons 11.
+frame(9, 1, 1, "manuscript-frame.png")
+banner(11, RIBBON_BOX, "manuscript-banner", 26)
+banner(11, SCROLL_BOX, "manuscript-scroll", 5)
+
+# torchlight: Border All 6 + ribbons 14.
+frame(6, 1, 1, "torchlight-frame.png")
+banner(14, RIBBON_BOX, "torchlight-banner", 26)
+banner(14, SCROLL_BOX, "torchlight-scroll", 5)
+
+# steampunk: Border All 1 + ribbons 13.
+frame(1, 1, 1, "steampunk-frame.png")
+banner(13, RIBBON_BOX, "steampunk-banner", 26)
+banner(13, SCROLL_BOX, "steampunk-scroll", 5)
+
+# scifi: Border All 3 + ribbons 06.
+frame(3, 1, 1, "scifi-frame.png")
+banner(6, RIBBON_BOX, "scifi-banner", 26)
+banner(6, SCROLL_BOX, "scifi-scroll", 5)
+
+# shadow: Border All 13 + ribbons 12.
+frame(13, 1, 1, "shadow-frame.png")
+banner(12, RIBBON_BOX, "shadow-banner", 26, FULL_BRIGHT)
+banner(12, SCROLL_BOX, "shadow-scroll", 5, FULL_BRIGHT)
+
+# western: Border All 11 + ribbons 17.
+frame(11, 1, 1, "western-frame.png")
+banner(17, RIBBON_BOX, "western-banner", 26, FULL_BRIGHT)
+banner(17, SCROLL_BOX, "western-scroll", 5, FULL_BRIGHT)
+
+# galaxy: Border All 10 + ribbons 05.
+frame(10, 1, 1, "galaxy-frame.png")
+banner(5, RIBBON_BOX, "galaxy-banner", 26)
+banner(5, SCROLL_BOX, "galaxy-scroll", 5)

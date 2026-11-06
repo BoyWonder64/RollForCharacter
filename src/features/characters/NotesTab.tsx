@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { PixelBanner, PixelFrameOverlay } from "../../components/PixelFrame";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
@@ -124,7 +125,11 @@ export function NotesTab({ character }: { character: Character }) {
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
           {scrollIcon && <Image source={scrollIcon} style={styles.sectionIcon} resizeMode="contain" />}
-          <Text style={styles.sectionTitle}>Campaign Notes</Text>
+          {theme.pixel ? (
+            <PixelBanner title="Campaign Notes" />
+          ) : (
+            <Text style={styles.sectionTitle}>Campaign Notes</Text>
+          )}
         </View>
         <Pressable style={styles.actionLink} onPress={handleOpenAddNote}>
           <Text style={styles.actionLinkText}>+ Add Note</Text>
@@ -136,6 +141,7 @@ export function NotesTab({ character }: { character: Character }) {
       ) : (
         notes.map((note) => (
           <View key={note.id} style={styles.noteCard}>
+            <PixelFrameOverlay />
             <View style={styles.noteHeaderRow}>
               <Text style={styles.noteSubject}>{note.subject}</Text>
               <Pressable onPress={() => handleOpenEditNote(note)}>
@@ -170,7 +176,11 @@ export function NotesTab({ character }: { character: Character }) {
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
           {chestIcon && <Image source={chestIcon} style={styles.sectionIcon} resizeMode="contain" />}
-          <Text style={styles.sectionTitle}>Special Items</Text>
+          {theme.pixel ? (
+            <PixelBanner title="Special Items" />
+          ) : (
+            <Text style={styles.sectionTitle}>Special Items</Text>
+          )}
         </View>
         <Pressable style={styles.actionLink} onPress={() => setAddItemOpen(true)}>
           <Text style={styles.actionLinkText}>+ Add Item</Text>
@@ -186,6 +196,7 @@ export function NotesTab({ character }: { character: Character }) {
             : undefined;
           return (
             <View key={item.id} style={styles.itemRow}>
+              <PixelFrameOverlay scale={0.75} />
               {icon && <Image source={icon} style={styles.itemIcon} resizeMode="contain" />}
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
@@ -228,13 +239,13 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     actionLink: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.mode === "light" ? theme.colors.surfaceAlt : theme.colors.primary,
       borderRadius: theme.radius,
       paddingHorizontal: 12,
       paddingVertical: 6,
     },
     actionLinkText: {
-      color: theme.colors.primaryText,
+      color: theme.mode === "light" ? "#0A0A0A" : theme.colors.primaryText,
       fontWeight: "700",
       fontSize: 12,
       fontFamily: theme.displayFontFamily,
@@ -242,7 +253,7 @@ function createStyles(theme: Theme) {
     empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily },
     noteCard: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,
@@ -285,7 +296,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,

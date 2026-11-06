@@ -99,4 +99,4 @@ Found in the 2026-11-02 class and race review against open5e v2 (srd-2014) and d
 - [x] Profile picture not saving (fixed 2026-11-05, needs a device check): sprite/upload portraits now persist via `persistPortrait` for non-`file://` URIs, the Edit screen saves a changed/removed portrait immediately, and the wizard alerts if the portrait save fails. Check: new character with a sprite and with an upload, then change it from Edit; it should show on the list, sheet header and after restart.
 
 
-Look into the game center 
+Look into the game center for multiplayer

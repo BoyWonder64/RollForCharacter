@@ -7,7 +7,6 @@ import {
   abilityModifier,
   addXp,
   adjustCurrency,
-  levelUp,
   toggleInspiration,
 } from "./characterRepo";
 import {
@@ -24,7 +23,7 @@ import {
   racialTraitsForCharacter,
 } from "./characterCalculations";
 import { listCharacterFeats } from "./featRepo";
-import { addClass, levelUpClass, listCharacterClasses } from "./characterClassRepo";
+import { listCharacterClasses } from "./characterClassRepo";
 import { formatMulticlassLabel, isMulticlassed } from "./multiclass";
 import { ConditionsChecklist } from "../../components/ConditionsChecklist";
 import { ClassResourceTracker } from "../../components/ClassResourceTracker";
@@ -43,9 +42,7 @@ import { levelForXp, xpToNextLevel } from "./xpTable";
 import { getRulesetCatalog } from "../../data/rulesets";
 import { spellSaveDc } from "../dice/structuredRolls";
 import { CurrencyModal, type CurrencyDenomination } from "../../components/CurrencyModal";
-import { LevelUpModal } from "../../components/LevelUpModal";
 import { XpModal } from "../../components/XpModal";
-import type { LevelUpChoices } from "./characterRepo";
 import type { AbilityScoreKey, Character, CharacterClass } from "../../types/models";
 import { PixelBanner, PixelFrameOverlay } from "../../components/PixelFrame";
 import { useTheme } from "../../theme/ThemeContext";
@@ -218,7 +215,6 @@ export function StatsTab({
     )
     .filter((l): l is NonNullable<typeof l> => !!l);
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
-  const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [xpModalOpen, setXpModalOpen] = useState(false);
 
   const [weapons, setWeapons] = useState<WeaponRow[]>([]);
@@ -259,50 +255,6 @@ export function StatsTab({
     onChanged();
   }
 
-  async function handleLevelUpConfirm(choices: LevelUpChoices, classId?: string) {
-    const outcome = classId
-      ? await levelUpClass(character.id, classId, choices)
-      : await levelUp(character.id, choices);
-    setLevelUpModalOpen(false);
-    onChanged();
-    listCharacterClasses(character.id).then(setClassRows);
-    if (outcome) {
-      const profLine =
-        outcome.proficiencyBonus !== character.proficiencyBonus
-          ? `\nProficiency bonus is now +${outcome.proficiencyBonus}.`
-          : "";
-      const hpLine =
-        choices.hpMethod === "manual"
-          ? `Set your HP for this level yourself in Edit.`
-          : `+${outcome.hpGain} max HP${
-              outcome.roll !== undefined ? ` (rolled ${outcome.roll})` : ""
-            }`;
-      const featureLines = outcome.featuresGained.map((f) => `• ${f.name}`).join("\n");
-      const body = [hpLine + profLine, featureLines].filter(Boolean).join("\n\n");
-      Alert.alert(`Level ${outcome.newLevel}!`, body);
-    }
-  }
-
-  async function handleMulticlassConfirm(
-    classId: string,
-    className: string,
-    choices: LevelUpChoices
-  ) {
-    const outcome = await addClass(character.id, classId, className, choices);
-    setLevelUpModalOpen(false);
-    onChanged();
-    listCharacterClasses(character.id).then(setClassRows);
-    if (outcome) {
-      const hpLine =
-        choices.hpMethod === "manual"
-          ? "Set your HP for this level yourself in Edit."
-          : `+${outcome.hpGain} max HP${outcome.roll !== undefined ? ` (rolled ${outcome.roll})` : ""}`;
-      const featureLines = outcome.featuresGained.map((f) => `• ${f.name}`).join("\n");
-      const body = [hpLine, featureLines].filter(Boolean).join("\n\n");
-      Alert.alert(`${className} 1!`, body);
-    }
-  }
-
   const xpReadyToLevelUp =
     character.usesXp && levelForXp(character.ruleset, character.experiencePoints) > character.level;
   const xpNeeded = character.usesXp
@@ -316,41 +268,34 @@ export function StatsTab({
           Level {character.level}
           {isMulticlassed(classRows) ? ` (${formatMulticlassLabel(classRows, character.className)})` : ""}
         </Text>
-        <Pressable style={styles.levelUpButton} onPress={() => setLevelUpModalOpen(true)}>
-          <PixelFrameOverlay />
-          <Text style={styles.levelUpButtonText}>
-            Level Up{xpReadyToLevelUp ? " ✓" : ""}
-          </Text>
-        </Pressable>
       </View>
 
-      <Pressable
-        style={[styles.inspirationChip, character.inspiration && styles.inspirationChipActive]}
-        onPress={handleToggleInspiration}
-      >
-        <Text
-          style={[
-            styles.inspirationChipText,
-            character.inspiration && styles.inspirationChipTextActive,
-          ]}
-        >
-          ✦ Inspiration{character.inspiration ? " (ready)" : ""}
-        </Text>
-      </Pressable>
-
-      <ClassResourceTracker character={character} onChanged={onChanged} />
-
-      <LevelUpModal
-        visible={levelUpModalOpen}
+      <ClassResourceTracker
         character={character}
-        classRows={classRows}
-        onClose={() => setLevelUpModalOpen(false)}
-        onConfirm={handleLevelUpConfirm}
-        onMulticlassConfirm={handleMulticlassConfirm}
+        onChanged={onChanged}
+        footer={
+          <>
+            <ConditionsChecklist character={character} onChanged={onChanged} />
+            <View style={styles.boxDivider} />
+            <Pressable
+              style={[
+              styles.inspirationChip,
+              character.inspiration && styles.inspirationChipActive,
+            ]}
+              onPress={handleToggleInspiration}
+            >
+              <Text
+                style={[
+                  styles.inspirationChipText,
+                  character.inspiration && styles.inspirationChipTextActive,
+                ]}
+              >
+                ✦ Inspiration{character.inspiration ? " (ready)" : ""}
+              </Text>
+            </Pressable>
+          </>
+        }
       />
-
-      <Text style={styles.sectionTitle}>Conditions</Text>
-      <ConditionsChecklist character={character} onChanged={onChanged} />
 
       {character.usesXp && (
         <>
@@ -464,6 +409,7 @@ export function StatsTab({
                 )
               }
             >
+              <PixelFrameOverlay scale={0.75} />
               <View style={[styles.proficiencyDot, proficient && styles.proficiencyDotOn]} />
               <Text style={styles.proficiencyName}>{ABILITY_LABELS[key]}</Text>
               <Text style={styles.proficiencyMod}>{formatModifier(modifier)}</Text>
@@ -496,6 +442,7 @@ export function StatsTab({
                 )
               }
             >
+              <PixelFrameOverlay scale={0.75} />
               <View style={[styles.proficiencyDot, proficient && styles.proficiencyDotOn]} />
               <Text style={styles.proficiencyName}>
                 {skill.name} <Text style={styles.proficiencyAbility}>({ABILITY_LABELS[skill.ability]})</Text>
@@ -525,48 +472,51 @@ export function StatsTab({
         })}
       </View>
 
-      <Text style={styles.sectionTitle}>Armor &amp; Weapons</Text>
-      {weapons.length === 0 && armor.length === 0 ? (
-        <Text style={styles.flavorLine}>
-          Nothing carried yet — add gear from the Equipment tab.
-        </Text>
-      ) : (
-        <>
-          {weapons.map((weapon) => {
-            const proficient = isProficientWithWeapon(weapon, weaponProficiencies);
-            const attackBonus = weaponAttackBonus(
-              weapon,
-              character.strength,
-              character.dexterity,
-              character.proficiencyBonus,
-              proficient,
-              weaponFeatAttackBonus(weapon, featEffects)
-            );
-            return (
-              <Text key={`w-${weapon.id}`} style={styles.flavorLine}>
-                <Text style={styles.flavorLabel}>
-                  {weapon.isMagic ? "✨ " : ""}
-                  {weapon.name}
-                  {weapon.quantity > 1 ? ` ×${weapon.quantity}` : ""}:{" "}
+      <SectionTitle title="Armor & Weapons" />
+      <View style={styles.gearBox}>
+        <PixelFrameOverlay />
+        {weapons.length === 0 && armor.length === 0 ? (
+          <Text style={styles.flavorLine}>
+            Nothing carried yet — add gear from the Equipment tab.
+          </Text>
+        ) : (
+          <>
+            {weapons.map((weapon) => {
+              const proficient = isProficientWithWeapon(weapon, weaponProficiencies);
+              const attackBonus = weaponAttackBonus(
+                weapon,
+                character.strength,
+                character.dexterity,
+                character.proficiencyBonus,
+                proficient,
+                weaponFeatAttackBonus(weapon, featEffects)
+              );
+              return (
+                <Text key={`w-${weapon.id}`} style={styles.flavorLine}>
+                  <Text style={styles.flavorLabel}>
+                    {weapon.isMagic ? "✨ " : ""}
+                    {weapon.name}
+                    {weapon.quantity > 1 ? ` ×${weapon.quantity}` : ""}:{" "}
+                  </Text>
+                  Attack {describeAttackBonus(attackBonus)}
+                  {` · ${describeWeaponDamage(weapon)}`}
+                  {weapon.equipped ? " (Equipped)" : ""}
                 </Text>
-                Attack {describeAttackBonus(attackBonus)}
-                {` · ${describeWeaponDamage(weapon)}`}
-                {weapon.equipped ? " (Equipped)" : ""}
+              );
+            })}
+            {armor.map((item) => (
+              <Text key={`a-${item.id}`} style={styles.flavorLine}>
+                <Text style={styles.flavorLabel}>
+                  {item.isMagic ? "✨ " : ""}
+                  {item.name}:{" "}
+                </Text>
+                AC {describeArmorAc(item)}
+                {item.equipped ? " (Equipped)" : ""}
               </Text>
-            );
-          })}
-          {armor.map((item) => (
-            <Text key={`a-${item.id}`} style={styles.flavorLine}>
-              <Text style={styles.flavorLabel}>
-                {item.isMagic ? "✨ " : ""}
-                {item.name}:{" "}
-              </Text>
-              AC {describeArmorAc(item)}
-              {item.equipped ? " (Equipped)" : ""}
-            </Text>
-          ))}
-        </>
-      )}
+            ))}
+          </>
+        )}
+      </View>
 
       {racialTraits.length > 0 && (
         <>
@@ -578,6 +528,7 @@ export function StatsTab({
                 style={styles.proficiencyRow}
                 onPress={() => Alert.alert(trait.name, trait.description)}
               >
+                <PixelFrameOverlay scale={0.75} />
                 <View style={[styles.proficiencyDot, styles.proficiencyDotOn]} />
                 <Text style={styles.proficiencyName}>{trait.name}</Text>
               </Pressable>
@@ -596,6 +547,7 @@ export function StatsTab({
                 style={styles.proficiencyRow}
                 onPress={() => Alert.alert(feature.name, feature.description)}
               >
+                <PixelFrameOverlay scale={0.75} />
                 <View style={[styles.proficiencyDot, styles.proficiencyDotOn]} />
                 <Text style={styles.proficiencyName}>{feature.name}</Text>
               </Pressable>
@@ -611,7 +563,10 @@ export function StatsTab({
       {character.alignment ? (
         <>
           <SectionTitle title="Alignment" />
-          <Text style={styles.flavorLine}>{character.alignment}</Text>
+          <View style={styles.proficiencyRow}>
+            <PixelFrameOverlay scale={0.75} />
+            <Text style={styles.proficiencyName}>{character.alignment}</Text>
+          </View>
         </>
       ) : null}
 
@@ -625,6 +580,7 @@ export function StatsTab({
                 style={styles.proficiencyRow}
                 onPress={() => Alert.alert(lang.name, lang.typicalSpeakers)}
               >
+                <PixelFrameOverlay scale={0.75} />
                 <View style={[styles.proficiencyDot, styles.proficiencyDotOn]} />
                 <Text style={styles.proficiencyName}>{lang.name}</Text>
               </Pressable>
@@ -741,18 +697,7 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
       flexShrink: 1,
     },
-    levelUpButton: {
-      backgroundColor: theme.colors.accent,
-      borderRadius: theme.radius,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-    },
-    levelUpButtonText: {
-      color: theme.colors.primaryText,
-      fontWeight: "700",
-      fontSize: 13,
-      fontFamily: theme.displayFontFamily,
-    },
+    boxDivider: { height: 1, backgroundColor: theme.colors.border, marginVertical: 14 },
     inspirationChip: {
       alignSelf: "flex-start",
       backgroundColor: theme.colors.surface,
@@ -761,7 +706,7 @@ function createStyles(theme: Theme) {
       borderRadius: theme.radius,
       paddingHorizontal: 12,
       paddingVertical: 6,
-      marginBottom: 20,
+      marginBottom: 0,
     },
     inspirationChipActive: { backgroundColor: theme.colors.accent, borderColor: theme.colors.accent },
     inspirationChipText: {
@@ -798,6 +743,8 @@ function createStyles(theme: Theme) {
       marginTop: 20,
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+    // One frame around the whole armor + weapons list on pixel themes.
+    gearBox: theme.pixel ? { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10 } : {},
     sectionBanner: { marginTop: 14, marginBottom: 8 },
     currencyBanner: { marginBottom: 8 },
     sectionTitleInline: { marginTop: 0, marginBottom: 0 },
@@ -867,11 +814,11 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
+      paddingHorizontal: theme.pixel ? 14 : 10,
+      paddingVertical: theme.pixel ? 10 : 8,
       marginBottom: 4,
       gap: 8,
     },

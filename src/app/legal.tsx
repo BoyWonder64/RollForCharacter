@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "../components/PixelFrame";
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "../components/AppText";
 import { Stack } from "expo-router";
@@ -137,9 +138,10 @@ export default function LegalScreen() {
     <>
       <Stack.Screen options={{ title: "Legal & Licenses" }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.sectionTitle}>Credits</Text>
+        <SectionHeading title="Credits" textStyle={styles.sectionTitle} />
         {CREDITS.map((credit) => (
           <View key={credit.title} style={styles.creditRow}>
+            <PixelFrameOverlay scale={0.75} />
             <Text style={styles.creditTitle}>{credit.title}</Text>
             <Text style={styles.creditText}>{credit.text}</Text>
           </View>
@@ -160,6 +162,7 @@ export default function LegalScreen() {
             style={styles.creditRow}
             onPress={() => Linking.openURL(source.url).catch(() => {})}
           >
+            <PixelFrameOverlay scale={0.75} />
             <Text style={styles.creditTitle}>{source.title}</Text>
             <Text style={styles.creditText}>
               {source.publisher} · {source.license}
@@ -171,10 +174,12 @@ export default function LegalScreen() {
           Legal Information page:
         </Text>
         <View style={styles.creditRow}>
+          <PixelFrameOverlay scale={0.75} />
           <Text style={styles.creditTitle}>System Reference Document 5.1</Text>
           <Text style={styles.creditText}>{CC_BY_NOTICE_SRD_5_1}</Text>
         </View>
         <View style={styles.creditRow}>
+          <PixelFrameOverlay scale={0.75} />
           <Text style={styles.creditTitle}>System Reference Document 5.2 / 5.2.1</Text>
           <Text style={styles.creditText}>{CC_BY_NOTICE_SRD_5_2}</Text>
         </View>
@@ -185,6 +190,7 @@ export default function LegalScreen() {
           requires this exact notice and a copy of the full license text in any product that uses it.
         </Text>
         <View style={styles.creditRow}>
+          <PixelFrameOverlay scale={0.75} />
           <Text style={styles.creditText}>{OGL_COPYRIGHT_NOTICE}</Text>
         </View>
         <Button
@@ -195,6 +201,7 @@ export default function LegalScreen() {
         />
         {oglExpanded && (
           <View style={styles.creditRow}>
+            <PixelFrameOverlay scale={0.75} />
             <Text style={styles.creditText}>{OGL_FULL_TEXT}</Text>
           </View>
         )}
@@ -212,7 +219,7 @@ function createStyles(theme: Theme) {
     hint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 10 },
     creditRow: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,

@@ -1,5 +1,17 @@
 import type { ImageSourcePropType } from "react-native";
-import { JOURNAL_PIXEL_KIT, type PixelKit } from "./pixelKits";
+import {
+  CRIMSON_PIXEL_KIT,
+  FOREST_PIXEL_KIT,
+  GALAXY_PIXEL_KIT,
+  JOURNAL_PIXEL_KIT,
+  MANUSCRIPT_PIXEL_KIT,
+  SCIFI_PIXEL_KIT,
+  SHADOW_PIXEL_KIT,
+  STEAMPUNK_PIXEL_KIT,
+  TORCHLIGHT_PIXEL_KIT,
+  WESTERN_PIXEL_KIT,
+  type PixelKit,
+} from "./pixelKits";
 
 export type ThemeColors = {
   background: string;
@@ -58,27 +70,29 @@ type ThemeFamilyDefinition = {
 const RADIUS = 0;
 
 export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
+  // Forest: green accents over earthy browns (bark, soil, leather).
   classic: {
     label: "Forest",
+    pixel: FOREST_PIXEL_KIT,
     light: {
-      background: "#FFFFFF",
-      surface: "#F2F6F3",
-      surfaceAlt: "#E7EEE9",
-      border: "#D3DED7",
-      text: "#15201A",
-      textMuted: "#5A6B60",
+      background: "#EFE6D6",
+      surface: "#E3D5BC",
+      surfaceAlt: "#D5C3A2",
+      border: "#B89E76",
+      text: "#2B1D12",
+      textMuted: "#6B5238",
       primary: "#2E7D32",
       primaryText: "#FFFFFF",
       accent: "#2E7D32",
       danger: "#B3261E",
     },
     dark: {
-      background: "#121212",
-      surface: "#1B1F1C",
-      surfaceAlt: "#232823",
-      border: "#30362F",
-      text: "#F1F4F2",
-      textMuted: "#9FACA4",
+      background: "#1E140C",
+      surface: "#2A1D12",
+      surfaceAlt: "#38281A",
+      border: "#5A4129",
+      text: "#F2E8D8",
+      textMuted: "#B5A084",
       primary: "#2E7D32",
       primaryText: "#FFFFFF",
       accent: "#66BB6A",
@@ -89,6 +103,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Illuminated manuscript: warm parchment page, ink-brown text, deep green accent.
   parchment: {
     label: "Manuscript",
+    pixel: MANUSCRIPT_PIXEL_KIT,
     displayFontFamily: "CormorantGaramond_700Bold",
     light: {
       background: "#F3EEE2",
@@ -119,6 +134,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Dungeon & torchlight: stone and ember, heavy carved-serif headers.
   grimdark: {
     label: "Torchlight",
+    pixel: TORCHLIGHT_PIXEL_KIT,
     displayFontFamily: "Cinzel_700Bold",
     light: {
       background: "#D9D4CC",
@@ -180,6 +196,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Steampunk: brass, copper, oiled leather, Victorian typewriter headers.
   steampunk: {
     label: "Steampunk",
+    pixel: STEAMPUNK_PIXEL_KIT,
     displayFontFamily: "SpecialElite_400Regular",
     light: {
       background: "#E8DCC2",
@@ -210,6 +227,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Sci-fi: deep space, electric cyan, geometric headers.
   scifi: {
     label: "Sci-Fi",
+    pixel: SCIFI_PIXEL_KIT,
     displayFontFamily: "Orbitron_700Bold",
     light: {
       background: "#EAF0F2",
@@ -240,6 +258,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Crimson: classic red-box D&D — deep crimson, black, and gold trim.
   crimson: {
     label: "Crimson",
+    pixel: CRIMSON_PIXEL_KIT,
     light: {
       background: "#E8D9BE",
       surface: "#DCC9A3",
@@ -269,6 +288,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Shadow: thief's guild — charcoal and steel, with a poison-violet accent.
   shadow: {
     label: "Shadow",
+    pixel: SHADOW_PIXEL_KIT,
     light: {
       background: "#D6D2CC",
       surface: "#C7C2BA",
@@ -298,6 +318,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Western: dusty frontier — sand, saddle leather, and weathered rust.
   western: {
     label: "Western",
+    pixel: WESTERN_PIXEL_KIT,
     light: {
       background: "#E4D3AE",
       surface: "#D7C294",
@@ -327,6 +348,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Galaxy: space-opera bridge console — chrome, holo-blue, and gold insignia.
   galaxy: {
     label: "Galaxy",
+    pixel: GALAXY_PIXEL_KIT,
     light: {
       background: "#E8ECEF",
       surface: "#D7DEE3",

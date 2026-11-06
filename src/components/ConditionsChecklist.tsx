@@ -70,34 +70,34 @@ export function ConditionsChecklist({
               {activeConditions.length === 0 ? "+ Add Condition" : "+ Edit"}
             </Text>
           </Pressable>
-          <View style={styles.exhaustionBlock}>
+        </View>
+        <View style={styles.exhaustionBlock}>
+          <Pressable
+            style={styles.exhaustionLabelRow}
+            onPress={() => Alert.alert("Exhaustion", EXHAUSTION_DESCRIPTION)}
+          >
+            <Text style={styles.exhaustionLabel}>Exhaustion</Text>
+          </Pressable>
+          <View style={styles.exhaustionControls}>
             <Pressable
-              style={styles.exhaustionLabelRow}
-              onPress={() => Alert.alert("Exhaustion", EXHAUSTION_DESCRIPTION)}
+              style={[styles.exhaustionButton, character.exhaustionLevel <= 0 && styles.exhaustionButtonDisabled]}
+              disabled={character.exhaustionLevel <= 0}
+              onPress={() => handleExhaustionChange(-1)}
             >
-              <Text style={styles.exhaustionLabel}>Exhaustion</Text>
+              <View style={styles.glyphBar} />
             </Pressable>
-            <View style={styles.exhaustionControls}>
-              <Pressable
-                style={[styles.exhaustionButton, character.exhaustionLevel <= 0 && styles.exhaustionButtonDisabled]}
-                disabled={character.exhaustionLevel <= 0}
-                onPress={() => handleExhaustionChange(-1)}
-              >
-                <View style={styles.glyphBar} />
-              </Pressable>
-              <Text style={styles.exhaustionValue}>{character.exhaustionLevel}</Text>
-              <Pressable
-                style={[
-                  styles.exhaustionButton,
-                  character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL && styles.exhaustionButtonDisabled,
-                ]}
-                disabled={character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL}
-                onPress={() => handleExhaustionChange(1)}
-              >
-                <View style={styles.glyphBar} />
-              <View style={[styles.glyphBar, styles.glyphBarVertical]} />
-              </Pressable>
-            </View>
+            <Text style={styles.exhaustionValue}>{character.exhaustionLevel}</Text>
+            <Pressable
+              style={[
+                styles.exhaustionButton,
+                character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL && styles.exhaustionButtonDisabled,
+              ]}
+              disabled={character.exhaustionLevel >= MAX_EXHAUSTION_LEVEL}
+              onPress={() => handleExhaustionChange(1)}
+            >
+              <View style={styles.glyphBar} />
+            <View style={[styles.glyphBar, styles.glyphBarVertical]} />
+            </Pressable>
           </View>
         </View>
       </View>
@@ -153,7 +153,7 @@ export function ConditionsChecklist({
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, flex: 1 },
     chip: {
       flexDirection: "row",
       alignItems: "center",
@@ -192,18 +192,13 @@ function createStyles(theme: Theme) {
       fontWeight: "600",
       fontFamily: theme.displayFontFamily,
     },
-    // The exhaustion stepper is the last item in the chip row, right beside the add/edit chip.
-    conditionsRow: {},
+    // Condition chips stay on the left; the exhaustion stepper hangs on the right of the same row.
+    conditionsRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
     exhaustionBlock: {
       flexDirection: "row",
       alignItems: "center",
       gap: 8,
-      backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: theme.radius,
-      paddingHorizontal: 10,
-      paddingVertical: 3,
+      alignSelf: "flex-start",
     },
     exhaustionLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     exhaustionLabel: {

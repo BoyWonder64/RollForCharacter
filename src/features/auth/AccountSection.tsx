@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PixelFrameOverlay } from "../../components/PixelFrame";
 import {
   ActivityIndicator,
   Alert,
@@ -39,6 +40,7 @@ export function AccountSection() {
   if (!isSupabaseConfigured) {
     return (
       <View style={styles.card}>
+        <PixelFrameOverlay />
         <Text style={styles.hint}>
           Cloud sync isn&apos;t set up yet. Your characters stay on this device only until it is.
         </Text>
@@ -49,6 +51,7 @@ export function AccountSection() {
   if (loading) {
     return (
       <View style={[styles.card, { alignItems: "center" }]}>
+        <PixelFrameOverlay />
         <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
@@ -68,6 +71,7 @@ export function AccountSection() {
 
     return (
       <View style={styles.card}>
+        <PixelFrameOverlay />
         <Text style={styles.hint}>
           Signed in as {(user.user_metadata?.display_name as string | undefined) ?? user.email}
         </Text>
@@ -101,6 +105,7 @@ export function AccountSection() {
 
   return (
     <View style={styles.card}>
+      <PixelFrameOverlay />
       <Text style={styles.hint}>
         Sign in to back up your characters to the cloud and sync them across devices. The app
         keeps working fully offline either way.
@@ -175,7 +180,7 @@ function createStyles(theme: Theme) {
   return StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,

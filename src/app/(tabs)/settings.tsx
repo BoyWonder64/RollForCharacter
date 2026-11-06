@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import {
   DICE_OVERRIDE_MODES,
   getDiceOverrideMode,
@@ -184,13 +185,13 @@ export default function SettingsScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
-      <Text style={styles.sectionTitle}>Account</Text>
+      <SectionHeading title="Account" textStyle={styles.sectionTitle} centered />
       <AccountSection />
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Homebrew</Text>
+      <SectionHeading title="Homebrew" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <Button title="Homebrew Library" fullWidth onPress={() => router.push("/homebrew")} />
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Appearance</Text>
+      <SectionHeading title="Appearance" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <View style={styles.optionRow}>
         {MODE_OPTIONS.map((option) => {
           const active = preference === option.key;
@@ -206,7 +207,7 @@ export default function SettingsScreen() {
         })}
       </View>
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Theme</Text>
+      <SectionHeading title="Theme" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <Text style={styles.hint}>
         Default for characters without their own look (set in Edit → Appearance).
       </Text>
@@ -220,6 +221,7 @@ export default function SettingsScreen() {
             style={[styles.familyRow, active && styles.familyRowActive]}
             onPress={() => setFamily(familyId)}
           >
+            <PixelFrameOverlay scale={0.75} />
             <View
               style={[styles.swatch, { backgroundColor: swatchColors.primary }]}
             />
@@ -230,7 +232,7 @@ export default function SettingsScreen() {
         );
       })}
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Font</Text>
+      <SectionHeading title="Font" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       {FONT_CHOICE_ORDER.map((fontId) => {
         const option = FONT_CHOICES[fontId];
         const active = fontChoice === fontId;
@@ -240,6 +242,7 @@ export default function SettingsScreen() {
             style={[styles.familyRow, active && styles.familyRowActive]}
             onPress={() => setFontChoice(fontId)}
           >
+            <PixelFrameOverlay scale={0.75} />
             <Text
               style={[
                 styles.familyLabel,
@@ -253,7 +256,7 @@ export default function SettingsScreen() {
         );
       })}
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Accessibility</Text>
+      <SectionHeading title="Accessibility" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <Text style={styles.toggleLabel}>Text size: {Math.round(fontScale * 100)}%</Text>
       <Text style={styles.hint}>Scales text throughout the app.</Text>
       <View style={styles.optionRow}>
@@ -277,8 +280,9 @@ export default function SettingsScreen() {
         />
       </View>
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Icons & Sound</Text>
+      <SectionHeading title="Icons & Sound" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <View style={styles.toggleRow}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>Show icons</Text>
         <Switch
           value={iconsEnabled}
@@ -299,6 +303,7 @@ export default function SettingsScreen() {
                 style={[styles.familyRow, active && styles.familyRowActive]}
                 onPress={() => setIconStyle(styleId)}
               >
+                <PixelFrameOverlay scale={0.75} />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
                     {option.label}
@@ -312,6 +317,7 @@ export default function SettingsScreen() {
       )}
 
       <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>Sound effects</Text>
         <Switch
           value={soundEnabled}
@@ -321,8 +327,9 @@ export default function SettingsScreen() {
         />
       </View>
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Device</Text>
+      <SectionHeading title="Device" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <View style={styles.toggleRow}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>Keep screen on</Text>
         <Switch
           value={keepScreenOn}
@@ -333,6 +340,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>Roll history</Text>
         <Switch
           value={historyEnabled}
@@ -345,8 +353,9 @@ export default function SettingsScreen() {
         Log of recent rolls on the Dice Roller.
       </Text>
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Game Modes</Text>
+      <SectionHeading title="Game Modes" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <View style={styles.toggleRow}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>DM mode</Text>
         <Switch
           value={dmMode}
@@ -378,6 +387,7 @@ export default function SettingsScreen() {
                 style={[styles.familyRow, active && styles.familyRowActive]}
                 onPress={() => setDmEdition(option.key)}
               >
+                <PixelFrameOverlay scale={0.75} />
                 <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
                   {option.label}
                 </Text>
@@ -388,6 +398,7 @@ export default function SettingsScreen() {
       )}
 
       <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>Party mode (Premium)</Text>
         <Switch
           value={partyMode}
@@ -400,7 +411,7 @@ export default function SettingsScreen() {
         Adds a Party tab to share characters with your group online.
       </Text>
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Help</Text>
+      <SectionHeading title="Help" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <Button
         title="Glossary"
         fullWidth
@@ -414,7 +425,7 @@ export default function SettingsScreen() {
         onPress={() => router.push("/legal")}
       />
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Feedback & Support</Text>
+      <SectionHeading title="Feedback & Support" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <Button
         title="Report a Bug / Suggest a Feature"
         textStyle={styles.feedbackButtonText}
@@ -429,8 +440,9 @@ export default function SettingsScreen() {
         onPress={handleDonate}
       />
 
-      <Text style={[styles.sectionTitle, styles.themeSectionTitle]}>Advanced</Text>
+      <SectionHeading title="Advanced" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
       <View style={styles.toggleRow}>
+        <PixelFrameOverlay scale={0.75} />
         <Text style={styles.toggleLabel}>Developer mode</Text>
         <Switch
           value={developerMode}
@@ -448,11 +460,13 @@ export default function SettingsScreen() {
 
       {developerMode && (
         <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
           <Text style={styles.creditText}>{buildDiagnostics()}</Text>
         </View>
       )}
       {developerMode && (
         <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
           <Text style={styles.toggleLabel}>Pixel packs in use</Text>
           {PIXEL_PACKS_IN_USE.map((pack) => (
             <Text key={pack.name} style={styles.creditText}>
@@ -463,6 +477,7 @@ export default function SettingsScreen() {
       )}
       {developerMode && (
         <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
           <Text style={styles.toggleLabel}>Dice override</Text>
           <Text style={styles.toggleHint}>
             Every roll in the app (dice roller, character sheet, level-up HP, stat rolling, DM
@@ -482,6 +497,7 @@ export default function SettingsScreen() {
                   style={[styles.familyRow, styles.diceOverrideChip, active && styles.familyRowActive]}
                   onPress={() => handleDiceModeChange(option.key)}
                 >
+                  <PixelFrameOverlay scale={0.75} />
                   <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
                     {option.label}
                   </Text>
@@ -554,13 +570,16 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       gap: 12,
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,
       marginBottom: 8,
     },
-    familyRowActive: { borderColor: theme.colors.primary },
+    familyRowActive: {
+      borderColor: theme.colors.primary,
+      ...(theme.pixel ? { backgroundColor: theme.colors.surfaceAlt } : {}),
+    },
     swatch: {
       width: 24,
       height: 24,
@@ -573,7 +592,7 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,
@@ -585,7 +604,7 @@ function createStyles(theme: Theme) {
     iconStyleDescription: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
     creditRow: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 12,

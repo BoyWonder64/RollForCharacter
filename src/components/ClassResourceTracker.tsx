@@ -25,6 +25,7 @@ import { ResourceOverrideModal, type ResourceOverrideChange } from "./ResourceOv
 import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getCampaignItemIcon, type CampaignItemIconId } from "../features/icons/iconAssets";
 import type { Character } from "../types/models";
+import { PixelFrameOverlay } from "./PixelFrame";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { DoneAccessory } from "./DoneAccessory";
@@ -44,9 +45,12 @@ import { DoneAccessory } from "./DoneAccessory";
 export function ClassResourceTracker({
   character,
   onChanged,
+  footer,
 }: {
   character: Character;
   onChanged?: () => void;
+  /** Extra section rendered inside the same box, below a divider (e.g. conditions). */
+  footer?: React.ReactNode;
 }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -173,6 +177,7 @@ export function ClassResourceTracker({
 
   return (
     <View style={styles.container}>
+      <PixelFrameOverlay />
       <Pressable
         style={styles.hitDiceToggleRow}
         onPress={() => setHitDiceExpanded((prev) => !prev)}
@@ -361,6 +366,12 @@ export function ClassResourceTracker({
             ))}
         </View>
       )}
+      {footer ? (
+        <>
+          <View style={styles.divider} />
+          {footer}
+        </>
+      ) : null}
       <ResourceOverrideModal
         visible={adjusting !== null}
         name={adjusting?.definition.name ?? ""}
@@ -386,10 +397,10 @@ function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
-      padding: 14,
+      padding: theme.pixel ? 18 : 14,
       marginTop: 12,
     },
     titleRow: {

@@ -13,8 +13,10 @@ import {
   applyHeal,
   endConcentration,
   getCharacter,
+  levelUp,
+  type LevelUpChoices,
 } from "../../../../features/characters/characterRepo";
-import { listCharacterClasses } from "../../../../features/characters/characterClassRepo";
+import { addClass, levelUpClass, listCharacterClasses } from "../../../../features/characters/characterClassRepo";
 import { formatMulticlassLabel } from "../../../../features/characters/multiclass";
 import type { Character, CharacterClass } from "../../../../types/models";
 import { StatsTab } from "../../../../features/characters/StatsTab";
@@ -25,6 +27,8 @@ import { PixelBanner, PixelFrameOverlay } from "../../../../components/PixelFram
 import { HealthBar } from "../../../../components/HealthBar";
 import { HpDeltaModal } from "../../../../components/HpDeltaModal";
 import { DeathSaveTracker } from "../../../../components/DeathSaveTracker";
+import { LevelUpModal } from "../../../../components/LevelUpModal";
+import { levelForXp } from "../../../../features/characters/xpTable";
 import { RestModal } from "../../../../components/RestModal";
 import {
   buildStructuredRollPlan,
@@ -109,6 +113,7 @@ function CharacterSheetBody({
   const [activeTab, setActiveTab] = useState<TabKey>("stats");
   const [hpModalMode, setHpModalMode] = useState<"damage" | "heal" | null>(null);
   const [restModalOpen, setRestModalOpen] = useState(false);
+  const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [classRows, setClassRows] = useState<CharacterClass[]>([]);
 
   useFocusEffect(
@@ -116,6 +121,53 @@ function CharacterSheetBody({
       listCharacterClasses(characterId).then(setClassRows);
     }, [characterId])
   );
+
+  async function handleLevelUpConfirm(choices: LevelUpChoices, classId?: string) {
+    const outcome = classId
+      ? await levelUpClass(characterId, classId, choices)
+      : await levelUp(characterId, choices);
+    setLevelUpModalOpen(false);
+    refresh();
+    listCharacterClasses(characterId).then(setClassRows);
+    if (outcome) {
+      const profLine =
+        outcome.proficiencyBonus !== character.proficiencyBonus
+          ? `\nProficiency bonus is now +${outcome.proficiencyBonus}.`
+          : "";
+      const hpLine =
+        choices.hpMethod === "manual"
+          ? `Set your HP for this level yourself in Edit.`
+          : `+${outcome.hpGain} max HP${
+              outcome.roll !== undefined ? ` (rolled ${outcome.roll})` : ""
+            }`;
+      const featureLines = outcome.featuresGained.map((f) => `• ${f.name}`).join("\n");
+      const body = [hpLine + profLine, featureLines].filter(Boolean).join("\n\n");
+      Alert.alert(`Level ${outcome.newLevel}!`, body);
+    }
+  }
+
+  async function handleMulticlassConfirm(
+    classId: string,
+    className: string,
+    choices: LevelUpChoices
+  ) {
+    const outcome = await addClass(characterId, classId, className, choices);
+    setLevelUpModalOpen(false);
+    refresh();
+    listCharacterClasses(characterId).then(setClassRows);
+    if (outcome) {
+      const hpLine =
+        choices.hpMethod === "manual"
+          ? "Set your HP for this level yourself in Edit."
+          : `+${outcome.hpGain} max HP${outcome.roll !== undefined ? ` (rolled ${outcome.roll})` : ""}`;
+      const featureLines = outcome.featuresGained.map((f) => `• ${f.name}`).join("\n");
+      const body = [hpLine, featureLines].filter(Boolean).join("\n\n");
+      Alert.alert(`${className} 1!`, body);
+    }
+  }
+
+  const xpReadyToLevelUp =
+    character.usesXp && levelForXp(character.ruleset, character.experiencePoints) > character.level;
 
   async function handleHpDeltaConfirm(amount: number, options?: { critical?: boolean }) {
     if (hpModalMode === "damage") {
@@ -275,9 +327,16 @@ function CharacterSheetBody({
               Hit Dice: {character.hitDiceRemaining}/{character.level}
             </Text>
           </Pressable>
-          <Pressable style={styles.restButton} onPress={() => setRestModalOpen(true)}>
-            <Text style={styles.restButtonText}>Rest</Text>
-          </Pressable>
+          <View style={styles.restActions}>
+            <Pressable style={styles.levelUpButton} onPress={() => setLevelUpModalOpen(true)}>
+              <Text style={styles.levelUpButtonText}>
+                Level Up{xpReadyToLevelUp ? " ✓" : ""}
+              </Text>
+            </Pressable>
+            <Pressable style={styles.restButton} onPress={() => setRestModalOpen(true)}>
+              <Text style={styles.restButtonText}>Rest</Text>
+            </Pressable>
+          </View>
         </View>
 
         {character.currentHp <= 0 && (
@@ -295,6 +354,15 @@ function CharacterSheetBody({
         mode={hpModalMode ?? "damage"}
         onClose={() => setHpModalMode(null)}
         onConfirm={handleHpDeltaConfirm}
+      />
+
+      <LevelUpModal
+        visible={levelUpModalOpen}
+        character={character}
+        classRows={classRows}
+        onClose={() => setLevelUpModalOpen(false)}
+        onConfirm={handleLevelUpConfirm}
+        onMulticlassConfirm={handleMulticlassConfirm}
       />
 
       <RestModal
@@ -405,6 +473,19 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
       flexShrink: 1,
       marginRight: 10,
+    },
+    restActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+    levelUpButton: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: theme.radius,
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+    },
+    levelUpButtonText: {
+      color: theme.colors.primaryText,
+      fontSize: 13,
+      fontWeight: "700",
+      fontFamily: theme.displayFontFamily,
     },
     restButton: {
       backgroundColor: theme.colors.surfaceAlt,

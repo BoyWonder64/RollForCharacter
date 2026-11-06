@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import {
   Alert,
   Animated,
@@ -554,11 +555,15 @@ export default function DiceRollerScreen() {
       <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent} bottomOffset={24}>
         {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Character</Text>
+            <SectionHeading title="Character" textStyle={styles.sectionTitle} centered />
             {characters.length === 0 ? (
-              <Text style={styles.hint}>Create a character first to use {mode} rolls.</Text>
+              <Text style={[styles.hint, styles.centerText]}>Create a character first to use {mode} rolls.</Text>
             ) : showCharacterSwitcher ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipScrollContent}
+              >
                 <View style={styles.chipRow}>
                   {characters.map((c) => (
                     <Pressable
@@ -580,7 +585,7 @@ export default function DiceRollerScreen() {
                 </View>
               </ScrollView>
             ) : (
-              <Text style={styles.hint}>
+              <Text style={[styles.hint, styles.centerText]}>
                 Rolling as {selectedCharacter?.name ?? "your character"}. Turn on DM mode in
                 Settings to roll for other characters.
               </Text>
@@ -690,7 +695,7 @@ export default function DiceRollerScreen() {
 
         {mode === "check" && checkBy === "skill" && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Skill</Text>
+            <SectionHeading title="Skill" textStyle={styles.sectionTitle} />
             <View style={styles.quickRow}>
               {skillCatalog.map((skill) => {
                 const active = skillId === skill.id;
@@ -719,7 +724,7 @@ export default function DiceRollerScreen() {
           mode === "save" ||
           (mode === "attack" && attackType === "weapon")) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ability</Text>
+            <SectionHeading title="Ability" textStyle={styles.sectionTitle} />
             <View style={styles.quickRow}>
               {abilityChoices.map((key) => {
                 const active = ability === key;
@@ -765,9 +770,10 @@ export default function DiceRollerScreen() {
 
         {mode === "attack" && attackType === "initiative" && initiativeRolls.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Initiative Order</Text>
+            <SectionHeading title="Initiative Order" textStyle={styles.sectionTitle} />
             {initiativeRolls.map((entry) => (
               <View key={entry.id} style={styles.initiativeRow}>
+                <PixelFrameOverlay scale={0.75} />
                 <Text style={styles.initiativeValue}>{entry.value}</Text>
                 <Text style={styles.initiativeLabel} numberOfLines={1}>
                   {entry.label}
@@ -1072,7 +1078,7 @@ export default function DiceRollerScreen() {
         {historyEnabled ? (
           <>
             <View style={styles.historyHeaderRow}>
-              <Text style={styles.sectionTitle}>History</Text>
+              <SectionHeading title="History" textStyle={styles.sectionTitle} centered />
               {history.length > 0 && (
                 <Pressable onPress={handleClearHistory}>
                   <Text style={styles.clearHistoryText}>Clear</Text>
@@ -1081,6 +1087,7 @@ export default function DiceRollerScreen() {
             </View>
             {history.map((roll) => (
               <View key={roll.id} style={styles.historyRow}>
+                <PixelFrameOverlay scale={0.75} />
                 <Text style={styles.historyExpression} numberOfLines={1}>
                   {roll.expression}
                 </Text>
@@ -1093,8 +1100,8 @@ export default function DiceRollerScreen() {
           </>
         ) : (
           <View style={styles.historyHeaderRow}>
-            <Text style={styles.sectionTitle}>History</Text>
-            <Text style={styles.hint}>Off — turn on in Settings.</Text>
+            <SectionHeading title="History" textStyle={styles.sectionTitle} centered />
+            <Text style={[styles.hint, styles.centerText]}>Off — turn on in Settings.</Text>
           </View>
         )}
 
@@ -1163,6 +1170,9 @@ function createStyles(theme: Theme) {
     },
     hint: { color: theme.colors.textMuted, fontSize: 13 },
     chipRow: { flexDirection: "row", gap: 8 },
+    // flexGrow lets the chips centre when they fit, and still scroll when they don't.
+    chipScrollContent: { flexGrow: 1, justifyContent: "center" },
+    centerText: { textAlign: "center" },
     chip: {
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
@@ -1273,7 +1283,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingHorizontal: 12,
@@ -1446,9 +1456,10 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     historyHeaderRow: {
-      flexDirection: "row",
+      flexDirection: "column",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "center",
+      gap: 4,
       marginTop: 24,
       marginBottom: 8,
     },
@@ -1461,16 +1472,17 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
+      borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
+      justifyContent: "center",
       padding: 10,
       marginBottom: 6,
       gap: 8,
     },
-    historyExpression: { color: theme.colors.text, width: 90, fontWeight: "600" },
-    historyBreakdown: { color: theme.colors.textMuted, flex: 1, fontSize: 12 },
-    historyTotal: { color: theme.colors.text, fontWeight: "700" },
+    historyExpression: { color: theme.colors.text, width: 90, fontWeight: "600", textAlign: "center" },
+    historyBreakdown: { color: theme.colors.textMuted, flex: 1, fontSize: 12, textAlign: "center" },
+    historyTotal: { color: theme.colors.text, fontWeight: "700", textAlign: "center" },
     realDiceNote: {
       color: theme.colors.textMuted,
       fontSize: 11,

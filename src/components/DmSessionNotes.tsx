@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PixelBanner, SectionHeading } from "./PixelFrame";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 import { Text, TextInput } from "./AppText";
 import { useFocusEffect } from "expo-router";
@@ -24,6 +25,7 @@ import {
 import type { DmTimelineEventInput } from "../features/dm/dmNotesRepo";
 import { CampaignNoteModal, type CampaignNoteDraft } from "./CampaignNoteModal";
 import { DmTimelineEventModal } from "./DmTimelineEventModal";
+import { DmCampaignManageModal } from "./DmCampaignManageModal";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "./dmStyles";
 
@@ -55,7 +57,8 @@ export function DmSessionNotes() {
   const [campaigns, setCampaigns] = useState<DmCampaigns | null>(null);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [nameDraft, setNameDraft] = useState("");
-  const [campaignEdit, setCampaignEdit] = useState<"new" | "rename" | null>(null);
+  const [campaignEdit, setCampaignEdit] = useState<"new" | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
   const activeCampaign = campaigns?.active ?? "";
 
   const [notes, setNotes] = useState<NoteRow[]>([]);
@@ -99,27 +102,21 @@ export function DmSessionNotes() {
   async function handleSubmitCampaignName() {
     if (campaignEdit === "new") {
       setCampaigns(await createDmCampaign(nameDraft));
-    } else if (campaignEdit === "rename" && campaigns) {
-      setCampaigns(await renameDmCampaign(campaigns.active, nameDraft));
     }
     setCampaignEdit(null);
     setNameDraft("");
   }
 
-  function handleDeleteCampaign() {
+  async function handleRenameCampaign(newName: string) {
+    if (!campaigns) return;
+    setCampaigns(await renameDmCampaign(campaigns.active, newName));
+    setManageOpen(false);
+  }
+
+  async function handleDeleteCampaign() {
     if (!campaigns || campaigns.names.length <= 1) return;
-    Alert.alert(
-      "Delete campaign?",
-      `Delete "${campaigns.active}" and all of its notes and timeline? This cannot be undone.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => setCampaigns(await deleteDmCampaign(campaigns.active)),
-        },
-      ]
-    );
+    setCampaigns(await deleteDmCampaign(campaigns.active));
+    setManageOpen(false);
   }
 
   useFocusEffect(
@@ -204,7 +201,7 @@ export function DmSessionNotes() {
   if (!onboarded) {
     return (
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Welcome, Dungeon Master</Text>
+        <SectionHeading title="Welcome, Dungeon Master" textStyle={styles.sectionTitle} />
         <Text style={[styles.hint, { marginVertical: 8 }]}>
           Notes and your timeline are kept per campaign, so you can run more than one. Name your
           first campaign to get started.
@@ -251,13 +248,13 @@ export function DmSessionNotes() {
         </View>
       </ScrollView>
 
-      {campaignEdit ? (
+      {campaignEdit === "new" ? (
         <View style={[styles.row, { marginTop: 8 }]}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
             value={nameDraft}
             onChangeText={setNameDraft}
-            placeholder={campaignEdit === "new" ? "New campaign name" : "Campaign name"}
+            placeholder="New campaign name"
             placeholderTextColor={theme.colors.textMuted}
             autoFocus
           />
@@ -269,27 +266,28 @@ export function DmSessionNotes() {
           </Pressable>
         </View>
       ) : (
-        <View style={[styles.row, { marginTop: 8, gap: 16 }]}>
-          <Pressable
-            onPress={() => {
-              setNameDraft(activeCampaign);
-              setCampaignEdit("rename");
-            }}
-          >
-            <Text style={[styles.hint, { color: theme.colors.accent, fontWeight: "700" }]}>
-              Rename
-            </Text>
-          </Pressable>
-          {campaigns && campaigns.names.length > 1 ? (
-            <Pressable onPress={handleDeleteCampaign}>
-              <Text style={styles.bad}>Delete campaign</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        <Pressable style={{ marginTop: 8, alignSelf: "flex-start" }} onPress={() => setManageOpen(true)}>
+          <Text style={[styles.hint, { color: theme.colors.accent, fontWeight: "700" }]}>
+            Manage campaign
+          </Text>
+        </Pressable>
       )}
 
+      <DmCampaignManageModal
+        visible={manageOpen}
+        campaignName={activeCampaign}
+        canDelete={!!campaigns && campaigns.names.length > 1}
+        onClose={() => setManageOpen(false)}
+        onRename={handleRenameCampaign}
+        onDelete={handleDeleteCampaign}
+      />
+
       <View style={[styles.headerRow, { marginTop: 16 }]}>
-        <Text style={styles.sectionTitle}>Session notes</Text>
+        {theme.pixel ? (
+          <PixelBanner title="Session Notes" />
+        ) : (
+          <SectionHeading title="Session Notes" textStyle={styles.sectionTitle} />
+        )}
         <Pressable style={styles.primaryButton} onPress={handleOpenAddNote}>
           <Text style={styles.primaryButtonText}>+ Add Note</Text>
         </Pressable>
@@ -306,11 +304,6 @@ export function DmSessionNotes() {
               <Text style={[styles.sectionTitle, { fontSize: 15, flex: 1 }]} numberOfLines={1}>
                 {note.subject}
               </Text>
-              <Pressable onPress={() => handleOpenEditNote(note)}>
-                <Text style={[styles.hint, { color: theme.colors.accent, fontWeight: "700" }]}>
-                  Edit
-                </Text>
-              </Pressable>
             </View>
             <Text style={[styles.hint, { fontSize: 11, marginTop: -4 }]}>
               {formatDate(note.updatedAt)}
@@ -321,12 +314,19 @@ export function DmSessionNotes() {
                 {note.body}
               </Text>
             ) : null}
-            <Pressable
-              style={{ alignSelf: "flex-end", marginTop: 8 }}
-              onPress={() => handleRemoveNote(note.id, note.subject)}
-            >
-              <Text style={styles.bad}>Delete</Text>
-            </Pressable>
+            <View style={[styles.row, { justifyContent: "flex-end", marginTop: 10 }]}>
+              <Pressable style={styles.secondaryButton} onPress={() => handleOpenEditNote(note)}>
+                <Text style={styles.secondaryButtonText}>Edit</Text>
+              </Pressable>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => handleRemoveNote(note.id, note.subject)}
+              >
+                <Text style={[styles.secondaryButtonText, { color: theme.colors.danger }]}>
+                  Delete
+                </Text>
+              </Pressable>
+            </View>
           </View>
         ))
       )}
@@ -342,7 +342,11 @@ export function DmSessionNotes() {
       />
 
       <View style={[styles.headerRow, { marginTop: 24 }]}>
-        <Text style={styles.sectionTitle}>Timeline</Text>
+        {theme.pixel ? (
+          <PixelBanner title="Timeline" />
+        ) : (
+          <SectionHeading title="Timeline" textStyle={styles.sectionTitle} />
+        )}
         <Pressable style={styles.primaryButton} onPress={handleOpenAddEvent}>
           <Text style={styles.primaryButtonText}>+ Add Event</Text>
         </Pressable>
@@ -357,11 +361,6 @@ export function DmSessionNotes() {
               <Text style={[styles.sectionTitle, { fontSize: 15, flex: 1 }]} numberOfLines={1}>
                 {index + 1}. {event.title}
               </Text>
-              <Pressable onPress={() => handleOpenEditEvent(event)}>
-                <Text style={[styles.hint, { color: theme.colors.accent, fontWeight: "700" }]}>
-                  Edit
-                </Text>
-              </Pressable>
             </View>
             {event.eventDate ? (
               <Text style={[styles.hint, { fontSize: 11, marginTop: -4 }]}>{event.eventDate}</Text>
@@ -371,12 +370,19 @@ export function DmSessionNotes() {
                 {event.body}
               </Text>
             ) : null}
-            <Pressable
-              style={{ alignSelf: "flex-end", marginTop: 8 }}
-              onPress={() => handleRemoveEvent(event.id, event.title)}
-            >
-              <Text style={styles.bad}>Delete</Text>
-            </Pressable>
+            <View style={[styles.row, { justifyContent: "flex-end", marginTop: 10 }]}>
+              <Pressable style={styles.secondaryButton} onPress={() => handleOpenEditEvent(event)}>
+                <Text style={styles.secondaryButtonText}>Edit</Text>
+              </Pressable>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => handleRemoveEvent(event.id, event.title)}
+              >
+                <Text style={[styles.secondaryButtonText, { color: theme.colors.danger }]}>
+                  Delete
+                </Text>
+              </Pressable>
+            </View>
           </View>
         ))
       )}
