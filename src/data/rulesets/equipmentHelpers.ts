@@ -1,4 +1,5 @@
 import type { EquipmentGrant, WeaponProficiencyCategory } from "./types";
+import type { ToolOrInstrumentCategory } from "./toolsAndInstruments";
 
 // Builders for a class's `startingEquipment`, shared by every ruleset that
 // models real weapon/armor grants (5e and 5e-2024).
@@ -41,4 +42,14 @@ export function item(name: string, quantity?: number, description?: string): Equ
 }
 export function gold(amount: number): EquipmentGrant {
   return { kind: "gold", amount };
+}
+/** See `EquipmentGrant`'s `goldRoll` case -- a generic, non-PHB "take gold instead" option. */
+export function goldRoll(formula: string): EquipmentGrant {
+  return { kind: "goldRoll", formula };
+}
+export function itemChoice(
+  category: ToolOrInstrumentCategory | ToolOrInstrumentCategory[],
+  quantity?: number
+): EquipmentGrant {
+  return { kind: "itemChoice", category, quantity };
 }

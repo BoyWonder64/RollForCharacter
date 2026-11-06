@@ -211,6 +211,32 @@ describe("gearRepo", () => {
       expect(isProficientWithWeapon(rapier, ["Simple weapons", "Longswords"])).toBe(false);
     });
 
+    describe("3.5e phrasing", () => {
+      const crossbowLight = asRow(listWeaponCatalog("3.5e").find((w) => w.id === "crossbow-light")!);
+      const crossbowHand = asRow(listWeaponCatalog("3.5e").find((w) => w.id === "crossbow-hand")!);
+      const swordShort = asRow(listWeaponCatalog("3.5e").find((w) => w.id === "sword-short")!);
+      const dagger35 = asRow(listWeaponCatalog("3.5e").find((w) => w.id === "dagger")!);
+
+      it("recognizes 'All simple/martial weapons' (vs 2014/2024's bare phrasing)", () => {
+        expect(isProficientWithWeapon(dagger35, ["All simple weapons"])).toBe(true);
+        expect(isProficientWithWeapon(crossbowLight, ["All martial weapons"])).toBe(false);
+      });
+
+      it("matches a comma-form catalog name against natural word order", () => {
+        // Catalog: "Sword, short" / "Crossbow, hand" -- 3.5e class data writes these "Short sword"/"Hand crossbow".
+        expect(isProficientWithWeapon(swordShort, ["Short sword"])).toBe(true);
+        expect(isProficientWithWeapon(crossbowHand, ["Hand crossbow"])).toBe(true);
+        expect(isProficientWithWeapon(crossbowHand, ["Short sword"])).toBe(false);
+      });
+
+      it("expands a combined qualifier like 'Crossbow (light or heavy)'", () => {
+        const crossbowHeavy = asRow(listWeaponCatalog("3.5e").find((w) => w.id === "crossbow-heavy")!);
+        expect(isProficientWithWeapon(crossbowLight, ["Crossbow (light or heavy)"])).toBe(true);
+        expect(isProficientWithWeapon(crossbowHeavy, ["Crossbow (light or heavy)"])).toBe(true);
+        expect(isProficientWithWeapon(crossbowHand, ["Crossbow (light or heavy)"])).toBe(false);
+      });
+    });
+
     it("uses the better of Str/Dex for a Finesse weapon", () => {
       // Str 10 (+0), Dex 16 (+3) -- Finesse picks the higher modifier.
       expect(weaponAttackBonus(rapier, 10, 16, 2, true)).toBe(5);

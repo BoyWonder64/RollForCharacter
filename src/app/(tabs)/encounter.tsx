@@ -94,7 +94,7 @@ export default function EncounterScreen() {
 
   if (!dmMode) {
     return (
-      <View style={[localStyles.center, { backgroundColor: theme.colors.background }]}>
+      <View style={[localStyles.center, { backgroundColor: theme.screenBackground }]}>
         <Text style={styles.hint}>Turn on DM mode in Settings to use the Encounter tab.</Text>
       </View>
     );
@@ -109,7 +109,7 @@ export default function EncounterScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <View style={{ flex: 1, backgroundColor: theme.screenBackground }}>
       <View
         style={{
           backgroundColor: theme.colors.surface,

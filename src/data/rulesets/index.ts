@@ -10,11 +10,14 @@ import { CLASSES_5E_2024 } from "./5e-2024/classes";
 import { CLASS_PROGRESSIONS_5E_2024 } from "./5e-2024/classProgression";
 import { SPELLS_5E_2024 } from "./5e-2024/spells";
 import { SKILLS_5E_2024 } from "./5e-2024/skills";
+import { WEAPONS_5E_2024 } from "./5e-2024/weapons";
 import { RACES_35E } from "./3.5e/races";
 import { CLASSES_35E } from "./3.5e/classes";
 import { CLASS_PROGRESSIONS_35E } from "./3.5e/classProgression";
 import { SPELLS_35E } from "./3.5e/spells";
 import { SKILLS_35E } from "./3.5e/skills";
+import { WEAPONS_35E } from "./3.5e/weapons";
+import { ARMOR_35E } from "./3.5e/armor";
 import { SRD_LANGUAGES } from "./sharedLanguages";
 import type { RulesetCatalog } from "./types";
 import { withPactMagic } from "./warlockPactMagic";
@@ -31,9 +34,11 @@ export const RULESETS: Record<string, RulesetCatalog> = {
     classProgressions: withPactMagic(CLASS_PROGRESSIONS_5E_2024),
     spells: SPELLS_5E_2024,
     skills: SKILLS_5E_2024,
-    // Same weapon/armor stat tables as 2014 (verified against SRD 5.2's
-    // armor list: identical names and AC); 2024 weapon Mastery isn't modeled.
-    weapons: WEAPONS_5E,
+    // Same armor stat table as 2014 (verified against SRD 5.2's armor list:
+    // identical names and AC). Weapons share the same base stats too, but
+    // 2024 adds a Weapon Mastery property per weapon -- see
+    // 5e-2024/weapons.ts.
+    weapons: WEAPONS_5E_2024,
     armor: ARMOR_5E,
     languages: SRD_LANGUAGES,
     // 2024 SRD: "Your character knows at least three languages: Common plus
@@ -63,6 +68,8 @@ export const RULESETS: Record<string, RulesetCatalog> = {
     classProgressions: CLASS_PROGRESSIONS_35E,
     spells: SPELLS_35E,
     skills: SKILLS_35E,
+    weapons: WEAPONS_35E,
+    armor: ARMOR_35E,
   },
 };
 

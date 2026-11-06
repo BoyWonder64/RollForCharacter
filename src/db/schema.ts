@@ -560,6 +560,7 @@ export const dmEncounters = sqliteTable("dm_encounters", {
 // there into this table.
 export const dmNotes = sqliteTable("dm_notes", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  campaign: text("campaign").notNull().default(""),
   subject: text("subject").notNull().default(""),
   body: text("body").notNull().default(""),
   createdAt: text("created_at")
@@ -578,6 +579,7 @@ export const dmNotes = sqliteTable("dm_notes", {
 // end of the list.
 export const dmTimelineEvents = sqliteTable("dm_timeline_events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  campaign: text("campaign").notNull().default(""),
   title: text("title").notNull().default(""),
   eventDate: text("event_date").notNull().default(""),
   body: text("body").notNull().default(""),

@@ -427,6 +427,9 @@ At 20th level, your call for intervention succeeds automatically, no roll requir
         name: "Life Domain",
         summary: `The Life domain focuses on the vibrant positive energy-one of the fundamental forces of the universe-that sustains all life. The gods of life promote vitality and health through healing the sick and wounded, caring for those in need, and driving away the forces of death and undeath. Almost any non-evil deity can claim influence over this domain, particularly agricultural deities (such as Chauntea,`,
         srdLicensed: true,
+        // Structured counterpart to the "Bonus Proficiency" feature below --
+        // see `Subclass.bonusArmorProficiencies`.
+        bonusArmorProficiencies: ["Heavy armor"],
         features: [
           {
             level: 1,

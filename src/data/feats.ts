@@ -104,7 +104,7 @@ export const FEATS: FeatDefinition[] = [
     id: "srd-2024-boon-of-spell-recall",
     name: "Boon of Spell Recall",
     prerequisite: "Level 19+, Spellcasting Feature",
-    description: "You gain the following benefits.\n\n- Increase one ability score of your choice by 1, to a maximum of 30.\n\n- Whenever you cast a spell with a level 1â€“4 spell slot, roll 1d4. If the number you roll is the same as the slot's level, the slot isn't expended.",
+    description: "You gain the following benefits.\n\n- Increase one ability score of your choice by 1, to a maximum of 30.\n\n- Whenever you cast a spell with a level 1–4 spell slot, roll 1d4. If the number you roll is the same as the slot's level, the slot isn't expended.",
     sourceKey: "srd-2024",
     sourceName: "System Reference Document 5.2",
     effectTemplate: { kind: "abilityScoreIncreaseChoice", amount: 1, max: 30 },

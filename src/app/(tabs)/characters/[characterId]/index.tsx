@@ -318,7 +318,7 @@ function CharacterSheetBody({
         {activeTab === "spells" && (
           <SpellsTab character={character} onCharacterChanged={refresh} />
         )}
-        {activeTab === "equipment" && <EquipmentTab character={character} />}
+        {activeTab === "equipment" && <EquipmentTab character={character} onChanged={refresh} />}
         {activeTab === "notes" && <NotesTab character={character} />}
         {activeTab === "preview" && <CharacterPreviewTab characterId={characterId} />}
       </KeyboardAwareScrollView>
@@ -329,7 +329,7 @@ function CharacterSheetBody({
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     loading: { color: theme.colors.textMuted, textAlign: "center", marginTop: 32 },
     headerActions: { flexDirection: "row", gap: 14 },
     editLink: {

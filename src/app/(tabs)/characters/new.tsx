@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { router } from "expo-router";
 import {
@@ -27,6 +27,9 @@ import { StartingEquipmentStep } from "../../../components/StartingEquipmentStep
 import {
   applyRaceAbilityBonuses,
   calculateMaxHp,
+  effectiveArmorProficiencies,
+  effectiveWeaponProficiencies,
+  findSubclass,
   getClassProgression,
   languageGrantForRace,
   proficiencyBonusForLevel,
@@ -37,6 +40,7 @@ import {
   ABILITY_LABELS,
   abilityModifier,
   createCharacterFromOnboarding,
+  updateCharacter,
 } from "../../../features/characters/characterRepo";
 import {
   addCatalogSpellToCharacter,
@@ -44,6 +48,9 @@ import {
   listSpellCatalog,
 } from "../../../features/spells/spellRepo";
 import { getSpellLimits } from "../../../features/characters/spellLimits";
+import { PortraitPicker, type PortraitChoice } from "../../../components/PortraitPicker";
+import { findSpritePortrait } from "../../../data/spritePortraits";
+import { persistBundledPortrait, persistPortrait } from "../../../features/characters/portraitStorage";
 import { SubclassPicker } from "../../../components/SubclassPicker";
 import { xpThresholdForLevel } from "../../../features/characters/xpTable";
 import type { AbilityScoreKey } from "../../../types/models";
@@ -71,6 +78,7 @@ const ALL_STEPS = [
   // and any subclass proficiencies are already known.
   "equipment",
   "spells",
+  "portrait",
   "review",
 ] as const;
 type Step = (typeof ALL_STEPS)[number];
@@ -146,6 +154,7 @@ export default function NewCharacterScreen() {
 
   const [name, setName] = useState("");
   const [subclass, setSubclass] = useState("");
+  const [portraitChoice, setPortraitChoice] = useState<PortraitChoice>(null);
 
   const [raceId, setRaceId] = useState<string | null>(null);
   const [customRaceName, setCustomRaceName] = useState("");
@@ -318,6 +327,20 @@ export default function NewCharacterScreen() {
     !!subclassProgression?.subclassLevel &&
     (subclassProgression.subclasses?.length ?? 0) > 0 &&
     levelNum >= subclassProgression.subclassLevel;
+
+  // If the starting level already reaches the subclass-choice level and one's
+  // been picked, fold its bonus proficiencies (e.g. 2014 Life Domain Cleric's
+  // heavy armor) into the class definition the Starting Equipment step sees,
+  // so its weapon/armor swap picker honors them too.
+  const chosenSubclass =
+    subclassProgression && subclass ? findSubclass(subclassProgression, subclass) : undefined;
+  const classDefForEquipment: ClassDefinition | null = selectedClass
+    ? {
+        ...selectedClass,
+        armorProficiencies: effectiveArmorProficiencies(selectedClass, chosenSubclass),
+        weaponProficiencies: effectiveWeaponProficiencies(selectedClass, chosenSubclass),
+      }
+    : null;
 
   // Paladins and Rangers are 5e half-casters -- they get no spells at all
   // until character level 2 (first-level spell slots), unlike full casters
@@ -518,6 +541,8 @@ export default function NewCharacterScreen() {
         return true;
       case "name":
         return name.trim().length > 0;
+      case "portrait":
+        return true;
       case "race":
         return (
           raceId !== null &&
@@ -640,7 +665,23 @@ export default function NewCharacterScreen() {
     }
   }
 
+  const creatingRef = useRef(false);
+  const [creating, setCreating] = useState(false);
+
   async function handleCreate() {
+    if (creatingRef.current) return;
+    creatingRef.current = true;
+    setCreating(true);
+    try {
+      await createNow();
+    } catch (error) {
+      creatingRef.current = false;
+      setCreating(false);
+      throw error;
+    }
+  }
+
+  async function createNow() {
     const created = await createCharacterFromOnboarding({
       name: name.trim(),
       ruleset,
@@ -697,6 +738,19 @@ export default function NewCharacterScreen() {
           }
         : {}),
     });
+    // Portrait is cosmetic: a failure to save it shouldn't lose the character.
+    try {
+      let portraitUri: string | null = null;
+      if (portraitChoice?.kind === "upload") portraitUri = await persistPortrait(portraitChoice.uri);
+      else if (portraitChoice?.kind === "sprite") {
+        const sprite = findSpritePortrait(portraitChoice.id);
+        if (sprite) portraitUri = await persistBundledPortrait(sprite.source);
+      }
+      if (portraitUri) await updateCharacter(created.id, { portraitUri });
+    } catch (error) {
+      console.warn("Portrait save failed", error);
+      Alert.alert("Portrait not saved", "Your character was created, but the portrait couldn't be saved. You can add it from the Edit screen.");
+    }
     if (resolvedGear) await applyStartingGear(created.id, ruleset, resolvedGear);
     await applyStartingSpellSlots(created.id);
     for (const spellId of selectedSpellIds) {
@@ -727,6 +781,7 @@ export default function NewCharacterScreen() {
         style={styles.body}
         contentContainerStyle={styles.bodyContent}
         bottomOffset={60}
+        keyboardShouldPersistTaps="handled"
       >
         {step === "ruleset" && (
           <View>
@@ -758,6 +813,16 @@ export default function NewCharacterScreen() {
               placeholderTextColor={theme.colors.textMuted}
               autoFocus
             />
+          </View>
+        )}
+
+        {step === "portrait" && (
+          <View>
+            <Text style={styles.title}>Choose a portrait</Text>
+            <Text style={styles.hint}>
+              Pick a pixel-art hero or upload your own image. You can skip this and change it later.
+            </Text>
+            <PortraitPicker value={portraitChoice} onChange={setPortraitChoice} />
           </View>
         )}
 
@@ -1217,9 +1282,9 @@ export default function NewCharacterScreen() {
           </View>
         )}
 
-        {step === "equipment" && selectedClass && (
+        {step === "equipment" && selectedClass && classDefForEquipment && (
           <StartingEquipmentStep
-            classDef={selectedClass}
+            classDef={classDefForEquipment}
             catalog={catalog}
             dexterity={finalAbilityScores.dexterity}
             selection={equipmentSelection}
@@ -1864,8 +1929,8 @@ export default function NewCharacterScreen() {
           </Text>
         </Pressable>
         {step === "review" ? (
-          <Pressable style={styles.navButtonPrimary} onPress={handleCreate}>
-            <Text style={styles.navButtonPrimaryText}>Create Character</Text>
+          <Pressable style={[styles.navButtonPrimary, creating && styles.navButtonDisabled]} disabled={creating} onPress={handleCreate}>
+            <Text style={styles.navButtonPrimaryText}>{creating ? "Creating..." : "Create Character"}</Text>
           </Pressable>
         ) : (
           <Pressable
@@ -1921,7 +1986,7 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     stepCounter: {
       color: theme.colors.textMuted,
       fontSize: 12,

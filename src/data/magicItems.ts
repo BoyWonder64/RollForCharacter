@@ -141,37 +141,37 @@ export const MAGIC_ITEMS: MagicItemSeed[] = [
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `This item first appears to be a Large sealed iron barrel weighing 500 pounds. The barrel has a hidden catch, which can be found with a successful DC 20 Intelligence (Investigation) check. Releasing the catch unlocks a hatch at one end of the barrel, allowing two Medium or smaller creatures to crawl inside. Ten levers are set in a row at the far end, each in a neutral position, able to move either up or down. When certain levers are used, the apparatus transforms to resemble a giant lobster.
-
-The apparatus of the Crab is a Large object with the following statistics:
-
-**Armor Class:** 20
-
-**Hit Points:** 200
-
-**Speed:** 30 ft., swim 30 ft. (or 0 ft. for both if the legs and tail aren't extended)
-
-**Damage Immunities:** poison, psychic
-
-To be used as a vehicle, the apparatus requires one pilot. While the apparatus's hatch is closed, the compartment is airtight and watertight. The compartment holds enough air for 10 hours of breathing, divided by the number of breathing creatures inside.
-
-The apparatus floats on water. It can also go underwater to a depth of 900 feet. Below that, the vehicle takes 2d6 bludgeoning damage per minute from pressure.
-
-A creature in the compartment can use an action to move as many as two of the apparatus's levers up or down. After each use, a lever goes back to its neutral position. Each lever, from left to right, functions as shown in the Apparatus of the Crab Levers table.
-
-**Apparatus of the Crab Levers (table)**
-
-| Lever | Up                                                                                                                               | Down                                                                                                                                        |
-|-------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| 1     | Legs and tail extend, allowing the apparatus to walk and swim.                                                                   | Legs and tail retract, reducing the apparatus's speed to 0 and making it unable to benefit from bonuses to speed.                           |
-| 2     | Forward window shutter opens.                                                                                                    | Forward window shutter closes.                                                                                                              |
-| 3     | Side window shutters open (two per side).                                                                                        | Side window shutters close (two per side).                                                                                                  |
-| 4     | Two claws extend from the front sides of the apparatus.                                                                          | The claws retract.                                                                                                                          |
-| 5     | Each extended claw makes the following melee weapon attack: +8 to hit, reach 5 ft., one target. Hit: 7 (2d6) bludgeoning damage. | Each extended claw makes the following melee weapon attack: +8 to hit, reach 5 ft., one target. Hit: The target is grappled (escape DC 15). |
-| 6     | The apparatus walks or swims forward.                                                                                            | The apparatus walks or swims backward.                                                                                                      |
-| 7     | The apparatus turns 90 degrees left.                                                                                             | The apparatus turns 90 degrees right.                                                                                                       |
-| 8     | Eyelike fixtures emit bright light in a 30-foot radius and dim light for an additional 30 feet.                                  | The light turns off.                                                                                                                        |
-| 9     | The apparatus sinks as much as 20 feet in liquid.                                                                                | The apparatus rises up to 20 feet in liquid.                                                                                                |
+    description: `This item first appears to be a Large sealed iron barrel weighing 500 pounds. The barrel has a hidden catch, which can be found with a successful DC 20 Intelligence (Investigation) check. Releasing the catch unlocks a hatch at one end of the barrel, allowing two Medium or smaller creatures to crawl inside. Ten levers are set in a row at the far end, each in a neutral position, able to move either up or down. When certain levers are used, the apparatus transforms to resemble a giant lobster.
+
+The apparatus of the Crab is a Large object with the following statistics:
+
+**Armor Class:** 20
+
+**Hit Points:** 200
+
+**Speed:** 30 ft., swim 30 ft. (or 0 ft. for both if the legs and tail aren't extended)
+
+**Damage Immunities:** poison, psychic
+
+To be used as a vehicle, the apparatus requires one pilot. While the apparatus's hatch is closed, the compartment is airtight and watertight. The compartment holds enough air for 10 hours of breathing, divided by the number of breathing creatures inside.
+
+The apparatus floats on water. It can also go underwater to a depth of 900 feet. Below that, the vehicle takes 2d6 bludgeoning damage per minute from pressure.
+
+A creature in the compartment can use an action to move as many as two of the apparatus's levers up or down. After each use, a lever goes back to its neutral position. Each lever, from left to right, functions as shown in the Apparatus of the Crab Levers table.
+
+**Apparatus of the Crab Levers (table)**
+
+| Lever | Up                                                                                                                               | Down                                                                                                                                        |
+|-------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| 1     | Legs and tail extend, allowing the apparatus to walk and swim.                                                                   | Legs and tail retract, reducing the apparatus's speed to 0 and making it unable to benefit from bonuses to speed.                           |
+| 2     | Forward window shutter opens.                                                                                                    | Forward window shutter closes.                                                                                                              |
+| 3     | Side window shutters open (two per side).                                                                                        | Side window shutters close (two per side).                                                                                                  |
+| 4     | Two claws extend from the front sides of the apparatus.                                                                          | The claws retract.                                                                                                                          |
+| 5     | Each extended claw makes the following melee weapon attack: +8 to hit, reach 5 ft., one target. Hit: 7 (2d6) bludgeoning damage. | Each extended claw makes the following melee weapon attack: +8 to hit, reach 5 ft., one target. Hit: The target is grappled (escape DC 15). |
+| 6     | The apparatus walks or swims forward.                                                                                            | The apparatus walks or swims backward.                                                                                                      |
+| 7     | The apparatus turns 90 degrees left.                                                                                             | The apparatus turns 90 degrees right.                                                                                                       |
+| 8     | Eyelike fixtures emit bright light in a 30-foot radius and dim light for an additional 30 feet.                                  | The light turns off.                                                                                                                        |
+| 9     | The apparatus sinks as much as 20 feet in liquid.                                                                                | The apparatus rises up to 20 feet in liquid.                                                                                                |
 | 10    | The rear hatch unseals and opens.                                                                                                | The rear hatch closes and seals.                                                                                                            |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -500,24 +500,24 @@ A creature in the compartment can use an action to move as many as two of the ap
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `Inside this heavy cloth bag are 3d4 dry beans. The bag weighs 1/2 pound plus 1/4 pound for each bean it contains.
-
-If you dump the bag's contents out on the ground, they explode in a 10-foot radius, extending from the beans. Each creature in the area, including you, must make a DC 15 Dexterity saving throw, taking 5d4 fire damage on a failed save, or half as much damage on a successful one. The fire ignites flammable objects in the area that aren't being worn or carried.
-
-If you remove a bean from the bag, plant it in dirt or sand, and then water it, the bean produces an effect 1 minute later from the ground where it was planted. The GM can choose an effect from the following table, determine it randomly, or create an effect.
-
-| d100  | Effect                                                                                                                                                                                                                                                                                                                                                                |
-|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 01    | 5d4 toadstools sprout. If a creature eats a toadstool, roll any die. On an odd roll, the eater must succeed on a DC 15 Constitution saving throw or take 5d6 poison damage and become poisoned for 1 hour. On an even roll, the eater gains 5d6 temporary hit points for 1 hour.                                                                                      |
-| 02-10 | A geyser erupts and spouts water, beer, berry juice, tea, vinegar, wine, or oil (GM's choice) 30 feet into the air for 1d12 rounds.                                                                                                                                                                                                                                   |
-| 11-20 | A treant sprouts. There's a 50 percent chance that the treant is chaotic evil and attacks.                                                                                                                                                                                                                                                                            |
-| 21-30 | An animate, immobile stone statue in your likeness rises. It makes verbal threats against you. If you leave it and others come near, it describes you as the most heinous of villains and directs the newcomers to find and attack you. If you are on the same plane of existence as the statue, it knows where you are. The statue becomes inanimate after 24 hours. |
-| 31-40 | A campfire with blue flames springs forth and burns for 24 hours (or until it is extinguished).                                                                                                                                                                                                                                                                       |
-| 41-50 | 1d6 + 6 shriekers sprout                                                                                                                                                                                                                                                                                                                                              |
-| 51-60 | 1d4 + 8 bright pink toads crawl forth. Whenever a toad is touched, it transforms into a Large or smaller monster of the GM's choice. The monster remains for 1 minute, then disappears in a puff of bright pink smoke.                                                                                                                                                |
-| 61-70 | A hungry bulette burrows up and attacks. 71-80 A fruit tree grows. It has 1d10 + 20 fruit, 1d8 of which act as randomly determined magic potions, while one acts as an ingested poison of the GM's choice. The tree vanishes after 1 hour. Picked fruit remains, retaining any magic for 30 days.                                                                     |
-| 81-90 | A nest of 1d4 + 3 eggs springs up. Any creature that eats an egg must make a DC 20 Constitution saving throw. On a successful save, a creature permanently increases its lowest ability score by 1, randomly choosing among equally low scores. On a failed save, the creature takes 10d6 force damage from an internal magical explosion.                            |
-| 91-99 | A pyramid with a 60-foot-square base bursts upward. Inside is a sarcophagus containing a mummy lord. The pyramid is treated as the mummy lord's lair, and its sarcophagus contains treasure of the GM's choice.                                                                                                                                                       |
+    description: `Inside this heavy cloth bag are 3d4 dry beans. The bag weighs 1/2 pound plus 1/4 pound for each bean it contains.
+
+If you dump the bag's contents out on the ground, they explode in a 10-foot radius, extending from the beans. Each creature in the area, including you, must make a DC 15 Dexterity saving throw, taking 5d4 fire damage on a failed save, or half as much damage on a successful one. The fire ignites flammable objects in the area that aren't being worn or carried.
+
+If you remove a bean from the bag, plant it in dirt or sand, and then water it, the bean produces an effect 1 minute later from the ground where it was planted. The GM can choose an effect from the following table, determine it randomly, or create an effect.
+
+| d100  | Effect                                                                                                                                                                                                                                                                                                                                                                |
+|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 01    | 5d4 toadstools sprout. If a creature eats a toadstool, roll any die. On an odd roll, the eater must succeed on a DC 15 Constitution saving throw or take 5d6 poison damage and become poisoned for 1 hour. On an even roll, the eater gains 5d6 temporary hit points for 1 hour.                                                                                      |
+| 02-10 | A geyser erupts and spouts water, beer, berry juice, tea, vinegar, wine, or oil (GM's choice) 30 feet into the air for 1d12 rounds.                                                                                                                                                                                                                                   |
+| 11-20 | A treant sprouts. There's a 50 percent chance that the treant is chaotic evil and attacks.                                                                                                                                                                                                                                                                            |
+| 21-30 | An animate, immobile stone statue in your likeness rises. It makes verbal threats against you. If you leave it and others come near, it describes you as the most heinous of villains and directs the newcomers to find and attack you. If you are on the same plane of existence as the statue, it knows where you are. The statue becomes inanimate after 24 hours. |
+| 31-40 | A campfire with blue flames springs forth and burns for 24 hours (or until it is extinguished).                                                                                                                                                                                                                                                                       |
+| 41-50 | 1d6 + 6 shriekers sprout                                                                                                                                                                                                                                                                                                                                              |
+| 51-60 | 1d4 + 8 bright pink toads crawl forth. Whenever a toad is touched, it transforms into a Large or smaller monster of the GM's choice. The monster remains for 1 minute, then disappears in a puff of bright pink smoke.                                                                                                                                                |
+| 61-70 | A hungry bulette burrows up and attacks. 71-80 A fruit tree grows. It has 1d10 + 20 fruit, 1d8 of which act as randomly determined magic potions, while one acts as an ingested poison of the GM's choice. The tree vanishes after 1 hour. Picked fruit remains, retaining any magic for 30 days.                                                                     |
+| 81-90 | A nest of 1d4 + 3 eggs springs up. Any creature that eats an egg must make a DC 20 Constitution saving throw. On a successful save, a creature permanently increases its lowest ability score by 1, randomly choosing among equally low scores. On a failed save, the creature takes 10d6 force damage from an internal magical explosion.                            |
+| 91-99 | A pyramid with a 60-foot-square base bursts upward. Inside is a sarcophagus containing a mummy lord. The pyramid is treated as the mummy lord's lair, and its sarcophagus contains treasure of the GM's choice.                                                                                                                                                       |
 | 100   | A giant beanstalk sprouts, growing to a height of the GM's choice. The top leads where the GM chooses, such as to a great view, a cloud giant's castle, or a different plane of existence.                                                                                                                                                                            |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -528,12 +528,12 @@ If you remove a bean from the bag, plant it in dirt or sand, and then water it, 
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: false,
-    description: `This bag superficially resembles a _bag of holding_ but is a feeding orifice for a gigantic extradimensional creature. Turning the bag inside out closes the orifice.
-
-The extradimensional creature attached to the bag can sense whatever is placed inside the bag. Animal or vegetable matter placed wholly in the bag is devoured and lost forever. When part of a living creature is placed in the bag, as happens when someone reaches inside it, there is a 50 percent chance that the creature is pulled inside the bag. A creature inside the bag can use its action to try to escape with a successful DC 15 Strength check. Another creature can use its action to reach into the bag to pull a creature out, doing so with a successful DC 20 Strength check (provided it isn't pulled inside the bag first). Any creature that starts its turn inside the bag is devoured, its body destroyed.
-
-Inanimate objects can be stored in the bag, which can hold a cubic foot of such material. However, once each day, the bag swallows any objects inside it and spits them out into another plane of existence. The GM determines the time and plane.
-
+    description: `This bag superficially resembles a _bag of holding_ but is a feeding orifice for a gigantic extradimensional creature. Turning the bag inside out closes the orifice.
+
+The extradimensional creature attached to the bag can sense whatever is placed inside the bag. Animal or vegetable matter placed wholly in the bag is devoured and lost forever. When part of a living creature is placed in the bag, as happens when someone reaches inside it, there is a 50 percent chance that the creature is pulled inside the bag. A creature inside the bag can use its action to try to escape with a successful DC 15 Strength check. Another creature can use its action to reach into the bag to pull a creature out, doing so with a successful DC 20 Strength check (provided it isn't pulled inside the bag first). Any creature that starts its turn inside the bag is devoured, its body destroyed.
+
+Inanimate objects can be stored in the bag, which can hold a cubic foot of such material. However, once each day, the bag swallows any objects inside it and spits them out into another plane of existence. The GM determines the time and plane.
+
 If the bag is pierced or torn, it is destroyed, and anything contained within it is transported to a random location on the Astral Plane.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -544,10 +544,10 @@ If the bag is pierced or torn, it is destroyed, and anything contained within it
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This bag has an interior space considerably larger than its outside dimensions, roughly 2 feet in diameter at the mouth and 4 feet deep. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. The bag weighs 15 pounds, regardless of its contents. Retrieving an item from the bag requires an action.
-
-If the bag is overloaded, pierced, or torn, it ruptures and is destroyed, and its contents are scattered in the Astral Plane. If the bag is turned inside out, its contents spill forth, unharmed, but the bag must be put right before it can be used again. Breathing creatures inside the bag can survive up to a number of minutes equal to 10 divided by the number of creatures (minimum 1 minute), after which time they begin to suffocate.
-
+    description: `This bag has an interior space considerably larger than its outside dimensions, roughly 2 feet in diameter at the mouth and 4 feet deep. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. The bag weighs 15 pounds, regardless of its contents. Retrieving an item from the bag requires an action.
+
+If the bag is overloaded, pierced, or torn, it ruptures and is destroyed, and its contents are scattered in the Astral Plane. If the bag is turned inside out, its contents spill forth, unharmed, but the bag must be put right before it can be used again. Breathing creatures inside the bag can survive up to a number of minutes equal to 10 divided by the number of creatures (minimum 1 minute), after which time they begin to suffocate.
+
 Placing a _bag of holding_ inside an extradimensional space created by a _handy haversack_, _portable hole_, or similar item instantly destroys both items and opens a gate to the Astral Plane. The gate originates where the one item was placed inside the other. Any creature within 10 feet of the gate is sucked through it to a random location on the Astral Plane. The gate then closes. The gate is one-way only and can't be reopened.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -558,51 +558,51 @@ Placing a _bag of holding_ inside an extradimensional space created by a _handy 
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This ordinary bag, made from gray, rust, or tan cloth, appears empty. Reaching inside the bag, however, reveals the presence of a small, fuzzy object. The bag weighs 1/2 pound.
-
-You can use an action to pull the fuzzy object from the bag and throw it up to 20 feet. When the object lands, it transforms into a creature you determine by rolling a d8 and consulting the table that corresponds to the bag's color.
-
-The creature is friendly to you and your companions, and it acts on your turn. You can use a bonus action to command how the creature moves and what action it takes on its next turn, or to give it general orders, such as to attack your enemies. In the absence of such orders, the creature acts in a fashion appropriate to its nature.
-
-Once three fuzzy objects have been pulled from the bag, the bag can't be used again until the next dawn.
-
-**Gray Bag of Tricks (table)**
-
-| d8 | Creature     |
-|----|--------------|
-| 1  | Weasel       |
-| 2  | Giant rat    |
-| 3  | Badger       |
-| 4  | Boar         |
-| 5  | Panther      |
-| 6  | Giant badger |
-| 7  | Dire wolf    |
-| 8  | Giant elk    |
-
-**Rust Bag of Tricks (table)**
-
-| d8 | Creature   |
-|----|------------|
-| 1  | Rat        |
-| 2  | Owl        |
-| 3  | Mastiff    |
-| 4  | Goat       |
-| 5  | Giant goat |
-| 6  | Giant boar |
-| 7  | Lion       |
-| 8  | Brown bear |
-
-**Tan Bag of Tricks (table)**
-
-| d8 | Creature     |
-|----|--------------|
-| 1  | Jackal       |
-| 2  | Ape          |
-| 3  | Baboon       |
-| 4  | Axe beak     |
-| 5  | Black bear   |
-| 6  | Giant weasel |
-| 7  | Giant hyena  |
+    description: `This ordinary bag, made from gray, rust, or tan cloth, appears empty. Reaching inside the bag, however, reveals the presence of a small, fuzzy object. The bag weighs 1/2 pound.
+
+You can use an action to pull the fuzzy object from the bag and throw it up to 20 feet. When the object lands, it transforms into a creature you determine by rolling a d8 and consulting the table that corresponds to the bag's color.
+
+The creature is friendly to you and your companions, and it acts on your turn. You can use a bonus action to command how the creature moves and what action it takes on its next turn, or to give it general orders, such as to attack your enemies. In the absence of such orders, the creature acts in a fashion appropriate to its nature.
+
+Once three fuzzy objects have been pulled from the bag, the bag can't be used again until the next dawn.
+
+**Gray Bag of Tricks (table)**
+
+| d8 | Creature     |
+|----|--------------|
+| 1  | Weasel       |
+| 2  | Giant rat    |
+| 3  | Badger       |
+| 4  | Boar         |
+| 5  | Panther      |
+| 6  | Giant badger |
+| 7  | Dire wolf    |
+| 8  | Giant elk    |
+
+**Rust Bag of Tricks (table)**
+
+| d8 | Creature   |
+|----|------------|
+| 1  | Rat        |
+| 2  | Owl        |
+| 3  | Mastiff    |
+| 4  | Goat       |
+| 5  | Giant goat |
+| 6  | Giant boar |
+| 7  | Lion       |
+| 8  | Brown bear |
+
+**Tan Bag of Tricks (table)**
+
+| d8 | Creature     |
+|----|--------------|
+| 1  | Jackal       |
+| 2  | Ape          |
+| 3  | Baboon       |
+| 4  | Axe beak     |
+| 5  | Black bear   |
+| 6  | Giant weasel |
+| 7  | Giant hyena  |
 | 8  | Tiger        |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -643,10 +643,10 @@ Once three fuzzy objects have been pulled from the bag, the bag can't be used ag
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This small black sphere measures 3/4 of an inch in diameter and weighs an ounce. Typically, 1d4 + 4 _beads of force_ are found together.
-
-You can use an action to throw the bead up to 60 feet. The bead explodes on impact and is destroyed. Each creature within a 10-foot radius of where the bead landed must succeed on a DC 15 Dexterity saving throw or take 5d4 force damage. A sphere of transparent force then encloses the area for 1 minute. Any creature that failed the save and is completely within the area is trapped inside this sphere. Creatures that succeeded on the save, or are partially within the area, are pushed away from the center of the sphere until they are no longer inside it. Only breathable air can pass through the sphere's wall. No attack or other effect can.
-
+    description: `This small black sphere measures 3/4 of an inch in diameter and weighs an ounce. Typically, 1d4 + 4 _beads of force_ are found together.
+
+You can use an action to throw the bead up to 60 feet. The bead explodes on impact and is destroyed. Each creature within a 10-foot radius of where the bead landed must succeed on a DC 15 Dexterity saving throw or take 5d4 force damage. A sphere of transparent force then encloses the area for 1 minute. Any creature that failed the save and is completely within the area is trapped inside this sphere. Creatures that succeeded on the save, or are partially within the area, are pushed away from the center of the sphere until they are no longer inside it. Only breathable air can pass through the sphere's wall. No attack or other effect can.
+
 An enclosed creature can use its action to push against the sphere's wall, moving the sphere up to half the creature's walking speed. The sphere can be picked up, and its magic causes it to weigh only 1 pound, regardless of the weight of creatures inside.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -667,17 +667,17 @@ An enclosed creature can use its action to push against the sphere's wall, movin
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `While wearing this belt, you gain the following benefits:
-
-* Your Constitution score increases by 2, to a maximum of 20.
-* You have advantage on Charisma (Persuasion) checks made to interact with dwarves.
-
-In addition, while attuned to the belt, you have a 50 percent chance each day at dawn of growing a full beard if you're capable of growing one, or a visibly thicker beard if you already have one.
-
-If you aren't a dwarf, you gain the following additional benefits while wearing the belt:
-
-* You have advantage on saving throws against poison, and you have resistance against poison damage.
-* You have darkvision out to a range of 60 feet.
+    description: `While wearing this belt, you gain the following benefits:
+
+* Your Constitution score increases by 2, to a maximum of 20.
+* You have advantage on Charisma (Persuasion) checks made to interact with dwarves.
+
+In addition, while attuned to the belt, you have a 50 percent chance each day at dawn of growing a full beard if you're capable of growing one, or a visibly thicker beard if you already have one.
+
+If you aren't a dwarf, you gain the following additional benefits while wearing the belt:
+
+* You have advantage on saving throws against poison, and you have resistance against poison damage.
+* You have darkvision out to a range of 60 feet.
 * You can speak, read, and write Dwarvish.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -788,8 +788,8 @@ If you aren't a dwarf, you gain the following additional benefits while wearing 
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `While you wear these boots, you can use a bonus action and click the boots' heels together. If you do, the boots double your walking speed, and any creature that makes an opportunity attack against you has disadvantage on the attack roll. If you click your heels together again, you end the effect.
-
+    description: `While you wear these boots, you can use a bonus action and click the boots' heels together. If you do, the boots double your walking speed, and any creature that makes an opportunity attack against you has disadvantage on the attack roll. If you click your heels together again, you end the effect.
+
 When the boots' property has been used for a total of 10 minutes, the magic ceases to function until you finish a long rest.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -810,10 +810,10 @@ When the boots' property has been used for a total of 10 minutes, the magic ceas
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: true,
-    description: `These furred boots are snug and feel quite warm. While you wear them, you gain the following benefits:
-
-* You have resistance to cold damage.
-* You ignore difficult terrain created by ice or snow.
+    description: `These furred boots are snug and feel quite warm. While you wear them, you gain the following benefits:
+
+* You have resistance to cold damage.
+* You ignore difficult terrain created by ice or snow.
 * You can tolerate temperatures as low as -50 degrees Fahrenheit without any additional protection. If you wear heavy clothes, you can tolerate temperatures as low as -100 degrees Fahrenheit.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -824,8 +824,8 @@ When the boots' property has been used for a total of 10 minutes, the magic ceas
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `While this bowl is filled with water, you can use an action to speak the bowl's command word and summon a water elemental, as if you had cast the _conjure elemental_ spell. The bowl can't be used this way again until the next dawn.
-
+    description: `While this bowl is filled with water, you can use an action to speak the bowl's command word and summon a water elemental, as if you had cast the _conjure elemental_ spell. The bowl can't be used this way again until the next dawn.
+
 The bowl is about 1 foot in diameter and half as deep. It weighs 3 pounds and holds about 3 gallons.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -856,8 +856,8 @@ The bowl is about 1 foot in diameter and half as deep. It weighs 3 pounds and ho
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `While a fire burns in this brass brazier, you can use an action to speak the brazier's command word and summon a fire elemental, as if you had cast the _conjure elemental_ spell. The brazier can't be used this way again until the next dawn.
-
+    description: `While a fire burns in this brass brazier, you can use an action to speak the brazier's command word and summon a fire elemental, as if you had cast the _conjure elemental_ spell. The brazier can't be used this way again until the next dawn.
+
 The brazier weighs 5 pounds.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -878,8 +878,8 @@ The brazier weighs 5 pounds.`,
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This wooden broom, which weighs 3 pounds, functions like a mundane broom until you stand astride it and speak its command word. It then hovers beneath you and can be ridden in the air. It has a flying speed of 50 feet. It can carry up to 400 pounds, but its flying speed becomes 30 feet while carrying over 200 pounds. The broom stops hovering when you land.
-
+    description: `This wooden broom, which weighs 3 pounds, functions like a mundane broom until you stand astride it and speak its command word. It then hovers beneath you and can be ridden in the air. It has a flying speed of 50 feet. It can carry up to 400 pounds, but its flying speed becomes 30 feet while carrying over 200 pounds. The broom stops hovering when you land.
+
 You can send the broom to travel alone to a destination within 1 mile of you if you speak the command word, name the location, and are familiar with that place. The broom comes back to you when you speak another command word, provided that the broom is still within 1 mile of you.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -890,24 +890,24 @@ You can send the broom to travel alone to a destination within 1 mile of you if 
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: true,
-    description: `This slender taper is dedicated to a deity and shares that deity's alignment. The candle's alignment can be detected with the _detect evil and good_ spell. The GM chooses the god and associated alignment or determines the alignment randomly.
-
-| d20   | Alignment       |
-|-------|-----------------|
-| 1-2   | Chaotic evil    |
-| 3-4   | Chaotic neutral |
-| 5-7   | Chaotic good    |
-| 8-9   | Neutral evil    |
-| 10-11 | Neutral         |
-| 12-13 | Neutral good    |
-| 14-15 | Lawful evil     |
-| 16-17 | Lawful neutral  |
-| 18-20 | Lawful good     |
-
-The candle's magic is activated when the candle is lit, which requires an action. After burning for 4 hours, the candle is destroyed. You can snuff it out early for use at a later time. Deduct the time it burned in increments of 1 minute from the candle's total burn time.
-
-While lit, the candle sheds dim light in a 30-foot radius. Any creature within that light whose alignment matches that of the candle makes attack rolls, saving throws, and ability checks with advantage. In addition, a cleric or druid in the light whose alignment matches the candle's can cast 1st* level spells he or she has prepared without expending spell slots, though the spell's effect is as if cast with a 1st-level slot.
-
+    description: `This slender taper is dedicated to a deity and shares that deity's alignment. The candle's alignment can be detected with the _detect evil and good_ spell. The GM chooses the god and associated alignment or determines the alignment randomly.
+
+| d20   | Alignment       |
+|-------|-----------------|
+| 1-2   | Chaotic evil    |
+| 3-4   | Chaotic neutral |
+| 5-7   | Chaotic good    |
+| 8-9   | Neutral evil    |
+| 10-11 | Neutral         |
+| 12-13 | Neutral good    |
+| 14-15 | Lawful evil     |
+| 16-17 | Lawful neutral  |
+| 18-20 | Lawful good     |
+
+The candle's magic is activated when the candle is lit, which requires an action. After burning for 4 hours, the candle is destroyed. You can snuff it out early for use at a later time. Deduct the time it burned in increments of 1 minute from the candle's total burn time.
+
+While lit, the candle sheds dim light in a 30-foot radius. Any creature within that light whose alignment matches that of the candle makes attack rolls, saving throws, and ability checks with advantage. In addition, a cleric or druid in the light whose alignment matches the candle's can cast 1st* level spells he or she has prepared without expending spell slots, though the spell's effect is as if cast with a 1st-level slot.
+
 Alternatively, when you light the candle for the first time, you can cast the _gate_ spell with it. Doing so destroys the candle.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -918,8 +918,8 @@ Alternatively, when you light the candle for the first time, you can cast the _g
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This cape smells faintly of brimstone. While wearing it, you can use it to cast the _dimension door_ spell as an action. This property of the cape can't be used again until the next dawn.
-
+    description: `This cape smells faintly of brimstone. While wearing it, you can use it to cast the _dimension door_ spell as an action. This property of the cape can't be used again until the next dawn.
+
 When you disappear, you leave behind a cloud of smoke, and you appear in a similar cloud of smoke at your destination. The smoke lightly obscures the space you left and the space you appear in, and it dissipates at the end of your next turn. A light or stronger wind disperses the smoke.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -930,17 +930,17 @@ When you disappear, you leave behind a cloud of smoke, and you appear in a simil
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: false,
-    description: `You can speak the carpet's command word as an action to make the carpet hover and fly. It moves according to your spoken directions, provided that you are within 30 feet of it.
-
-Four sizes of _carpet of flying_ exist. The GM chooses the size of a given carpet or determines it randomly.
-
-| d100   | Size          | Capacity | Flying Speed |
-|--------|---------------|----------|--------------|
-| 01-20  | 3 ft. × 5 ft. | 200 lb.  | 80 feet      |
-| 21-55  | 4 ft. × 6 ft. | 400 lb.  | 60 feet      |
-| 56-80  | 5 ft. × 7 ft. | 600 lb.  | 40 feet      |
-| 81-100 | 6 ft. × 9 ft. | 800 lb.  | 30 feet      |
-
+    description: `You can speak the carpet's command word as an action to make the carpet hover and fly. It moves according to your spoken directions, provided that you are within 30 feet of it.
+
+Four sizes of _carpet of flying_ exist. The GM chooses the size of a given carpet or determines it randomly.
+
+| d100   | Size          | Capacity | Flying Speed |
+|--------|---------------|----------|--------------|
+| 01-20  | 3 ft. × 5 ft. | 200 lb.  | 80 feet      |
+| 21-55  | 4 ft. × 6 ft. | 400 lb.  | 60 feet      |
+| 56-80  | 5 ft. × 7 ft. | 600 lb.  | 40 feet      |
+| 81-100 | 6 ft. × 9 ft. | 800 lb.  | 30 feet      |
+
 A carpet can carry up to twice the weight shown on the table, but it flies at half speed if it carries more than its normal capacity.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -951,8 +951,8 @@ A carpet can carry up to twice the weight shown on the table, but it flies at ha
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `While incense is burning in this censer, you can use an action to speak the censer's command word and summon an air elemental, as if you had cast the _conjure elemental_ spell. The censer can't be used this way again until the next dawn.
-
+    description: `While incense is burning in this censer, you can use an action to speak the censer's command word and summon an air elemental, as if you had cast the _conjure elemental_ spell. The censer can't be used this way again until the next dawn.
+
 This 6-inch-wide, 1-foot-high vessel resembles a chalice with a decorated lid. It weighs 1 pound.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -963,8 +963,8 @@ This 6-inch-wide, 1-foot-high vessel resembles a chalice with a decorated lid. I
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This hollow metal tube measures about 1 foot long and weighs 1 pound. You can strike it as an action, pointing it at an object within 120 feet of you that can be opened, such as a door, lid, or lock. The chime issues a clear tone, and one lock or latch on the object opens unless the sound can't reach the object. If no locks or latches remain, the object itself opens.
-
+    description: `This hollow metal tube measures about 1 foot long and weighs 1 pound. You can strike it as an action, pointing it at an object within 120 feet of you that can be opened, such as a door, lid, or lock. The chime issues a clear tone, and one lock or latch on the object opens unless the sound can't reach the object. If no locks or latches remain, the object itself opens.
+
 The chime can be used ten times. After the tenth time, it cracks and becomes useless.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -985,12 +985,12 @@ The chime can be used ten times. After the tenth time, it cracks and becomes use
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: true,
-    description: `This fine garment is made of black silk interwoven with faint silvery threads. While wearing it, you gain the following benefits:
-
-* You have resistance to poison damage.
-* You have a climbing speed equal to your walking speed.
-* You can move up, down, and across vertical surfaces and upside down along ceilings, while leaving your hands free.
-* You can't be caught in webs of any sort and can move through webs as if they were difficult terrain.
+    description: `This fine garment is made of black silk interwoven with faint silvery threads. While wearing it, you gain the following benefits:
+
+* You have resistance to poison damage.
+* You have a climbing speed equal to your walking speed.
+* You can move up, down, and across vertical surfaces and upside down along ceilings, while leaving your hands free.
+* You can't be caught in webs of any sort and can move through webs as if they were difficult terrain.
 * You can use an action to cast the _web_ spell (save DC 13). The web created by the spell fills twice its normal area. Once used, this property of the cloak can't be used again until the next dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1031,8 +1031,8 @@ The chime can be used ten times. After the tenth time, it cracks and becomes use
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `While wearing this cloak, you have advantage on Dexterity (Stealth) checks. In an area of dim light or darkness, you can grip the edges of the cloak with both hands and use it to fly at a speed of 40 feet. If you ever fail to grip the cloak's edges while flying in this way, or if you are no longer in dim light or darkness, you lose this flying speed.
-
+    description: `While wearing this cloak, you have advantage on Dexterity (Stealth) checks. In an area of dim light or darkness, you can grip the edges of the cloak with both hands and use it to fly at a speed of 40 feet. If you ever fail to grip the cloak's edges while flying in this way, or if you are no longer in dim light or darkness, you lose this flying speed.
+
 While wearing the cloak in an area of dim light or darkness, you can use your action to cast _polymorph_ on yourself, transforming into a bat. While you are in the form of the bat, you retain your Intelligence, Wisdom, and Charisma scores. The cloak can't be used this way again until the next dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1079,7 +1079,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-hand-1",
-    name: `Crossbow-Hand (+1)`,
+    name: `Hand Crossbow (+1)`,
     category: `Weapon`,
     rarity: `Uncommon`,
     requiresAttunement: false,
@@ -1089,7 +1089,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-hand-2",
-    name: `Crossbow-Hand (+2)`,
+    name: `Hand Crossbow (+2)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -1099,7 +1099,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-hand-3",
-    name: `Crossbow-Hand (+3)`,
+    name: `Hand Crossbow (+3)`,
     category: `Weapon`,
     rarity: `Very Rare`,
     requiresAttunement: false,
@@ -1109,7 +1109,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-heavy-1",
-    name: `Crossbow-Heavy (+1)`,
+    name: `Heavy Crossbow (+1)`,
     category: `Weapon`,
     rarity: `Uncommon`,
     requiresAttunement: false,
@@ -1119,7 +1119,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-heavy-2",
-    name: `Crossbow-Heavy (+2)`,
+    name: `Heavy Crossbow (+2)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -1129,7 +1129,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-heavy-3",
-    name: `Crossbow-Heavy (+3)`,
+    name: `Heavy Crossbow (+3)`,
     category: `Weapon`,
     rarity: `Very Rare`,
     requiresAttunement: false,
@@ -1139,7 +1139,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-light-1",
-    name: `Crossbow-Light (+1)`,
+    name: `Light Crossbow (+1)`,
     category: `Weapon`,
     rarity: `Uncommon`,
     requiresAttunement: false,
@@ -1149,7 +1149,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-light-2",
-    name: `Crossbow-Light (+2)`,
+    name: `Light Crossbow (+2)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -1159,7 +1159,7 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
   },
   {
     slug: "srd-2014-crossbow-light-3",
-    name: `Crossbow-Light (+3)`,
+    name: `Light Crossbow (+3)`,
     category: `Weapon`,
     rarity: `Very Rare`,
     requiresAttunement: false,
@@ -1183,8 +1183,8 @@ While wearing the cloak in an area of dim light or darkness, you can use your ac
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `The typical crystal ball, a very rare item, is about 6 inches in diameter. While touching it, you can cast the scrying spell (save DC 17) with it.
-
+    description: `The typical crystal ball, a very rare item, is about 6 inches in diameter. While touching it, you can cast the scrying spell (save DC 17) with it.
+
 You can use an action to cast the detect thoughts spell (save DC 17) while you are scrying with the crystal ball, targeting creatures you can see within 30 feet of the spell's sensor. You don't need to concentrate on this detect thoughts to maintain it during its duration, but it ends if scrying ends.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1195,10 +1195,10 @@ You can use an action to cast the detect thoughts spell (save DC 17) while you a
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `The typical crystal ball, a very rare item, is about 6 inches in diameter. While touching it, you can cast the scrying spell (save DC 17) with it.
-
-The following crystal ball variants are legendary items and have additional properties.
-
+    description: `The typical crystal ball, a very rare item, is about 6 inches in diameter. While touching it, you can cast the scrying spell (save DC 17) with it.
+
+The following crystal ball variants are legendary items and have additional properties.
+
 While scrying with the crystal ball, you can communicate telepathically with creatures you can see within 30 feet of the spell's sensor. You can also use an action to cast the suggestion spell (save DC 17) through the sensor on one of those creatures. You don't need to concentrate on this suggestion to maintain it during its duration, but it ends if scrying ends. Once used, the suggestion power of the crystal ball can't be used again until the next dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1209,8 +1209,8 @@ While scrying with the crystal ball, you can communicate telepathically with cre
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `The typical crystal ball, a very rare item, is about 6 inches in diameter. While touching it, you can cast the scrying spell (save DC 17) with it.
-
+    description: `The typical crystal ball, a very rare item, is about 6 inches in diameter. While touching it, you can cast the scrying spell (save DC 17) with it.
+
 While scrying with the crystal ball, you have truesight with a radius of 120 feet centered on the spell's sensor.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1221,31 +1221,31 @@ While scrying with the crystal ball, you have truesight with a radius of 120 fee
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `This cube is about an inch across. Each face has a distinct marking on it that can be pressed. The cube starts with 36 charges, and it regains 1d20 expended charges daily at dawn.
-
-You can use an action to press one of the cube's faces, expending a number of charges based on the chosen face, as shown in the Cube of Force Faces table. Each face has a different effect. If the cube has insufficient charges remaining, nothing happens. Otherwise, a barrier of invisible force springs into existence, forming a cube 15 feet on a side. The barrier is centered on you, moves with you, and lasts for 1 minute, until you use an action to press the cube's sixth face, or the cube runs out of charges. You can change the barrier's effect by pressing a different face of the cube and expending the requisite number of charges, resetting the duration.
-
-If your movement causes the barrier to come into contact with a solid object that can't pass through the cube, you can't move any closer to that object as long as the barrier remains.
-
-**Cube of Force Faces (table)**
-
-| Face | Charges | Effect                                                                                                            |
-|------|---------|-------------------------------------------------------------------------------------------------------------------|
-| 1    | 1       | Gases, wind, and fog can't pass through the barrier.                                                              |
-| 2    | 2       | Nonliving matter can't pass through the barrier. Walls, floors, and ceilings can pass through at your discretion. |
-| 3    | 3       | Living matter can't pass through the barrier.                                                                     |
-| 4    | 4       | Spell effects can't pass through the barrier.                                                                     |
-| 5    | 5       | Nothing can pass through the barrier. Walls, floors, and ceilings can pass through at your discretion.            |
-| 6    | 0       | The barrier deactivates.                                                                                          |
-
-The cube loses charges when the barrier is targeted by certain spells or comes into contact with certain spell or magic item effects, as shown in the table below.
-
-| Spell or Item    | Charges Lost |
-|------------------|--------------|
-| Disintegrate     | 1d12         |
-| Horn of blasting | 1d10         |
-| Passwall         | 1d6          |
-| Prismatic spray  | 1d20         |
+    description: `This cube is about an inch across. Each face has a distinct marking on it that can be pressed. The cube starts with 36 charges, and it regains 1d20 expended charges daily at dawn.
+
+You can use an action to press one of the cube's faces, expending a number of charges based on the chosen face, as shown in the Cube of Force Faces table. Each face has a different effect. If the cube has insufficient charges remaining, nothing happens. Otherwise, a barrier of invisible force springs into existence, forming a cube 15 feet on a side. The barrier is centered on you, moves with you, and lasts for 1 minute, until you use an action to press the cube's sixth face, or the cube runs out of charges. You can change the barrier's effect by pressing a different face of the cube and expending the requisite number of charges, resetting the duration.
+
+If your movement causes the barrier to come into contact with a solid object that can't pass through the cube, you can't move any closer to that object as long as the barrier remains.
+
+**Cube of Force Faces (table)**
+
+| Face | Charges | Effect                                                                                                            |
+|------|---------|-------------------------------------------------------------------------------------------------------------------|
+| 1    | 1       | Gases, wind, and fog can't pass through the barrier.                                                              |
+| 2    | 2       | Nonliving matter can't pass through the barrier. Walls, floors, and ceilings can pass through at your discretion. |
+| 3    | 3       | Living matter can't pass through the barrier.                                                                     |
+| 4    | 4       | Spell effects can't pass through the barrier.                                                                     |
+| 5    | 5       | Nothing can pass through the barrier. Walls, floors, and ceilings can pass through at your discretion.            |
+| 6    | 0       | The barrier deactivates.                                                                                          |
+
+The cube loses charges when the barrier is targeted by certain spells or comes into contact with certain spell or magic item effects, as shown in the table below.
+
+| Spell or Item    | Charges Lost |
+|------------------|--------------|
+| Disintegrate     | 1d12         |
+| Horn of blasting | 1d10         |
+| Passwall         | 1d6          |
+| Prismatic spray  | 1d20         |
 | Wall of fire     | 1d4          |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1256,10 +1256,10 @@ The cube loses charges when the barrier is targeted by certain spells or comes i
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `This cube is 3 inches across and radiates palpable magical energy. The six sides of the cube are each keyed to a different plane of existence, one of which is the Material Plane. The other sides are linked to planes determined by the GM.
-
-You can use an action to press one side of the cube to cast the _gate_ spell with it, opening a portal to the plane keyed to that side. Alternatively, if you use an action to press one side twice, you can cast the _plane shift_ spell (save DC 17) with the cube and transport the targets to the plane keyed to that side.
-
+    description: `This cube is 3 inches across and radiates palpable magical energy. The six sides of the cube are each keyed to a different plane of existence, one of which is the Material Plane. The other sides are linked to planes determined by the GM.
+
+You can use an action to press one side of the cube to cast the _gate_ spell with it, opening a portal to the plane keyed to that side. Alternatively, if you use an action to press one side twice, you can cast the _plane shift_ spell (save DC 17) with the cube and transport the targets to the plane keyed to that side.
+
 The cube has 3 charges. Each use of the cube expends 1 charge. The cube regains 1d3 expended charges daily at dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1398,12 +1398,12 @@ After the hovering sword attacks for the fourth time, it flies up to 30 feet and
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This stoppered flask sloshes when shaken, as if it contains water. The decanter weighs 2 pounds.
-
-You can use an action to remove the stopper and speak one of three command words, whereupon an amount of fresh water or salt water (your choice) pours out of the flask. The water stops pouring out at the start of your next turn. Choose from the following options:
-
-* "Stream" produces 1 gallon of water.
-* "Fountain" produces 5 gallons of water.
+    description: `This stoppered flask sloshes when shaken, as if it contains water. The decanter weighs 2 pounds.
+
+You can use an action to remove the stopper and speak one of three command words, whereupon an amount of fresh water or salt water (your choice) pours out of the flask. The water stops pouring out at the start of your next turn. Choose from the following options:
+
+* "Stream" produces 1 gallon of water.
+* "Fountain" produces 5 gallons of water.
 * "Geyser" produces 30 gallons of water that gushes forth in a geyser 30 feet long and 1 foot wide. As a bonus action while holding the decanter, you can aim the geyser at a creature you can see within 30 feet of you. The target must succeed on a DC 13 Strength saving throw or take 1d4 bludgeoning damage and fall prone. Instead of a creature, you can target an object that isn't being worn or carried and that weighs no more than 200 pounds. The object is either knocked over or pushed up to 15 feet away from you.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1414,48 +1414,48 @@ You can use an action to remove the stopper and speak one of three command words
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This box contains a set of parchment cards. A full deck has 34 cards. A deck found as treasure is usually missing 1d20 - 1 cards.
-
-The magic of the deck functions only if cards are drawn at random (you can use an altered deck of playing cards to simulate the deck). You can use an action to draw a card at random from the deck and throw it to the ground at a point within 30 feet of you.
-
-An illusion of one or more creatures forms over the thrown card and remains until dispelled. An illusory creature appears real, of the appropriate size, and behaves as if it were a real creature except that it can do no harm. While you are within 120 feet of the illusory creature and can see it, you can use an action to move it magically anywhere within 30 feet of its card. Any physical interaction with the illusory creature reveals it to be an illusion, because objects pass through it. Someone who uses an action to visually inspect the creature identifies it as illusory with a successful DC 15 Intelligence (Investigation) check. The creature then appears translucent.
-
-The illusion lasts until its card is moved or the illusion is dispelled. When the illusion ends, the image on its card disappears, and that card can't be used again.
-
-| Playing Card      | Illusion                         |
-|-------------------|----------------------------------|
-| Ace of hearts     | Red dragon                       |
-| King of hearts    | Knight and four guards           |
-| Queen of hearts   | Succubus or incubus              |
-| Jack of hearts    | Druid                            |
-| Ten of hearts     | Cloud giant                      |
-| Nine of hearts    | Ettin                            |
-| Eight of hearts   | Bugbear                          |
-| Two of hearts     | Goblin                           |
-| Ace of diamonds   | Beholder                         |
-| King of diamonds  | Archmage and mage apprentice     |
-| Queen of diamonds | Night hag                        |
-| Jack of diamonds  | Assassin                         |
-| Ten of diamonds   | Fire giant                       |
-| Nine of diamonds  | Ogre mage                        |
-| Eight of diamonds | Gnoll                            |
-| Two of diamonds   | Kobold                           |
-| Ace of spades     | Lich                             |
-| King of spades    | Priest and two acolytes          |
-| Queen of spades   | Medusa                           |
-| Jack of spades    | Veteran                          |
-| Ten of spades     | Frost giant                      |
-| Nine of spades    | Troll                            |
-| Eight of spades   | Hobgoblin                        |
-| Two of spades     | Goblin                           |
-| Ace of clubs      | Iron golem                       |
-| King of clubs     | Bandit captain and three bandits |
-| Queen of clubs    | Erinyes                          |
-| Jack of clubs     | Berserker                        |
-| Ten of clubs      | Hill giant                       |
-| Nine of clubs     | Ogre                             |
-| Eight of clubs    | Orc                              |
-| Two of clubs      | Kobold                           |
+    description: `This box contains a set of parchment cards. A full deck has 34 cards. A deck found as treasure is usually missing 1d20 - 1 cards.
+
+The magic of the deck functions only if cards are drawn at random (you can use an altered deck of playing cards to simulate the deck). You can use an action to draw a card at random from the deck and throw it to the ground at a point within 30 feet of you.
+
+An illusion of one or more creatures forms over the thrown card and remains until dispelled. An illusory creature appears real, of the appropriate size, and behaves as if it were a real creature except that it can do no harm. While you are within 120 feet of the illusory creature and can see it, you can use an action to move it magically anywhere within 30 feet of its card. Any physical interaction with the illusory creature reveals it to be an illusion, because objects pass through it. Someone who uses an action to visually inspect the creature identifies it as illusory with a successful DC 15 Intelligence (Investigation) check. The creature then appears translucent.
+
+The illusion lasts until its card is moved or the illusion is dispelled. When the illusion ends, the image on its card disappears, and that card can't be used again.
+
+| Playing Card      | Illusion                         |
+|-------------------|----------------------------------|
+| Ace of hearts     | Red dragon                       |
+| King of hearts    | Knight and four guards           |
+| Queen of hearts   | Succubus or incubus              |
+| Jack of hearts    | Druid                            |
+| Ten of hearts     | Cloud giant                      |
+| Nine of hearts    | Ettin                            |
+| Eight of hearts   | Bugbear                          |
+| Two of hearts     | Goblin                           |
+| Ace of diamonds   | Beholder                         |
+| King of diamonds  | Archmage and mage apprentice     |
+| Queen of diamonds | Night hag                        |
+| Jack of diamonds  | Assassin                         |
+| Ten of diamonds   | Fire giant                       |
+| Nine of diamonds  | Ogre mage                        |
+| Eight of diamonds | Gnoll                            |
+| Two of diamonds   | Kobold                           |
+| Ace of spades     | Lich                             |
+| King of spades    | Priest and two acolytes          |
+| Queen of spades   | Medusa                           |
+| Jack of spades    | Veteran                          |
+| Ten of spades     | Frost giant                      |
+| Nine of spades    | Troll                            |
+| Eight of spades   | Hobgoblin                        |
+| Two of spades     | Goblin                           |
+| Ace of clubs      | Iron golem                       |
+| King of clubs     | Bandit captain and three bandits |
+| Queen of clubs    | Erinyes                          |
+| Jack of clubs     | Berserker                        |
+| Ten of clubs      | Hill giant                       |
+| Nine of clubs     | Ogre                             |
+| Eight of clubs    | Orc                              |
+| Two of clubs      | Kobold                           |
 | Jokers (2)        | You (the deck's owner)           |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1466,71 +1466,71 @@ The illusion lasts until its card is moved or the illusion is dispelled. When th
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `Usually found in a box or pouch, this deck contains a number of cards made of ivory or vellum. Most (75 percent) of these decks have only thirteen cards, but the rest have twenty-two.
-
-Before you draw a card, you must declare how many cards you intend to draw and then draw them randomly (you can use an altered deck of playing cards to simulate the deck). Any cards drawn in excess of this number have no effect. Otherwise, as soon as you draw a card from the deck, its magic takes effect. You must draw each card no more than 1 hour after the previous draw. If you fail to draw the chosen number, the remaining number of cards fly from the deck on their own and take effect all at once.
-
-Once a card is drawn, it fades from existence. Unless the card is the Fool or the Jester, the card reappears in the deck, making it possible to draw the same card twice.
-
-| Playing Card       | Card        |
-|--------------------|-------------|
-| Ace of diamonds    | Vizier\\*    |
-| King of diamonds   | Sun         |
-| Queen of diamonds  | Moon        |
-| Jack of diamonds   | Star        |
-| Two of diamonds    | Comet\\*     |
-| Ace of hearts      | The Fates\\* |
-| King of hearts     | Throne      |
-| Queen of hearts    | Key         |
-| Jack of hearts     | Knight      |
-| Two of hearts      | Gem\\*       |
-| Ace of clubs       | Talons\\*    |
-| King of clubs      | The Void    |
-| Queen of clubs     | Flames      |
-| Jack of clubs      | Skull       |
-| Two of clubs       | Idiot\\*     |
-| Ace of spades      | Donjon\\*    |
-| King of spades     | Ruin        |
-| Queen of spades    | Euryale     |
-| Jack of spades     | Rogue       |
-| Two of spades      | Balance\\*   |
-| Joker (with TM)    | Fool\\*      |
-| Joker (without TM) | Jester      |
-
-\\*Found only in a deck with twenty-two cards
-
-**_Balance_**. Your mind suffers a wrenching alteration, causing your alignment to change. Lawful becomes chaotic, good becomes evil, and vice versa. If you are true neutral or unaligned, this card has no effect on you.
-
-**_Comet_**. If you single-handedly defeat the next hostile monster or group of monsters you encounter, you gain experience points enough to gain one level. Otherwise, this card has no effect.
-
-**_Donjon_**. You disappear and become entombed in a state of suspended animation in an extradimensional sphere. Everything you were wearing and carrying stays behind in the space you occupied when you disappeared. You remain imprisoned until you are found and removed from the sphere. You can't be located by any divination magic, but a _wish_ spell can reveal the location of your prison. You draw no more cards.
-
-**_Euryale_**. The card's medusa-like visage curses you. You take a -2 penalty on saving throws while cursed in this way. Only a god or the magic of The Fates card can end this curse.
-
-**_The Fates_**. Reality's fabric unravels and spins anew, allowing you to avoid or erase one event as if it never happened. You can use the card's magic as soon as you draw the card or at any other time before you die.
-
-**_Flames_**. A powerful devil becomes your enemy. The devil seeks your ruin and plagues your life, savoring your suffering before attempting to slay you. This enmity lasts until either you or the devil dies.
-
-**_Fool_**. You lose 10,000 XP, discard this card, and draw from the deck again, counting both draws as one of your declared draws. If losing that much XP would cause you to lose a level, you instead lose an amount that leaves you with just enough XP to keep your level.
-
-**_Gem_**. Twenty-five pieces of jewelry worth 2,000 gp each or fifty gems worth 1,000 gp each appear at your feet.
-
-**_Idiot_**. Permanently reduce your Intelligence by 1d4 + 1 (to a minimum score of 1). You can draw one additional card beyond your declared draws.
-
-**_Jester_**. You gain 10,000 XP, or you can draw two additional cards beyond your declared draws.
-
-**_Key_**. A rare or rarer magic weapon with which you are proficient appears in your hands. The GM chooses the weapon.
-
-**_Knight_**. You gain the service of a 4th-level fighter who appears in a space you choose within 30 feet of you. The fighter is of the same race as you and serves you loyally until death, believing the fates have drawn him or her to you. You control this character.
-
-**_Moon_**. You are granted the ability to cast the _wish_ spell 1d3 times.
-
-**_Rogue_**. A nonplayer character of the GM's choice becomes hostile toward you. The identity of your new enemy isn't known until the NPC or someone else reveals it. Nothing less than a _wish_ spell or divine intervention can end the NPC's hostility toward you.
-
-**_Ruin_**. All forms of wealth that you carry or own, other than magic items, are lost to you. Portable property vanishes. Businesses, buildings, and land you own are lost in a way that alters reality the least. Any documentation that proves you should own something lost to this card also disappears.
-
-**_Skull_**. You summon an avatar of death-a ghostly humanoid skeleton clad in a tattered black robe and carrying a spectral scythe. It appears in a space of the GM's choice within 10 feet of you and attacks you, warning all others that you must win the battle alone. The avatar fights until you die or it drops to 0 hit points, whereupon it disappears. If anyone tries to help you, the helper summons its own avatar of death. A creature slain by an avatar of death can't be restored to life.
-
+    description: `Usually found in a box or pouch, this deck contains a number of cards made of ivory or vellum. Most (75 percent) of these decks have only thirteen cards, but the rest have twenty-two.
+
+Before you draw a card, you must declare how many cards you intend to draw and then draw them randomly (you can use an altered deck of playing cards to simulate the deck). Any cards drawn in excess of this number have no effect. Otherwise, as soon as you draw a card from the deck, its magic takes effect. You must draw each card no more than 1 hour after the previous draw. If you fail to draw the chosen number, the remaining number of cards fly from the deck on their own and take effect all at once.
+
+Once a card is drawn, it fades from existence. Unless the card is the Fool or the Jester, the card reappears in the deck, making it possible to draw the same card twice.
+
+| Playing Card       | Card        |
+|--------------------|-------------|
+| Ace of diamonds    | Vizier\\*    |
+| King of diamonds   | Sun         |
+| Queen of diamonds  | Moon        |
+| Jack of diamonds   | Star        |
+| Two of diamonds    | Comet\\*     |
+| Ace of hearts      | The Fates\\* |
+| King of hearts     | Throne      |
+| Queen of hearts    | Key         |
+| Jack of hearts     | Knight      |
+| Two of hearts      | Gem\\*       |
+| Ace of clubs       | Talons\\*    |
+| King of clubs      | The Void    |
+| Queen of clubs     | Flames      |
+| Jack of clubs      | Skull       |
+| Two of clubs       | Idiot\\*     |
+| Ace of spades      | Donjon\\*    |
+| King of spades     | Ruin        |
+| Queen of spades    | Euryale     |
+| Jack of spades     | Rogue       |
+| Two of spades      | Balance\\*   |
+| Joker (with TM)    | Fool\\*      |
+| Joker (without TM) | Jester      |
+
+\\*Found only in a deck with twenty-two cards
+
+**_Balance_**. Your mind suffers a wrenching alteration, causing your alignment to change. Lawful becomes chaotic, good becomes evil, and vice versa. If you are true neutral or unaligned, this card has no effect on you.
+
+**_Comet_**. If you single-handedly defeat the next hostile monster or group of monsters you encounter, you gain experience points enough to gain one level. Otherwise, this card has no effect.
+
+**_Donjon_**. You disappear and become entombed in a state of suspended animation in an extradimensional sphere. Everything you were wearing and carrying stays behind in the space you occupied when you disappeared. You remain imprisoned until you are found and removed from the sphere. You can't be located by any divination magic, but a _wish_ spell can reveal the location of your prison. You draw no more cards.
+
+**_Euryale_**. The card's medusa-like visage curses you. You take a -2 penalty on saving throws while cursed in this way. Only a god or the magic of The Fates card can end this curse.
+
+**_The Fates_**. Reality's fabric unravels and spins anew, allowing you to avoid or erase one event as if it never happened. You can use the card's magic as soon as you draw the card or at any other time before you die.
+
+**_Flames_**. A powerful devil becomes your enemy. The devil seeks your ruin and plagues your life, savoring your suffering before attempting to slay you. This enmity lasts until either you or the devil dies.
+
+**_Fool_**. You lose 10,000 XP, discard this card, and draw from the deck again, counting both draws as one of your declared draws. If losing that much XP would cause you to lose a level, you instead lose an amount that leaves you with just enough XP to keep your level.
+
+**_Gem_**. Twenty-five pieces of jewelry worth 2,000 gp each or fifty gems worth 1,000 gp each appear at your feet.
+
+**_Idiot_**. Permanently reduce your Intelligence by 1d4 + 1 (to a minimum score of 1). You can draw one additional card beyond your declared draws.
+
+**_Jester_**. You gain 10,000 XP, or you can draw two additional cards beyond your declared draws.
+
+**_Key_**. A rare or rarer magic weapon with which you are proficient appears in your hands. The GM chooses the weapon.
+
+**_Knight_**. You gain the service of a 4th-level fighter who appears in a space you choose within 30 feet of you. The fighter is of the same race as you and serves you loyally until death, believing the fates have drawn him or her to you. You control this character.
+
+**_Moon_**. You are granted the ability to cast the _wish_ spell 1d3 times.
+
+**_Rogue_**. A nonplayer character of the GM's choice becomes hostile toward you. The identity of your new enemy isn't known until the NPC or someone else reveals it. Nothing less than a _wish_ spell or divine intervention can end the NPC's hostility toward you.
+
+**_Ruin_**. All forms of wealth that you carry or own, other than magic items, are lost to you. Portable property vanishes. Businesses, buildings, and land you own are lost in a way that alters reality the least. Any documentation that proves you should own something lost to this card also disappears.
+
+**_Skull_**. You summon an avatar of death-a ghostly humanoid skeleton clad in a tattered black robe and carrying a spectral scythe. It appears in a space of the GM's choice within 10 feet of you and attacks you, warning all others that you must win the battle alone. The avatar fights until you die or it drops to 0 hit points, whereupon it disappears. If anyone tries to help you, the helper summons its own avatar of death. A creature slain by an avatar of death can't be restored to life.
+
 #`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1601,8 +1601,8 @@ The first time you attack with the sword on each of your turns, you can transfer
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `You can use an action to place these shackles on an incapacitated creature. The shackles adjust to fit a creature of Small to Large size. In addition to serving as mundane manacles, the shackles prevent a creature bound by them from using any method of extradimensional movement, including teleportation or travel to a different plane of existence. They don't prevent the creature from passing through an interdimensional portal.
-
+    description: `You can use an action to place these shackles on an incapacitated creature. The shackles adjust to fit a creature of Small to Large size. In addition to serving as mundane manacles, the shackles prevent a creature bound by them from using any method of extradimensional movement, including teleportation or travel to a different plane of existence. They don't prevent the creature from passing through an interdimensional portal.
+
 You and any creature you designate when you use the shackles can use an action to remove them. Once every 30 days, the bound creature can make a DC 30 Strength (Athletics) check. On a success, the creature breaks free and destroys the shackles.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1613,23 +1613,23 @@ You and any creature you designate when you use the shackles can use an action t
     category: `Armor`,
     rarity: `Very Rare`,
     requiresAttunement: true,
-    description: `Dragon scale mail is made of the scales of one kind of dragon. Sometimes dragons collect their cast-off scales and gift them to humanoids. Other times, hunters carefully skin and preserve the hide of a dead dragon. In either case, dragon scale mail is highly valued.
-
-While wearing this armor, you gain a +1 bonus to AC, you have advantage on saving throws against the Frightful Presence and breath weapons of dragons, and you have resistance to one damage type that is determined by the kind of dragon that provided the scales (see the table).
-
-Additionally, you can focus your senses as an action to magically discern the distance and direction to the closest dragon within 30 miles of you that is of the same type as the armor. This special action can't be used again until the next dawn.
-
-| Dragon | Resistance |
-|--------|------------|
-| Black  | Acid       |
-| Blue   | Lightning  |
-| Brass  | Fire       |
-| Bronze | Lightning  |
-| Copper | Acid       |
-| Gold   | Fire       |
-| Green  | Poison     |
-| Red    | Fire       |
-| Silver | Cold       |
+    description: `Dragon scale mail is made of the scales of one kind of dragon. Sometimes dragons collect their cast-off scales and gift them to humanoids. Other times, hunters carefully skin and preserve the hide of a dead dragon. In either case, dragon scale mail is highly valued.
+
+While wearing this armor, you gain a +1 bonus to AC, you have advantage on saving throws against the Frightful Presence and breath weapons of dragons, and you have resistance to one damage type that is determined by the kind of dragon that provided the scales (see the table).
+
+Additionally, you can focus your senses as an action to magically discern the distance and direction to the closest dragon within 30 miles of you that is of the same type as the armor. This special action can't be used again until the next dawn.
+
+| Dragon | Resistance |
+|--------|------------|
+| Black  | Acid       |
+| Blue   | Lightning  |
+| Brass  | Fire       |
+| Bronze | Lightning  |
+| Copper | Acid       |
+| Gold   | Fire       |
+| Green  | Poison     |
+| Red    | Fire       |
+| Silver | Cold       |
 | White  | Cold       |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1698,10 +1698,10 @@ When you hit a dragon with this weapon, the dragon takes an extra 3d6 damage of 
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This small packet contains 1d6 + 4 pinches of dust. You can use an action to sprinkle a pinch of it over water. The dust turns a cube of water 15 feet on a side into one marble-sized pellet, which floats or rests near where the dust was sprinkled. The pellet's weight is negligible.
-
-Someone can use an action to smash the pellet against a hard surface, causing the pellet to shatter and release the water the dust absorbed. Doing so ends that pellet's magic.
-
+    description: `This small packet contains 1d6 + 4 pinches of dust. You can use an action to sprinkle a pinch of it over water. The dust turns a cube of water 15 feet on a side into one marble-sized pellet, which floats or rests near where the dust was sprinkled. The pellet's weight is negligible.
+
+Someone can use an action to smash the pellet against a hard surface, causing the pellet to shatter and release the water the dust absorbed. Doing so ends that pellet's magic.
+
 An elemental composed mostly of water that is exposed to a pinch of the dust must make a DC 13 Constitution saving throw, taking 10d6 necrotic damage on a failed save, or half as much damage on a successful one.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1712,8 +1712,8 @@ An elemental composed mostly of water that is exposed to a pinch of the dust mus
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `Found in a small container, this powder resembles very fine sand. It appears to be _dust of disappearance_, and an _identify_ spell reveals it to be such. There is enough of it for one use.
-
+    description: `Found in a small container, this powder resembles very fine sand. It appears to be _dust of disappearance_, and an _identify_ spell reveals it to be such. There is enough of it for one use.
+
 When you use an action to throw a handful of the dust into the air, you and each creature that needs to breathe within 30 feet of you must succeed on a DC 15 Constitution saving throw or become unable to breathe, while sneezing uncontrollably. A creature affected in this way is incapacitated and suffocating. As long as it is conscious, a creature can repeat the saving throw at the end of each of its turns, ending the effect on it on a success. The _lesser restoration_ spell can also end the effect on a creature.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1744,8 +1744,8 @@ When you use an action to throw a handful of the dust into the air, you and each
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `Each of the quiver's three compartments connects to an extradimensional space that allows the quiver to hold numerous items while never weighing more than 2 pounds. The shortest compartment can hold up to sixty arrows, bolts, or similar objects. The midsize compartment holds up to eighteen javelins or similar objects. The longest compartment holds up to six long objects, such as bows, quarterstaffs, or spears.
-
+    description: `Each of the quiver's three compartments connects to an extradimensional space that allows the quiver to hold numerous items while never weighing more than 2 pounds. The shortest compartment can hold up to sixty arrows, bolts, or similar objects. The midsize compartment holds up to eighteen javelins or similar objects. The longest compartment holds up to six long objects, such as bows, quarterstaffs, or spears.
+
 You can draw any item the quiver contains as if doing so from a regular quiver or scabbard.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1756,14 +1756,14 @@ You can draw any item the quiver contains as if doing so from a regular quiver o
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: false,
-    description: `This painted brass bottle weighs 1 pound. When you use an action to remove the stopper, a cloud of thick smoke flows out of the bottle. At the end of your turn, the smoke disappears with a flash of harmless fire, and an efreeti appears in an unoccupied space within 30 feet of you.
-
-The first time the bottle is opened, the GM rolls to determine what happens.
-
-| d100   | Effect                                                                                                                                                                                                                                                                                                                                                 |
-|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 01-10  | The efreeti attacks you. After fighting for 5 rounds, the efreeti disappears, and the bottle loses its magic.                                                                                                                                                                                                                                          |
-| 11-90  | The efreeti serves you for 1 hour, doing as you command. Then the efreeti returns to the bottle, and a new stopper contains it. The stopper can't be removed for 24 hours. The next two times the bottle is opened, the same effect occurs. If the bottle is opened a fourth time, the efreeti escapes and disappears, and the bottle loses its magic. |
+    description: `This painted brass bottle weighs 1 pound. When you use an action to remove the stopper, a cloud of thick smoke flows out of the bottle. At the end of your turn, the smoke disappears with a flash of harmless fire, and an efreeti appears in an unoccupied space within 30 feet of you.
+
+The first time the bottle is opened, the GM rolls to determine what happens.
+
+| d100   | Effect                                                                                                                                                                                                                                                                                                                                                 |
+|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 01-10  | The efreeti attacks you. After fighting for 5 rounds, the efreeti disappears, and the bottle loses its magic.                                                                                                                                                                                                                                          |
+| 11-90  | The efreeti serves you for 1 hour, doing as you command. Then the efreeti returns to the bottle, and a new stopper contains it. The stopper can't be removed for 24 hours. The next two times the bottle is opened, the same effect occurs. If the bottle is opened a fourth time, the efreeti escapes and disappears, and the bottle loses its magic. |
 | 91-100 | The efreeti can cast the wish spell three times for you. It disappears when it grants the final wish or after 1 hour, and the bottle loses its magic.                                                                                                                                                                                                  |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1774,13 +1774,13 @@ The first time the bottle is opened, the GM rolls to determine what happens.
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This gem contains a mote of elemental energy. When you use an action to break the gem, an elemental is summoned as if you had cast the _conjure elemental_ spell, and the gem's magic is lost. The type of gem determines the elemental summoned by the spell.
-
-| Gem            | Summoned Elemental |
-|----------------|--------------------|
-| Blue sapphire  | Air elemental      |
-| Yellow diamond | Earth elemental    |
-| Red corundum   | Fire elemental     |
+    description: `This gem contains a mote of elemental energy. When you use an action to break the gem, an elemental is summoned as if you had cast the _conjure elemental_ spell, and the gem's magic is lost. The type of gem determines the elemental summoned by the spell.
+
+| Gem            | Summoned Elemental |
+|----------------|--------------------|
+| Blue sapphire  | Air elemental      |
+| Yellow diamond | Earth elemental    |
+| Red corundum   | Fire elemental     |
 | Emerald        | Water elemental    |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1801,8 +1801,8 @@ The first time the bottle is opened, the GM rolls to determine what happens.
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `Smoke leaks from the lead-stoppered mouth of this brass bottle, which weighs 1 pound. When you use an action to remove the stopper, a cloud of thick smoke pours out in a 60-foot radius from the bottle. The cloud's area is heavily obscured. Each minute the bottle remains open and within the cloud, the radius increases by 10 feet until it reaches its maximum radius of 120 feet.
-
+    description: `Smoke leaks from the lead-stoppered mouth of this brass bottle, which weighs 1 pound. When you use an action to remove the stopper, a cloud of thick smoke pours out in a 60-foot radius from the bottle. The cloud's area is heavily obscured. Each minute the bottle remains open and within the cloud, the radius increases by 10 feet until it reaches its maximum radius of 120 feet.
+
 The cloud persists as long as the bottle is open. Closing the bottle requires you to speak its command word as an action. Once the bottle is closed, the cloud disperses after 10 minutes. A moderate wind (11 to 20 miles per hour) can also disperse the smoke after 1 minute, and a strong wind (21 or more miles per hour) can do so after 1 round.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -1843,29 +1843,29 @@ The cloud persists as long as the bottle is open. Closing the bottle requires yo
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This tiny object looks like a feather. Different types of feather tokens exist, each with a different single* use effect. The GM chooses the kind of token or determines it randomly.
-
-| d100   | Feather Token |
-|--------|---------------|
-| 01-20  | Anchor        |
-| 21-35  | Bird          |
-| 36-50  | Fan           |
-| 51-65  | Swan boat     |
-| 66-90  | Tree          |
-| 91-100  | Whip          |
-
-**_Anchor_**. You can use an action to touch the token to a boat or ship. For the next 24 hours, the vessel can't be moved by any means. Touching the token to the vessel again ends the effect. When the effect ends, the token disappears.
-
-**_Bird_**. You can use an action to toss the token 5 feet into the air. The token disappears and an enormous, multicolored bird takes its place. The bird has the statistics of a roc, but it obeys your simple commands and can't attack. It can carry up to 500 pounds while flying at its maximum speed (16 miles an hour for a maximum of 144 miles per day, with a one-hour rest for every 3 hours of flying), or 1,000 pounds at half that speed. The bird disappears after flying its maximum distance for a day or if it drops to 0 hit points. You can dismiss the bird as an action.
-
-**_Fan_**. If you are on a boat or ship, you can use an action to toss the token up to 10 feet in the air. The token disappears, and a giant flapping fan takes its place. The fan floats and creates a wind strong enough to fill the sails of one ship, increasing its speed by 5 miles per hour for 8 hours. You can dismiss the fan as an action.
-
-**_Swan Boat_**. You can use an action to touch the token to a body of water at least 60 feet in diameter. The token disappears, and a 50-foot-long, 20-foot* wide boat shaped like a swan takes its place. The boat is self-propelled and moves across water at a speed of 6 miles per hour. You can use an action while on the boat to command it to move or to turn up to 90 degrees. The boat can carry up to thirty-two Medium or smaller creatures. A Large creature counts as four Medium creatures, while a Huge creature counts as nine. The boat remains for 24 hours and then disappears. You can dismiss the boat as an action.
-
-**_Tree_**. You must be outdoors to use this token. You can use an action to touch it to an unoccupied space on the ground. The token disappears, and in its place a nonmagical oak tree springs into existence. The tree is 60 feet tall and has a 5-foot-diameter trunk, and its branches at the top spread out in a 20-foot radius.
-
-**_Whip_**. You can use an action to throw the token to a point within 10 feet of you. The token disappears, and a floating whip takes its place. You can then use a bonus action to make a melee spell attack against a creature within 10 feet of the whip, with an attack bonus of +9. On a hit, the target takes 1d6 + 5 force damage.
-
+    description: `This tiny object looks like a feather. Different types of feather tokens exist, each with a different single* use effect. The GM chooses the kind of token or determines it randomly.
+
+| d100   | Feather Token |
+|--------|---------------|
+| 01-20  | Anchor        |
+| 21-35  | Bird          |
+| 36-50  | Fan           |
+| 51-65  | Swan boat     |
+| 66-90  | Tree          |
+| 91-100  | Whip          |
+
+**_Anchor_**. You can use an action to touch the token to a boat or ship. For the next 24 hours, the vessel can't be moved by any means. Touching the token to the vessel again ends the effect. When the effect ends, the token disappears.
+
+**_Bird_**. You can use an action to toss the token 5 feet into the air. The token disappears and an enormous, multicolored bird takes its place. The bird has the statistics of a roc, but it obeys your simple commands and can't attack. It can carry up to 500 pounds while flying at its maximum speed (16 miles an hour for a maximum of 144 miles per day, with a one-hour rest for every 3 hours of flying), or 1,000 pounds at half that speed. The bird disappears after flying its maximum distance for a day or if it drops to 0 hit points. You can dismiss the bird as an action.
+
+**_Fan_**. If you are on a boat or ship, you can use an action to toss the token up to 10 feet in the air. The token disappears, and a giant flapping fan takes its place. The fan floats and creates a wind strong enough to fill the sails of one ship, increasing its speed by 5 miles per hour for 8 hours. You can dismiss the fan as an action.
+
+**_Swan Boat_**. You can use an action to touch the token to a body of water at least 60 feet in diameter. The token disappears, and a 50-foot-long, 20-foot* wide boat shaped like a swan takes its place. The boat is self-propelled and moves across water at a speed of 6 miles per hour. You can use an action while on the boat to command it to move or to turn up to 90 degrees. The boat can carry up to thirty-two Medium or smaller creatures. A Large creature counts as four Medium creatures, while a Huge creature counts as nine. The boat remains for 24 hours and then disappears. You can dismiss the boat as an action.
+
+**_Tree_**. You must be outdoors to use this token. You can use an action to touch it to an unoccupied space on the ground. The token disappears, and in its place a nonmagical oak tree springs into existence. The tree is 60 feet tall and has a 5-foot-diameter trunk, and its branches at the top spread out in a 20-foot radius.
+
+**_Whip_**. You can use an action to throw the token to a point within 10 feet of you. The token disappears, and a floating whip takes its place. You can then use a bonus action to make a melee spell attack against a creature within 10 feet of the whip, with an attack bonus of +9. On a hit, the target takes 1d6 + 5 force damage.
+
 As a bonus action on your turn, you can direct the whip to fly up to 20 feet and repeat the attack against a creature within 10 feet of it. The whip disappears after 1 hour, when you use an action to dismiss it, or when you are incapacitated or die.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2036,14 +2036,14 @@ As a bonus action on your turn, you can direct the whip to fly up to 20 feet and
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This object appears as a wooden box that measures 12 inches long, 6 inches wide, and 6 inches deep. It weighs 4 pounds and floats. It can be opened to store items inside. This item also has three command words, each requiring you to use an action to speak it.
-
-One command word causes the box to unfold into a boat 10 feet long, 4 feet wide, and 2 feet deep. The boat has one pair of oars, an anchor, a mast, and a lateen sail. The boat can hold up to four Medium creatures comfortably.
-
-The second command word causes the box to unfold into a ship 24 feet long, 8 feet wide, and 6 feet deep. The ship has a deck, rowing seats, five sets of oars, a steering oar, an anchor, a deck cabin, and a mast with a square sail. The ship can hold fifteen Medium creatures comfortably.
-
-When the box becomes a vessel, its weight becomes that of a normal vessel its size, and anything that was stored in the box remains in the boat.
-
+    description: `This object appears as a wooden box that measures 12 inches long, 6 inches wide, and 6 inches deep. It weighs 4 pounds and floats. It can be opened to store items inside. This item also has three command words, each requiring you to use an action to speak it.
+
+One command word causes the box to unfold into a boat 10 feet long, 4 feet wide, and 2 feet deep. The boat has one pair of oars, an anchor, a mast, and a lateen sail. The boat can hold up to four Medium creatures comfortably.
+
+The second command word causes the box to unfold into a ship 24 feet long, 8 feet wide, and 6 feet deep. The ship has a deck, rowing seats, five sets of oars, a steering oar, an anchor, a deck cabin, and a mast with a square sail. The ship can hold fifteen Medium creatures comfortably.
+
+When the box becomes a vessel, its weight becomes that of a normal vessel its size, and anything that was stored in the box remains in the boat.
+
 The third command word causes the _folding boat_ to fold back into a box, provided that no creatures are aboard. Any objects in the vessel that can't fit inside the box remain outside the box as it folds. Any objects in the vessel that can fit inside the box do so.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2120,12 +2120,12 @@ When you draw this weapon, you can extinguish all nonmagical flames within 30 fe
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This prism has 50 charges. While you are holding it, you can use an action to speak one of three command words to cause one of the following effects:
-
-* The first command word causes the gem to shed bright light in a 30-foot radius and dim light for an additional 30 feet. This effect doesn't expend a charge. It lasts until you use a bonus action to repeat the command word or until you use another function of the gem.
-* The second command word expends 1 charge and causes the gem to fire a brilliant beam of light at one creature you can see within 60 feet of you. The creature must succeed on a DC 15 Constitution saving throw or become blinded for 1 minute. The creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.
-* The third command word expends 5 charges and causes the gem to flare with blinding light in a 30* foot cone originating from it. Each creature in the cone must make a saving throw as if struck by the beam created with the second command word.
-
+    description: `This prism has 50 charges. While you are holding it, you can use an action to speak one of three command words to cause one of the following effects:
+
+* The first command word causes the gem to shed bright light in a 30-foot radius and dim light for an additional 30 feet. This effect doesn't expend a charge. It lasts until you use a bonus action to repeat the command word or until you use another function of the gem.
+* The second command word expends 1 charge and causes the gem to fire a brilliant beam of light at one creature you can see within 60 feet of you. The creature must succeed on a DC 15 Constitution saving throw or become blinded for 1 minute. The creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.
+* The third command word expends 5 charges and causes the gem to flare with blinding light in a 30* foot cone originating from it. Each creature in the cone must make a saving throw as if struck by the beam created with the second command word.
+
 When all of the gem's charges are expended, the gem becomes a nonmagical jewel worth 50 gp.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2136,8 +2136,8 @@ When all of the gem's charges are expended, the gem becomes a nonmagical jewel w
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `This gem has 3 charges. As an action, you can speak the gem's command word and expend 1 charge. For the next 10 minutes, you have truesight out to 120 feet when you peer through the gem.
-
+    description: `This gem has 3 charges. As an action, you can speak the gem's command word and expend 1 charge. For the next 10 minutes, you have truesight out to 120 feet when you peer through the gem.
+
 The gem regains 1d3 expended charges daily at dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2466,12 +2466,12 @@ The hammer also has 5 charges. While attuned to it, you can expend 1 charge and 
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This backpack has a central pouch and two side pouches, each of which is an extradimensional space. Each side pouch can hold up to 20 pounds of material, not exceeding a volume of 2 cubic feet. The large central pouch can hold up to 8 cubic feet or 80 pounds of material. The backpack always weighs 5 pounds, regardless of its contents.
-
-Placing an object in the haversack follows the normal rules for interacting with objects. Retrieving an item from the haversack requires you to use an action. When you reach into the haversack for a specific item, the item is always magically on top.
-
-The haversack has a few limitations. If it is overloaded, or if a sharp object pierces it or tears it, the haversack ruptures and is destroyed. If the haversack is destroyed, its contents are lost forever, although an artifact always turns up again somewhere. If the haversack is turned inside out, its contents spill forth, unharmed, and the haversack must be put right before it can be used again. If a breathing creature is placed within the haversack, the creature can survive for up to 10 minutes, after which time it begins to suffocate.
-
+    description: `This backpack has a central pouch and two side pouches, each of which is an extradimensional space. Each side pouch can hold up to 20 pounds of material, not exceeding a volume of 2 cubic feet. The large central pouch can hold up to 8 cubic feet or 80 pounds of material. The backpack always weighs 5 pounds, regardless of its contents.
+
+Placing an object in the haversack follows the normal rules for interacting with objects. Retrieving an item from the haversack requires you to use an action. When you reach into the haversack for a specific item, the item is always magically on top.
+
+The haversack has a few limitations. If it is overloaded, or if a sharp object pierces it or tears it, the haversack ruptures and is destroyed. If the haversack is destroyed, its contents are lost forever, although an artifact always turns up again somewhere. If the haversack is turned inside out, its contents spill forth, unharmed, and the haversack must be put right before it can be used again. If a breathing creature is placed within the haversack, the creature can survive for up to 10 minutes, after which time it begins to suffocate.
+
 Placing the haversack inside an extradimensional space created by a _bag of holding_, _portable hole_, or similar item instantly destroys both items and opens a gate to the Astral Plane. The gate originates where the one item was placed inside the other. Any creature within 10 feet of the gate is sucked through it and deposited in a random location on the Astral Plane. The gate then closes. The gate is one-way only and can't be reopened.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2502,15 +2502,15 @@ Placing the haversack inside an extradimensional space created by a _bag of hold
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: true,
-    description: `This dazzling helm is set with 1d10 diamonds, 2d10 rubies, 3d10 fire opals, and 4d10 opals. Any gem pried from the helm crumbles to dust. When all the gems are removed or destroyed, the helm loses its magic.
-
-You gain the following benefits while wearing it:
-
-* You can use an action to cast one of the following spells (save DC 18), using one of the helm's gems of the specified type as a component: _daylight_ (opal), _fireball_ (fire opal), _prismatic spray_ (diamond), or _wall of fire_ (ruby). The gem is destroyed when the spell is cast and disappears from the helm.
-* As long as it has at least one diamond, the helm emits dim light in a 30-foot radius when at least one undead is within that area. Any undead that starts its turn in that area takes 1d6 radiant damage.
-* As long as the helm has at least one ruby, you have resistance to fire damage.
-* As long as the helm has at least one fire opal, you can use an action and speak a command word to cause one weapon you are holding to burst into flames. The flames emit bright light in a 10-foot radius and dim light for an additional 10 feet. The flames are harmless to you and the weapon. When you hit with an attack using the blazing weapon, the target takes an extra 1d6 fire damage. The flames last until you use a bonus action to speak the command word again or until you drop or stow the weapon.
-
+    description: `This dazzling helm is set with 1d10 diamonds, 2d10 rubies, 3d10 fire opals, and 4d10 opals. Any gem pried from the helm crumbles to dust. When all the gems are removed or destroyed, the helm loses its magic.
+
+You gain the following benefits while wearing it:
+
+* You can use an action to cast one of the following spells (save DC 18), using one of the helm's gems of the specified type as a component: _daylight_ (opal), _fireball_ (fire opal), _prismatic spray_ (diamond), or _wall of fire_ (ruby). The gem is destroyed when the spell is cast and disappears from the helm.
+* As long as it has at least one diamond, the helm emits dim light in a 30-foot radius when at least one undead is within that area. Any undead that starts its turn in that area takes 1d6 radiant damage.
+* As long as the helm has at least one ruby, you have resistance to fire damage.
+* As long as the helm has at least one fire opal, you can use an action and speak a command word to cause one weapon you are holding to burst into flames. The flames emit bright light in a 10-foot radius and dim light for an additional 10 feet. The flames are harmless to you and the weapon. When you hit with an attack using the blazing weapon, the target takes an extra 1d6 fire damage. The flames last until you use a bonus action to speak the command word again or until you drop or stow the weapon.
+
 Roll a d20 if you are wearing the helm and take fire damage as a result of failing a saving throw against a spell. On a roll of 1, the helm emits beams of light from its remaining gems. Each creature within 60 feet of the helm other than you must succeed on a DC 17 Dexterity saving throw or be struck by a beam, taking radiant damage equal to the number of gems in the helm. The helm and its gems are then destroyed.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2531,8 +2531,8 @@ Roll a d20 if you are wearing the helm and take fire damage as a result of faili
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: true,
-    description: `While wearing this helm, you can use an action to cast the _detect thoughts_ spell (save DC 13) from it. As long as you maintain concentration on the spell, you can use a bonus action to send a telepathic message to a creature you are focused on. It can reply-using a bonus action to do so-while your focus on it continues.
-
+    description: `While wearing this helm, you can use an action to cast the _detect thoughts_ spell (save DC 13) from it. As long as you maintain concentration on the spell, you can use a bonus action to send a telepathic message to a creature you are focused on. It can reply-using a bonus action to do so-while your focus on it continues.
+
 While focusing on a creature with _detect thoughts_, you can use an action to cast the _suggestion_ spell (save DC 13) from the helm on that creature. Once used, the _suggestion_ property can't be used again until the next dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2601,8 +2601,8 @@ While you hold the drawn sword, it creates an aura in a 10-foot radius around yo
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `You can use an action to speak the horn's command word and then blow the horn, which emits a thunderous blast in a 30-foot cone that is audible 600 feet away. Each creature in the cone must make a DC 15 Constitution saving throw. On a failed save, a creature takes 5d6 thunder damage and is deafened for 1 minute. On a successful save, a creature takes half as much damage and isn't deafened. Creatures and objects made of glass or crystal have disadvantage on the saving throw and take 10d6 thunder damage instead of 5d6.
-
+    description: `You can use an action to speak the horn's command word and then blow the horn, which emits a thunderous blast in a 30-foot cone that is audible 600 feet away. Each creature in the cone must make a DC 15 Constitution saving throw. On a failed save, a creature takes 5d6 thunder damage and is deafened for 1 minute. On a successful save, a creature takes half as much damage and isn't deafened. Creatures and objects made of glass or crystal have disadvantage on the saving throw and take 10d6 thunder damage instead of 5d6.
+
 Each use of the horn's magic has a 20 percent chance of causing the horn to explode. The explosion deals 10d6 fire damage to the blower and destroys the horn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2683,12 +2683,12 @@ Each use of the horn's magic has a 20 percent chance of causing the horn to expl
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `You can use an action to place this 1-inch metal cube on the ground and speak its command word. The cube rapidly grows into a fortress that remains until you use an action to speak the command word that dismisses it, which works only if the fortress is empty.
-
-The fortress is a square tower, 20 feet on a side and 30 feet high, with arrow slits on all sides and a battlement atop it. Its interior is divided into two floors, with a ladder running along one wall to connect them. The ladder ends at a trapdoor leading to the roof. When activated, the tower has a small door on the side facing you. The door opens only at your command, which you can speak as a bonus action. It is immune to the _knock_ spell and similar magic, such as that of a _chime of opening_.
-
-Each creature in the area where the fortress appears must make a DC 15 Dexterity saving throw, taking 10d10 bludgeoning damage on a failed save, or half as much damage on a successful one. In either case, the creature is pushed to an unoccupied space outside but next to the fortress. Objects in the area that aren't being worn or carried take this damage and are pushed automatically.
-
+    description: `You can use an action to place this 1-inch metal cube on the ground and speak its command word. The cube rapidly grows into a fortress that remains until you use an action to speak the command word that dismisses it, which works only if the fortress is empty.
+
+The fortress is a square tower, 20 feet on a side and 30 feet high, with arrow slits on all sides and a battlement atop it. Its interior is divided into two floors, with a ladder running along one wall to connect them. The ladder ends at a trapdoor leading to the roof. When activated, the tower has a small door on the side facing you. The door opens only at your command, which you can speak as a bonus action. It is immune to the _knock_ spell and similar magic, such as that of a _chime of opening_.
+
+Each creature in the area where the fortress appears must make a DC 15 Dexterity saving throw, taking 10d10 bludgeoning damage on a failed save, or half as much damage on a successful one. In either case, the creature is pushed to an unoccupied space outside but next to the fortress. Objects in the area that aren't being worn or carried take this damage and are pushed automatically.
+
 The tower is made of adamantine, and its magic prevents it from being tipped over. The roof, the door, and the walls each have 100 hit points, immunity to damage from nonmagical weapons excluding siege weapons, and resistance to all other damage. Only a _wish_ spell can repair the fortress (this use of the spell counts as replicating a spell of 8th level or lower). Each casting of _wish_ causes the roof, the door, or one wall to regain 50 hit points.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2829,12 +2829,12 @@ The tower is made of adamantine, and its magic prevents it from being tipped ove
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This rusty iron sphere measures 3 inches in diameter and weighs 1 pound. You can use an action to speak the command word and throw the sphere at a Huge or smaller creature you can see within 60 feet of you. As the sphere moves through the air, it opens into a tangle of metal bands.
-
-Make a ranged attack roll with an attack bonus equal to your Dexterity modifier plus your proficiency bonus. On a hit, the target is restrained until you take a bonus action to speak the command word again to release it. Doing so, or missing with the attack, causes the bands to contract and become a sphere once more.
-
-A creature, including the one restrained, can use an action to make a DC 20 Strength check to break the iron bands. On a success, the item is destroyed, and the restrained creature is freed. If the check fails, any further attempts made by that creature automatically fail until 24 hours have elapsed.
-
+    description: `This rusty iron sphere measures 3 inches in diameter and weighs 1 pound. You can use an action to speak the command word and throw the sphere at a Huge or smaller creature you can see within 60 feet of you. As the sphere moves through the air, it opens into a tangle of metal bands.
+
+Make a ranged attack roll with an attack bonus equal to your Dexterity modifier plus your proficiency bonus. On a hit, the target is restrained until you take a bonus action to speak the command word again to release it. Doing so, or missing with the attack, causes the bands to contract and become a sphere once more.
+
+A creature, including the one restrained, can use an action to make a DC 20 Strength check to break the iron bands. On a success, the item is destroyed, and the restrained creature is freed. If the check fails, any further attempts made by that creature automatically fail until 24 hours have elapsed.
+
 Once the bands are used, they can't be used again until the next dawn.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2845,33 +2845,33 @@ Once the bands are used, they can't be used again until the next dawn.`,
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `This iron bottle has a brass stopper. You can use an action to speak the flask's command word, targeting a creature that you can see within 60 feet of you. If the target is native to a plane of existence other than the one you're on, the target must succeed on a DC 17 Wisdom saving throw or be trapped in the flask. If the target has been trapped by the flask before, it has advantage on the saving throw. Once trapped, a creature remains in the flask until released. The flask can hold only one creature at a time. A creature trapped in the flask doesn't need to breathe, eat, or drink and doesn't age.
-
-You can use an action to remove the flask's stopper and release the creature the flask contains. The creature is friendly to you and your companions for 1 hour and obeys your commands for that duration. If you give no commands or give it a command that is likely to result in its death, it defends itself but otherwise takes no actions. At the end of the duration, the creature acts in accordance with its normal disposition and alignment.
-
-An _identify_ spell reveals that a creature is inside the flask, but the only way to determine the type of creature is to open the flask. A newly discovered bottle might already contain a creature chosen by the GM or determined randomly.
-
-| d100  | Contents          |
-|-------|-------------------|
-| 1-50  | Empty             |
-| 51-54 | Demon (type 1)    |
-| 55-58 | Demon (type 2)    |
-| 59-62 | Demon (type 3)    |
-| 63-64 | Demon (type 4)    |
-| 65    | Demon (type 5)    |
-| 66    | Demon (type 6)    |
-| 67    | Deva              |
-| 68-69 | Devil (greater)   |
-| 70-73 | Devil (lesser)    |
-| 74-75 | Djinni            |
-| 76-77 | Efreeti           |
-| 78-83 | Elemental (any)   |
-| 84-86 | Invisible stalker |
-| 87-90 | Night hag         |
-| 91    | Planetar          |
-| 92-95 | Salamander        |
-| 96    | Solar             |
-| 97-99 | Succubus/incubus  |
+    description: `This iron bottle has a brass stopper. You can use an action to speak the flask's command word, targeting a creature that you can see within 60 feet of you. If the target is native to a plane of existence other than the one you're on, the target must succeed on a DC 17 Wisdom saving throw or be trapped in the flask. If the target has been trapped by the flask before, it has advantage on the saving throw. Once trapped, a creature remains in the flask until released. The flask can hold only one creature at a time. A creature trapped in the flask doesn't need to breathe, eat, or drink and doesn't age.
+
+You can use an action to remove the flask's stopper and release the creature the flask contains. The creature is friendly to you and your companions for 1 hour and obeys your commands for that duration. If you give no commands or give it a command that is likely to result in its death, it defends itself but otherwise takes no actions. At the end of the duration, the creature acts in accordance with its normal disposition and alignment.
+
+An _identify_ spell reveals that a creature is inside the flask, but the only way to determine the type of creature is to open the flask. A newly discovered bottle might already contain a creature chosen by the GM or determined randomly.
+
+| d100  | Contents          |
+|-------|-------------------|
+| 1-50  | Empty             |
+| 51-54 | Demon (type 1)    |
+| 55-58 | Demon (type 2)    |
+| 59-62 | Demon (type 3)    |
+| 63-64 | Demon (type 4)    |
+| 65    | Demon (type 5)    |
+| 66    | Demon (type 6)    |
+| 67    | Deva              |
+| 68-69 | Devil (greater)   |
+| 70-73 | Devil (lesser)    |
+| 74-75 | Djinni            |
+| 76-77 | Efreeti           |
+| 78-83 | Elemental (any)   |
+| 84-86 | Invisible stalker |
+| 87-90 | Night hag         |
+| 91    | Planetar          |
+| 92-95 | Salamander        |
+| 96    | Solar             |
+| 97-99 | Succubus/incubus  |
 | 100   | Xorn              |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -2960,7 +2960,7 @@ The javelin's property can't be used again until the next dawn. In the meantime,
   },
   {
     slug: "srd-2014-light-hammer-1",
-    name: `Light-Hammer (+1)`,
+    name: `Light Hammer (+1)`,
     category: `Weapon`,
     rarity: `Uncommon`,
     requiresAttunement: false,
@@ -2970,7 +2970,7 @@ The javelin's property can't be used again until the next dawn. In the meantime,
   },
   {
     slug: "srd-2014-light-hammer-2",
-    name: `Light-Hammer (+2)`,
+    name: `Light Hammer (+2)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -2980,7 +2980,7 @@ The javelin's property can't be used again until the next dawn. In the meantime,
   },
   {
     slug: "srd-2014-light-hammer-3",
-    name: `Light-Hammer (+3)`,
+    name: `Light Hammer (+3)`,
     category: `Weapon`,
     rarity: `Very Rare`,
     requiresAttunement: false,
@@ -3206,17 +3206,17 @@ The mace regains 1d3 expended charges daily at dawn.`,
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: false,
-    description: `This tome contains information and incantations necessary to make a particular type of golem. The GM chooses the type or determines it randomly. To decipher and use the manual, you must be a spellcaster with at least two 5th-level spell slots. A creature that can't use a _manual of golems_ and attempts to read it takes 6d6 psychic damage.
-
-| d20   | Golem | Time     | Cost       |
-|-------|-------|----------|------------|
-| 1-5   | Clay  | 30 days  | 65,000 gp  |
-| 6-17  | Flesh | 60 days  | 50,000 gp  |
-| 18    | Iron  | 120 days | 100,000 gp |
-| 19-20 | Stone | 90 days  | 80,000 gp  |
-
-To create a golem, you must spend the time shown on the table, working without interruption with the manual at hand and resting no more than 8 hours per day. You must also pay the specified cost to purchase supplies.
-
+    description: `This tome contains information and incantations necessary to make a particular type of golem. The GM chooses the type or determines it randomly. To decipher and use the manual, you must be a spellcaster with at least two 5th-level spell slots. A creature that can't use a _manual of golems_ and attempts to read it takes 6d6 psychic damage.
+
+| d20   | Golem | Time     | Cost       |
+|-------|-------|----------|------------|
+| 1-5   | Clay  | 30 days  | 65,000 gp  |
+| 6-17  | Flesh | 60 days  | 50,000 gp  |
+| 18    | Iron  | 120 days | 100,000 gp |
+| 19-20 | Stone | 90 days  | 80,000 gp  |
+
+To create a golem, you must spend the time shown on the table, working without interruption with the manual at hand and resting no more than 8 hours per day. You must also pay the specified cost to purchase supplies.
+
 Once you finish creating the golem, the book is consumed in eldritch flames. The golem becomes animate when the ashes of the manual are sprinkled on it. It is under your control, and it understands and obeys your spoken commands.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -3237,14 +3237,14 @@ Once you finish creating the golem, the book is consumed in eldritch flames. The
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: false,
-    description: `Typically found in 1d4 pots inside a fine wooden box with a brush (weighing 1 pound in total), these pigments allow you to create three-dimensional objects by painting them in two dimensions. The paint flows from the brush to form the desired object as you concentrate on its image.
-
-Each pot of paint is sufficient to cover 1,000 square feet of a surface, which lets you create inanimate objects or terrain features-such as a door, a pit, flowers, trees, cells, rooms, or weapons- that are up to 10,000 cubic feet. It takes 10 minutes to cover 100 square feet.
-
-When you complete the painting, the object or terrain feature depicted becomes a real, nonmagical object. Thus, painting a door on a wall creates an actual door that can be opened to whatever is beyond. Painting a pit on a floor creates a real pit, and its depth counts against the total area of objects you create.
-
-Nothing created by the pigments can have a value greater than 25 gp. If you paint an object of greater value (such as a diamond or a pile of gold), the object looks authentic, but close inspection reveals it is made from paste, bone, or some other worthless material.
-
+    description: `Typically found in 1d4 pots inside a fine wooden box with a brush (weighing 1 pound in total), these pigments allow you to create three-dimensional objects by painting them in two dimensions. The paint flows from the brush to form the desired object as you concentrate on its image.
+
+Each pot of paint is sufficient to cover 1,000 square feet of a surface, which lets you create inanimate objects or terrain features-such as a door, a pit, flowers, trees, cells, rooms, or weapons- that are up to 10,000 cubic feet. It takes 10 minutes to cover 100 square feet.
+
+When you complete the painting, the object or terrain feature depicted becomes a real, nonmagical object. Thus, painting a door on a wall creates an actual door that can be opened to whatever is beyond. Painting a pit on a floor creates a real pit, and its depth counts against the total area of objects you create.
+
+Nothing created by the pigments can have a value greater than 25 gp. If you paint an object of greater value (such as a diamond or a pile of gold), the object looks authentic, but close inspection reveals it is made from paste, bone, or some other worthless material.
+
 If you paint a form of energy such as fire or lightning, the energy appears but dissipates as soon as you complete the painting, doing no harm to anything.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -3295,18 +3295,18 @@ If you paint a form of energy such as fire or lightning, the energy appears but 
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: false,
-    description: `When this 4-foot-tall mirror is viewed indirectly, its surface shows faint images of creatures. The mirror weighs 50 pounds, and it has AC 11, 10 hit points, and vulnerability to bludgeoning damage. It shatters and is destroyed when reduced to 0 hit points.
-
-If the mirror is hanging on a vertical surface and you are within 5 feet of it, you can use an action to speak its command word and activate it. It remains activated until you use an action to speak the command word again.
-
-Any creature other than you that sees its reflection in the activated mirror while within 30 feet of it must succeed on a DC 15 Charisma saving throw or be trapped, along with anything it is wearing or carrying, in one of the mirror's twelve extradimensional cells. This saving throw is made with advantage if the creature knows the mirror's nature, and constructs succeed on the saving throw automatically.
-
-An extradimensional cell is an infinite expanse filled with thick fog that reduces visibility to 10 feet. Creatures trapped in the mirror's cells don't age, and they don't need to eat, drink, or sleep. A creature trapped within a cell can escape using magic that permits planar travel. Otherwise, the creature is confined to the cell until freed.
-
-If the mirror traps a creature but its twelve extradimensional cells are already occupied, the mirror frees one trapped creature at random to accommodate the new prisoner. A freed creature appears in an unoccupied space within sight of the mirror but facing away from it. If the mirror is shattered, all creatures it contains are freed and appear in unoccupied spaces near it.
-
-While within 5 feet of the mirror, you can use an action to speak the name of one creature trapped in it or call out a particular cell by number. The creature named or contained in the named cell appears as an image on the mirror's surface. You and the creature can then communicate normally.
-
+    description: `When this 4-foot-tall mirror is viewed indirectly, its surface shows faint images of creatures. The mirror weighs 50 pounds, and it has AC 11, 10 hit points, and vulnerability to bludgeoning damage. It shatters and is destroyed when reduced to 0 hit points.
+
+If the mirror is hanging on a vertical surface and you are within 5 feet of it, you can use an action to speak its command word and activate it. It remains activated until you use an action to speak the command word again.
+
+Any creature other than you that sees its reflection in the activated mirror while within 30 feet of it must succeed on a DC 15 Charisma saving throw or be trapped, along with anything it is wearing or carrying, in one of the mirror's twelve extradimensional cells. This saving throw is made with advantage if the creature knows the mirror's nature, and constructs succeed on the saving throw automatically.
+
+An extradimensional cell is an infinite expanse filled with thick fog that reduces visibility to 10 feet. Creatures trapped in the mirror's cells don't age, and they don't need to eat, drink, or sleep. A creature trapped within a cell can escape using magic that permits planar travel. Otherwise, the creature is confined to the cell until freed.
+
+If the mirror traps a creature but its twelve extradimensional cells are already occupied, the mirror frees one trapped creature at random to accommodate the new prisoner. A freed creature appears in an unoccupied space within sight of the mirror but facing away from it. If the mirror is shattered, all creatures it contains are freed and appear in unoccupied spaces near it.
+
+While within 5 feet of the mirror, you can use an action to speak the name of one creature trapped in it or call out a particular cell by number. The creature named or contained in the named cell appears as an image on the mirror's surface. You and the creature can then communicate normally.
+
 In a similar way, you can use an action to speak a second command word and free one creature trapped in the mirror. The freed creature appears, along with its possessions, in the unoccupied space nearest to the mirror and facing away from it.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -3437,8 +3437,8 @@ In a similar way, you can use an action to speak a second command word and free 
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This necklace has 1d6 + 3 beads hanging from it. You can use an action to detach a bead and throw it up to 60 feet away. When it reaches the end of its trajectory, the bead detonates as a 3rd-level _fireball_ spell (save DC 15).
-
+    description: `This necklace has 1d6 + 3 beads hanging from it. You can use an action to detach a bead and throw it up to 60 feet away. When it reaches the end of its trajectory, the bead detonates as a 3rd-level _fireball_ spell (save DC 15).
+
 You can hurl multiple beads, or even the whole necklace, as one action. When you do so, increase the level of the _fireball_ by 1 for each bead beyond the first.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -3449,17 +3449,17 @@ You can hurl multiple beads, or even the whole necklace, as one action. When you
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `This necklace has 1d4 + 2 magic beads made from aquamarine, black pearl, or topaz. It also has many nonmagical beads made from stones such as amber, bloodstone, citrine, coral, jade, pearl, or quartz. If a magic bead is removed from the necklace, that bead loses its magic.
-
-Six types of magic beads exist. The GM decides the type of each bead on the necklace or determines it randomly. A necklace can have more than one bead of the same type. To use one, you must be wearing the necklace. Each bead contains a spell that you can cast from it as a bonus action (using your spell save DC if a save is necessary). Once a magic bead's spell is cast, that bead can't be used again until the next dawn.
-
-| d20   | Bead of...   | Spell                                         |
-|-------|--------------|-----------------------------------------------|
-| 1-6   | Blessing     | Bless                                         |
-| 7-12  | Curing       | Cure wounds (2nd level) or lesser restoration |
-| 13-16 | Favor        | Greater restoration                           |
-| 17-18 | Smiting      | Branding smite                                |
-| 19    | Summons      | Planar ally                                   |
+    description: `This necklace has 1d4 + 2 magic beads made from aquamarine, black pearl, or topaz. It also has many nonmagical beads made from stones such as amber, bloodstone, citrine, coral, jade, pearl, or quartz. If a magic bead is removed from the necklace, that bead loses its magic.
+
+Six types of magic beads exist. The GM decides the type of each bead on the necklace or determines it randomly. A necklace can have more than one bead of the same type. To use one, you must be wearing the necklace. Each bead contains a spell that you can cast from it as a bonus action (using your spell save DC if a save is necessary). Once a magic bead's spell is cast, that bead can't be used again until the next dawn.
+
+| d20   | Bead of...   | Spell                                         |
+|-------|--------------|-----------------------------------------------|
+| 1-6   | Blessing     | Bless                                         |
+| 7-12  | Curing       | Cure wounds (2nd level) or lesser restoration |
+| 13-16 | Favor        | Greater restoration                           |
+| 17-18 | Smiting      | Branding smite                                |
+| 19    | Summons      | Planar ally                                   |
 | 20    | Wind walking | Wind walk                                     |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -3694,10 +3694,10 @@ Alternatively, the oil can be poured on the ground as an action, where it covers
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: true,
-    description: `You must be proficient with wind instruments to use these pipes. While you are attuned to the pipes, ordinary rats and giant rats are indifferent toward you and will not attack you unless you threaten or harm them.
-
-The pipes have 3 charges. If you play the pipes as an action, you can use a bonus action to expend 1 to 3 charges, calling forth one swarm of rats with each expended charge, provided that enough rats are within half a mile of you to be called in this fashion (as determined by the GM). If there aren't enough rats to form a swarm, the charge is wasted. Called swarms move toward the music by the shortest available route but aren't under your control otherwise. The pipes regain 1d3 expended charges daily at dawn.
-
+    description: `You must be proficient with wind instruments to use these pipes. While you are attuned to the pipes, ordinary rats and giant rats are indifferent toward you and will not attack you unless you threaten or harm them.
+
+The pipes have 3 charges. If you play the pipes as an action, you can use a bonus action to expend 1 to 3 charges, calling forth one swarm of rats with each expended charge, provided that enough rats are within half a mile of you to be called in this fashion (as determined by the GM). If there aren't enough rats to form a swarm, the charge is wasted. Called swarms move toward the music by the shortest available route but aren't under your control otherwise. The pipes regain 1d3 expended charges daily at dawn.
+
 Whenever a swarm of rats that isn't under another creature's control comes within 30 feet of you while you are playing the pipes, you can make a Charisma check contested by the swarm's Wisdom check. If you lose the contest, the swarm behaves as it normally would and can't be swayed by the pipes' music for the next 24 hours. If you win the contest, the swarm is swayed by the pipes' music and becomes friendly to you and your companions for as long as you continue to play the pipes each round as an action. A friendly swarm obeys your commands. If you issue no commands to a friendly swarm, it defends itself but otherwise takes no actions. If a friendly swarm starts its turn and can't hear the pipes' music, your control over that swarm ends, and the swarm behaves as it normally would and can't be swayed by the pipes' music for the next 24 hours.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -3718,14 +3718,14 @@ Whenever a swarm of rats that isn't under another creature's control comes withi
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter.
-
-You can use an action to unfold a _portable hole_ and place it on or against a solid surface, whereupon the _portable hole_ creates an extradimensional hole 10 feet deep. The cylindrical space within the hole exists on a different plane, so it can't be used to create open passages. Any creature inside an open _portable hole_ can exit the hole by climbing out of it.
-
-You can use an action to close a _portable hole_ by taking hold of the edges of the cloth and folding it up. Folding the cloth closes the hole, and any creatures or objects within remain in the extradimensional space. No matter what's in it, the hole weighs next to nothing.
-
-If the hole is folded up, a creature within the hole's extradimensional space can use an action to make a DC 10 Strength check. On a successful check, the creature forces its way out and appears within 5 feet of the _portable hole_ or the creature carrying it. A breathing creature within a closed _portable hole_ can survive for up to 10 minutes, after which time it begins to suffocate.
-
+    description: `This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter.
+
+You can use an action to unfold a _portable hole_ and place it on or against a solid surface, whereupon the _portable hole_ creates an extradimensional hole 10 feet deep. The cylindrical space within the hole exists on a different plane, so it can't be used to create open passages. Any creature inside an open _portable hole_ can exit the hole by climbing out of it.
+
+You can use an action to close a _portable hole_ by taking hold of the edges of the cloth and folding it up. Folding the cloth closes the hole, and any creatures or objects within remain in the extradimensional space. No matter what's in it, the hole weighs next to nothing.
+
+If the hole is folded up, a creature within the hole's extradimensional space can use an action to make a DC 10 Strength check. On a successful check, the creature forces its way out and appears within 5 feet of the _portable hole_ or the creature carrying it. A breathing creature within a closed _portable hole_ can survive for up to 10 minutes, after which time it begins to suffocate.
+
 Placing a _portable hole_ inside an extradimensional space created by a _bag of holding_, _handy haversack_, or similar item instantly destroys both items and opens a gate to the Astral Plane. The gate originates where the one item was placed inside the other. Any creature within 10 feet of the gate is sucked through it and deposited in a random location on the Astral Plane. The gate then closes. The gate is one-way only and can't be reopened.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4051,8 +4051,8 @@ If you drink it, you take 3d6 poison damage, and you must succeed on a DC 13 Con
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This glass jar, 3 inches in diameter, contains 1d4 + 1 doses of a thick mixture that smells faintly of aloe. The jar and its contents weigh 1/2 pound.
-
+    description: `This glass jar, 3 inches in diameter, contains 1d4 + 1 doses of a thick mixture that smells faintly of aloe. The jar and its contents weigh 1/2 pound.
+
 As an action, one dose of the ointment can be swallowed or applied to the skin. The creature that receives it regains 2d8 + 2 hit points, ceases to be poisoned, and is cured of any disease.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4369,14 +4369,14 @@ Whenever you use the ring again before taking a long rest, you must succeed on a
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `This robe is adorned with eyelike patterns. While you wear the robe, you gain the following benefits:
-
-* The robe lets you see in all directions, and you have advantage on Wisdom (Perception) checks that rely on sight.
-* You have darkvision out to a range of 120 feet.
-* You can see invisible creatures and objects, as well as see into the Ethereal Plane, out to a range of 120 feet.
-
-The eyes on the robe can't be closed or averted. Although you can close or avert your own eyes, you are never considered to be doing so while wearing this robe.
-
+    description: `This robe is adorned with eyelike patterns. While you wear the robe, you gain the following benefits:
+
+* The robe lets you see in all directions, and you have advantage on Wisdom (Perception) checks that rely on sight.
+* You have darkvision out to a range of 120 feet.
+* You can see invisible creatures and objects, as well as see into the Ethereal Plane, out to a range of 120 feet.
+
+The eyes on the robe can't be closed or averted. Although you can close or avert your own eyes, you are never considered to be doing so while wearing this robe.
+
 A _light_ spell cast on the robe or a _daylight_ spell cast within 5 feet of the robe causes you to be blinded for 1 minute. At the end of each of your turns, you can make a Constitution saving throw (DC 11 for _light_ or DC 15 for _daylight_), ending the blindness on a success.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4397,10 +4397,10 @@ A _light_ spell cast on the robe or a _daylight_ spell cast within 5 feet of the
     category: `Wondrous Item`,
     rarity: `Very Rare`,
     requiresAttunement: true,
-    description: `This black or dark blue robe is embroidered with small white or silver stars. You gain a +1 bonus to saving throws while you wear it.
-
-Six stars, located on the robe's upper front portion, are particularly large. While wearing this robe, you can use an action to pull off one of the stars and use it to cast _magic missile_ as a 5th-level spell. Daily at dusk, 1d6 removed stars reappear on the robe.
-
+    description: `This black or dark blue robe is embroidered with small white or silver stars. You gain a +1 bonus to saving throws while you wear it.
+
+Six stars, located on the robe's upper front portion, are particularly large. While wearing this robe, you can use an action to pull off one of the stars and use it to cast _magic missile_ as a 5th-level spell. Daily at dusk, 1d6 removed stars reappear on the robe.
+
 While you wear the robe, you can use an action to enter the Astral Plane along with everything you are wearing and carrying. You remain there until you use an action to return to the plane you were on. You reappear in the last space you occupied, or if that space is occupied, the nearest unoccupied space.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4411,12 +4411,12 @@ While you wear the robe, you can use an action to enter the Astral Plane along w
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `This elegant garment is made from exquisite cloth of white, gray, or black and adorned with silvery runes. The robe's color corresponds to the alignment for which the item was created. A white robe was made for good, gray for neutral, and black for evil. You can't attune to a _robe of the archmagi_ that doesn't correspond to your alignment.
-
-You gain these benefits while wearing the robe:
-
-* If you aren't wearing armor, your base Armor Class is 15 + your Dexterity modifier.
-* You have advantage on saving throws against spells and other magical effects.
+    description: `This elegant garment is made from exquisite cloth of white, gray, or black and adorned with silvery runes. The robe's color corresponds to the alignment for which the item was created. A white robe was made for good, gray for neutral, and black for evil. You can't attune to a _robe of the archmagi_ that doesn't correspond to your alignment.
+
+You gain these benefits while wearing the robe:
+
+* If you aren't wearing armor, your base Armor Class is 15 + your Dexterity modifier.
+* You have advantage on saving throws against spells and other magical effects.
 * Your spell save DC and spell attack bonus each increase by 2.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4427,33 +4427,33 @@ You gain these benefits while wearing the robe:
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This robe has cloth patches of various shapes and colors covering it. While wearing the robe, you can use an action to detach one of the patches, causing it to become the object or creature it represents. Once the last patch is removed, the robe becomes an ordinary garment.
-
-The robe has two of each of the following patches:
-
-* Dagger
-* Bullseye lantern (filled and lit)
-* Steel mirror
-* 10-foot pole
-* Hempen rope (50 feet, coiled)
-* Sack
-
-In addition, the robe has 4d4 other patches. The GM chooses the patches or determines them randomly.
-
-| d100   | Patch                                                                                                                                                                                             |
-|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 01-08  | Bag of 100 gp                                                                                                                                                                                     |
-| 09-15  | Silver coffer (1 foot long, 6 inches wide and deep) worth 500 gp                                                                                                                                  |
-| 16-22  | Iron door (up to 10 feet wide and 10 feet high, barred on one side of your choice), which you can place in an opening you can reach; it conforms to fit the opening, attaching and hinging itself |
-| 23-30  | 10 gems worth 100 gp each                                                                                                                                                                         |
-| 31-44  | Wooden ladder (24 feet long) |
-| 45-51 | A riding horse with saddle bags                                                                                                                                |
-| 52-59  | Pit (a cube 10 feet on a side), which you can place on the ground within 10 feet of you                                                                                                           |
-| 60-68  | 4 potions of healing                                                                                                                                                                              |
-| 69-75  | Rowboat (12 feet long)                                                                                                                                                                            |
-| 76-83  | Spell scroll containing one spell of 1st to 3rd level                                                                                                                                             |
-| 84-90  | 2 mastiffs                                                                                                                                                                                        |
-| 91-96  | Window (2 feet by 4 feet, up to 2 feet deep), which you can place on a vertical surface you can reach                                                                                             |
+    description: `This robe has cloth patches of various shapes and colors covering it. While wearing the robe, you can use an action to detach one of the patches, causing it to become the object or creature it represents. Once the last patch is removed, the robe becomes an ordinary garment.
+
+The robe has two of each of the following patches:
+
+* Dagger
+* Bullseye lantern (filled and lit)
+* Steel mirror
+* 10-foot pole
+* Hempen rope (50 feet, coiled)
+* Sack
+
+In addition, the robe has 4d4 other patches. The GM chooses the patches or determines them randomly.
+
+| d100   | Patch                                                                                                                                                                                             |
+|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 01-08  | Bag of 100 gp                                                                                                                                                                                     |
+| 09-15  | Silver coffer (1 foot long, 6 inches wide and deep) worth 500 gp                                                                                                                                  |
+| 16-22  | Iron door (up to 10 feet wide and 10 feet high, barred on one side of your choice), which you can place in an opening you can reach; it conforms to fit the opening, attaching and hinging itself |
+| 23-30  | 10 gems worth 100 gp each                                                                                                                                                                         |
+| 31-44  | Wooden ladder (24 feet long) |
+| 45-51 | A riding horse with saddle bags                                                                                                                                |
+| 52-59  | Pit (a cube 10 feet on a side), which you can place on the ground within 10 feet of you                                                                                                           |
+| 60-68  | 4 potions of healing                                                                                                                                                                              |
+| 69-75  | Rowboat (12 feet long)                                                                                                                                                                            |
+| 76-83  | Spell scroll containing one spell of 1st to 3rd level                                                                                                                                             |
+| 84-90  | 2 mastiffs                                                                                                                                                                                        |
+| 91-96  | Window (2 feet by 4 feet, up to 2 feet deep), which you can place on a vertical surface you can reach                                                                                             |
 | 97-100 | Portable ram                                                                                                                                                                                      |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4552,10 +4552,10 @@ When the time runs out or you use an action to end it, all visitors reappear in 
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: false,
-    description: `This 60-foot length of silk rope weighs 3 pounds and can hold up to 3,000 pounds. If you hold one end of the rope and use an action to speak the command word, the rope animates. As a bonus action, you can command the other end to move toward a destination you choose. That end moves 10 feet on your turn when you first command it and 10 feet on each of your turns until reaching its destination, up to its maximum length away, or until you tell it to stop. You can also tell the rope to fasten itself securely to an object or to unfasten itself, to knot or unknot itself, or to coil itself for carrying.
-
-If you tell the rope to knot, large knots appear at 1* foot intervals along the rope. While knotted, the rope shortens to a 50-foot length and grants advantage on checks made to climb it.
-
+    description: `This 60-foot length of silk rope weighs 3 pounds and can hold up to 3,000 pounds. If you hold one end of the rope and use an action to speak the command word, the rope animates. As a bonus action, you can command the other end to move toward a destination you choose. That end moves 10 feet on your turn when you first command it and 10 feet on each of your turns until reaching its destination, up to its maximum length away, or until you tell it to stop. You can also tell the rope to fasten itself securely to an object or to unfasten itself, to knot or unknot itself, or to coil itself for carrying.
+
+If you tell the rope to knot, large knots appear at 1* foot intervals along the rope. While knotted, the rope shortens to a 50-foot length and grants advantage on checks made to climb it.
+
 The rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as long as it has at least 1 hit point. If the rope drops to 0 hit points, it is destroyed.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4566,10 +4566,10 @@ The rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as 
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: false,
-    description: `This rope is 30 feet long and weighs 3 pounds. If you hold one end of the rope and use an action to speak its command word, the other end darts forward to entangle a creature you can see within 20 feet of you. The target must succeed on a DC 15 Dexterity saving throw or become restrained.
-
-You can release the creature by using a bonus action to speak a second command word. A target restrained by the rope can use an action to make a DC 15 Strength or Dexterity check (target's choice). On a success, the creature is no longer restrained by the rope.
-
+    description: `This rope is 30 feet long and weighs 3 pounds. If you hold one end of the rope and use an action to speak its command word, the other end darts forward to entangle a creature you can see within 20 feet of you. The target must succeed on a DC 15 Dexterity saving throw or become restrained.
+
+You can release the creature by using a bonus action to speak a second command word. A target restrained by the rope can use an action to make a DC 15 Strength or Dexterity check (target's choice). On a success, the creature is no longer restrained by the rope.
+
 The rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as long as it has at least 1 hit point. If the rope drops to 0 hit points, it is destroyed.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4580,9 +4580,9 @@ The rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as 
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `If you hold this beetle-shaped medallion in your hand for 1 round, an inscription appears on its surface revealing its magical nature. It provides two benefits while it is on your person:
-
-* You have advantage on saving throws against spells.
+    description: `If you hold this beetle-shaped medallion in your hand for 1 round, an inscription appears on its surface revealing its magical nature. It provides two benefits while it is on your person:
+
+* You have advantage on saving throws against spells.
 * The scarab has 12 charges. If you fail a saving throw against a necromancy spell or a harmful effect originating from an undead creature, you can use your reaction to expend 1 charge and turn the failed save into a successful one. The scarab crumbles into powder and is destroyed when its last charge is expended.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4775,8 +4775,8 @@ The rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as 
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `This viscous, milky-white substance can form a permanent adhesive bond between any two objects. It must be stored in a jar or flask that has been coated inside with _oil of slipperiness._ When found, a container contains 1d6 + 1 ounces.
-
+    description: `This viscous, milky-white substance can form a permanent adhesive bond between any two objects. It must be stored in a jar or flask that has been coated inside with _oil of slipperiness._ When found, a container contains 1d6 + 1 ounces.
+
 One ounce of the glue can cover a 1-foot square surface. The glue takes 1 minute to set. Once it has done so, the bond it creates can be broken only by the application of _universal solvent_ or _oil of etherealness_, or with a _wish_ spell.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -4927,20 +4927,20 @@ One ounce of the glue can cover a 1-foot square surface. The glue takes 1 minute
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `This 2-foot-diameter black sphere is a hole in the multiverse, hovering in space and stabilized by a magical field surrounding it.
-
-The sphere obliterates all matter it passes through and all matter that passes through it. Artifacts are the exception. Unless an artifact is susceptible to damage from a _sphere of annihilation_, it passes through the sphere unscathed. Anything else that touches the sphere but isn't wholly engulfed and obliterated by it takes 4d10 force damage.
-
-The sphere is stationary until someone controls it. If you are within 60 feet of an uncontrolled sphere, you can use an action to make a DC 25 Intelligence (Arcana) check. On a success, the sphere levitates in one direction of your choice, up to a number of feet equal to 5 × your Intelligence modifier (minimum 5 feet). On a failure, the sphere moves 10 feet toward you. A creature whose space the sphere enters must succeed on a DC 13 Dexterity saving throw or be touched by it, taking 4d10 force damage.
-
-If you attempt to control a sphere that is under another creature's control, you make an Intelligence (Arcana) check contested by the other creature's Intelligence (Arcana) check. The winner of the contest gains control of the sphere and can levitate it as normal.
-
-If the sphere comes into contact with a planar portal, such as that created by the _gate_ spell, or an extradimensional space, such as that within a _portable hole_, the GM determines randomly what happens, using the following table.
-
-| d100   | Result                                                                                                                             |
-|--------|------------------------------------------------------------------------------------------------------------------------------------|
-| 01-50  | The sphere is destroyed.                                                                                                           |
-| 51-85  | The sphere moves through the portal or into the extradimensional space.                                                            |
+    description: `This 2-foot-diameter black sphere is a hole in the multiverse, hovering in space and stabilized by a magical field surrounding it.
+
+The sphere obliterates all matter it passes through and all matter that passes through it. Artifacts are the exception. Unless an artifact is susceptible to damage from a _sphere of annihilation_, it passes through the sphere unscathed. Anything else that touches the sphere but isn't wholly engulfed and obliterated by it takes 4d10 force damage.
+
+The sphere is stationary until someone controls it. If you are within 60 feet of an uncontrolled sphere, you can use an action to make a DC 25 Intelligence (Arcana) check. On a success, the sphere levitates in one direction of your choice, up to a number of feet equal to 5 × your Intelligence modifier (minimum 5 feet). On a failure, the sphere moves 10 feet toward you. A creature whose space the sphere enters must succeed on a DC 13 Dexterity saving throw or be touched by it, taking 4d10 force damage.
+
+If you attempt to control a sphere that is under another creature's control, you make an Intelligence (Arcana) check contested by the other creature's Intelligence (Arcana) check. The winner of the contest gains control of the sphere and can levitate it as normal.
+
+If the sphere comes into contact with a planar portal, such as that created by the _gate_ spell, or an extradimensional space, such as that within a _portable hole_, the GM determines randomly what happens, using the following table.
+
+| d100   | Result                                                                                                                             |
+|--------|------------------------------------------------------------------------------------------------------------------------------------|
+| 01-50  | The sphere is destroyed.                                                                                                           |
+| 51-85  | The sphere moves through the portal or into the extradimensional space.                                                            |
 | 86-00  | A spatial rift sends each creature and object within 180 feet of the sphere, including the sphere, to a random plane of existence. |`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -5327,10 +5327,10 @@ Once per turn, when you hit a creature with an attack using this magic weapon, y
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `This talisman is a mighty symbol of goodness. A creature that is neither good nor evil in alignment takes 6d6 radiant damage upon touching the talisman. An evil creature takes 8d6 radiant damage upon touching the talisman. Either sort of creature takes the damage again each time it ends its turn holding or carrying the talisman.
-
-If you are a good cleric or paladin, you can use the talisman as a holy symbol, and you gain a +2 bonus to spell attack rolls while you wear or hold it.
-
+    description: `This talisman is a mighty symbol of goodness. A creature that is neither good nor evil in alignment takes 6d6 radiant damage upon touching the talisman. An evil creature takes 8d6 radiant damage upon touching the talisman. Either sort of creature takes the damage again each time it ends its turn holding or carrying the talisman.
+
+If you are a good cleric or paladin, you can use the talisman as a holy symbol, and you gain a +2 bonus to spell attack rolls while you wear or hold it.
+
 The talisman has 7 charges. If you are wearing or holding it, you can use an action to expend 1 charge from it and choose one creature you can see on the ground within 120 feet of you. If the target is of evil alignment, a flaming fissure opens under it. The target must succeed on a DC 20 Dexterity saving throw or fall into the fissure and be destroyed, leaving no remains. The fissure then closes, leaving no trace of its existence. When you expend the last charge, the talisman disperses into motes of golden light and is destroyed.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -5351,10 +5351,10 @@ The talisman has 7 charges. If you are wearing or holding it, you can use an act
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: true,
-    description: `This item symbolizes unrepentant evil. A creature that is neither good nor evil in alignment takes 6d6 necrotic damage upon touching the talisman. A good creature takes 8d6 necrotic damage upon touching the talisman. Either sort of creature takes the damage again each time it ends its turn holding or carrying the talisman.
-
-If you are an evil cleric or paladin, you can use the talisman as a holy symbol, and you gain a +2 bonus to spell attack rolls while you wear or hold it.
-
+    description: `This item symbolizes unrepentant evil. A creature that is neither good nor evil in alignment takes 6d6 necrotic damage upon touching the talisman. A good creature takes 8d6 necrotic damage upon touching the talisman. Either sort of creature takes the damage again each time it ends its turn holding or carrying the talisman.
+
+If you are an evil cleric or paladin, you can use the talisman as a holy symbol, and you gain a +2 bonus to spell attack rolls while you wear or hold it.
+
 The talisman has 6 charges. If you are wearing or holding it, you can use an action to expend 1 charge from the talisman and choose one creature you can see on the ground within 120 feet of you. If the target is of good alignment, a flaming fissure opens under it. The target must succeed on a DC 20 Dexterity saving throw or fall into the fissure and be destroyed, leaving no remains. The fissure then closes, leaving no trace of its existence. When you expend the last charge, the talisman dissolves into foul-smelling slime and is destroyed.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -5471,7 +5471,7 @@ The talisman has 6 charges. If you are wearing or holding it, you can use an act
   },
   {
     slug: "srd-2014-vicious-weapon-crossbow-hand",
-    name: `Vicious Weapon (Crossbow-Hand)`,
+    name: `Vicious Weapon (Hand Crossbow)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -5481,7 +5481,7 @@ The talisman has 6 charges. If you are wearing or holding it, you can use an act
   },
   {
     slug: "srd-2014-vicious-weapon-crossbow-heavy",
-    name: `Vicious Weapon (Crossbow-Heavy)`,
+    name: `Vicious Weapon (Heavy Crossbow)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -5491,7 +5491,7 @@ The talisman has 6 charges. If you are wearing or holding it, you can use an act
   },
   {
     slug: "srd-2014-vicious-weapon-crossbow-light",
-    name: `Vicious Weapon (Crossbow-Light)`,
+    name: `Vicious Weapon (Light Crossbow)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -5611,7 +5611,7 @@ The talisman has 6 charges. If you are wearing or holding it, you can use an act
   },
   {
     slug: "srd-2014-vicious-weapon-light-hammer",
-    name: `Vicious Weapon (Light-Hammer)`,
+    name: `Vicious Weapon (Light Hammer)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -5781,7 +5781,7 @@ The talisman has 6 charges. If you are wearing or holding it, you can use an act
   },
   {
     slug: "srd-2014-vicious-weapon-war-pick",
-    name: `Vicious Weapon (War-Pick)`,
+    name: `Vicious Weapon (War Pick)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -6060,7 +6060,7 @@ The wand regains 1d6 + 1 expended charges daily at dawn. If you expend the wand'
   },
   {
     slug: "srd-2014-war-pick-1",
-    name: `War-Pick (+1)`,
+    name: `War Pick (+1)`,
     category: `Weapon`,
     rarity: `Uncommon`,
     requiresAttunement: false,
@@ -6070,7 +6070,7 @@ The wand regains 1d6 + 1 expended charges daily at dawn. If you expend the wand'
   },
   {
     slug: "srd-2014-war-pick-2",
-    name: `War-Pick (+2)`,
+    name: `War Pick (+2)`,
     category: `Weapon`,
     rarity: `Rare`,
     requiresAttunement: false,
@@ -6080,7 +6080,7 @@ The wand regains 1d6 + 1 expended charges daily at dawn. If you expend the wand'
   },
   {
     slug: "srd-2014-war-pick-3",
-    name: `War-Pick (+3)`,
+    name: `War Pick (+3)`,
     category: `Weapon`,
     rarity: `Very Rare`,
     requiresAttunement: false,
@@ -6124,8 +6124,8 @@ The wand regains 1d6 + 1 expended charges daily at dawn. If you expend the wand'
     category: `Wondrous Item`,
     rarity: `Legendary`,
     requiresAttunement: false,
-    description: `This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter.
-
+    description: `This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter.
+
 You can use an action to unfold and place the _well of many worlds_ on a solid surface, whereupon it creates a two-way portal to another world or plane of existence. Each time the item opens a portal, the GM decides where it leads. You can use an action to close an open portal by taking hold of the edges of the cloth and folding it up. Once _well of many worlds_ has opened a portal, it can't do so again for 1d8 hours.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -6176,8 +6176,8 @@ You can use an action to unfold and place the _well of many worlds_ on a solid s
     category: `Wondrous Item`,
     rarity: `Uncommon`,
     requiresAttunement: true,
-    description: `While you wear these boots, you have a flying speed equal to your walking speed. You can use the boots to fly for up to 4 hours, all at once or in several shorter flights, each one using a minimum of 1 minute from the duration. If you are flying when the duration expires, you descend at a rate of 30 feet per round until you land.
-
+    description: `While you wear these boots, you have a flying speed equal to your walking speed. You can use the boots to fly for up to 4 hours, all at once or in several shorter flights, each one using a minimum of 1 minute from the duration. If you are flying when the duration expires, you descend at a rate of 30 feet per round until you land.
+
 The boots regain 2 hours of flying capability for every 12 hours they aren't in use.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",
@@ -6188,17 +6188,17 @@ The boots regain 2 hours of flying capability for every 12 hours they aren't in 
     category: `Wondrous Item`,
     rarity: `Rare`,
     requiresAttunement: true,
-    description: `While wearing this cloak, you can use an action to speak its command word. This turns the cloak into a pair of bat wings or bird wings on your back for 1 hour or until you repeat the command word as an action. The wings give you a flying speed of 60 feet. When they disappear, you can't use them again for 1d12 hours.
-
-
-
-
-## Sentient Magic Items
-
-Some magic items possess sentience and personality. Such an item might be possessed, haunted by the spirit of a previous owner, or self-aware thanks to the magic used to create it. In any case, the item behaves like a character, complete with personality quirks, ideals, bonds, and sometimes flaws. A sentient item might be a cherished ally to its wielder or a continual thorn in the side.
-
-Most sentient items are weapons. Other kinds of items can manifest sentience, but consumable items such as potions and scrolls are never sentient.
-
+    description: `While wearing this cloak, you can use an action to speak its command word. This turns the cloak into a pair of bat wings or bird wings on your back for 1 hour or until you repeat the command word as an action. The wings give you a flying speed of 60 feet. When they disappear, you can't use them again for 1d12 hours.
+
+
+
+
+## Sentient Magic Items
+
+Some magic items possess sentience and personality. Such an item might be possessed, haunted by the spirit of a previous owner, or self-aware thanks to the magic used to create it. In any case, the item behaves like a character, complete with personality quirks, ideals, bonds, and sometimes flaws. A sentient item might be a cherished ally to its wielder or a continual thorn in the side.
+
+Most sentient items are weapons. Other kinds of items can manifest sentience, but consumable items such as potions and scrolls are never sentient.
+
 Sentient magic items function as NPCs under the GM's control. Any activated property of the item is under the item's control, not its wielder's. As long as the wielder maintains a good relationship with the item, the wielder can access those properties normally. If the relationship is strained, the item can suppress its activated properties or even turn them against the wielder.`,
     sourceKey: "srd-2014",
     sourceName: "System Reference Document 5.1",

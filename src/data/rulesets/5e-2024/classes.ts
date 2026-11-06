@@ -1,5 +1,5 @@
 import type { ClassDefinition, EquipmentLine } from "../types";
-import { armor, gold, item, weapon } from "../equipmentHelpers";
+import { armor, gold, item, itemChoice, weapon } from "../equipmentHelpers";
 
 // ---------------------------------------------------------------------------
 // Legal note (2024 D&D 5th Edition ruleset -- "SRD 5.2")
@@ -98,7 +98,7 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
     weaponProficiencies: ["Simple weapons"],
     startingEquipment: [
       [
-        [armor("leather"), weapon("dagger", 2), item("Musical Instrument"), item("Entertainer's Pack"), gold(19)],
+        [armor("leather"), weapon("dagger", 2), itemChoice("instrument"), item("Entertainer's Pack"), gold(19)],
         [gold(90)],
       ],
     ] as EquipmentLine[],
@@ -194,7 +194,7 @@ export const CLASSES_5E_2024: ClassDefinition[] = [
         [
           weapon("spear"),
           weapon("dagger", 5),
-          item("Artisan's Tools or Musical Instrument", 1, "The tool or instrument you chose for your Monk tool proficiency."),
+          itemChoice(["artisanTools", "instrument"]),
           item("Explorer's Pack"),
           gold(11),
         ],

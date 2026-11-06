@@ -1,6 +1,6 @@
 import { abilityModifier } from "../characters/characterCalculations";
 import type { Character } from "../../types/models";
-import { InvalidDiceExpressionError, parseDiceExpression } from "./diceEngine";
+import { InvalidDiceExpressionError, isValidDiceExpression, parseDiceExpression } from "./diceEngine";
 
 /**
  * A dice expression that may also name character values, e.g. Second Wind's
@@ -52,14 +52,27 @@ function normalizeFlatTerms(expression: string): string {
 export function resolveRollFormula(formula: string, character: Character): string {
   // A negative modifier substitutes as "+ -1"; the two replaces below fold double signs before normalizing.
   const substituted = formula.replace(TOKEN_PATTERN, (token) => String(tokenValue(token, character)));
+  if (hasAdvancedSyntax(substituted)) {
+    if (!isValidDiceExpression(substituted)) {
+      throw new InvalidDiceExpressionError(`"${substituted}" is not a valid dice expression`);
+    }
+    return substituted;
+  }
   const normalized = normalizeFlatTerms(substituted.replace(/\+\s*-/g, "- ").replace(/-\s*-/g, "+ "));
   parseDiceExpression(normalized);
   return normalized;
 }
 
+/** Keep/drop, reroll, min, explode, parentheses, multiply/divide: handled by the full evaluator, not the flat-term normalizer. */
+function hasAdvancedSyntax(expression: string): boolean {
+  return /[()*/!]|\d[kr]|d[hl]|min/i.test(expression);
+}
+
 /** True if `formula` would resolve to a valid dice expression for some character. Used by the form to enable Save. */
 export function isValidRollFormula(formula: string): boolean {
   if (!formula.trim()) return false;
+  const placeholder = formula.replace(TOKEN_PATTERN, "1");
+  if (hasAdvancedSyntax(placeholder)) return isValidDiceExpression(placeholder);
   try {
     parseDiceExpression(normalizeFlatTerms(formula.replace(TOKEN_PATTERN, "1")));
     return true;

@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from "react-native";
+
 export type ThemeColors = {
   background: string;
   surface: string;
@@ -32,6 +34,10 @@ export type Theme = {
   radius: number;
   /** fontFamily for titles/headers only; undefined means "use the system default". */
   displayFontFamily?: string;
+  /** Full-screen image painted behind every screen (screens go transparent). */
+  backdrop?: ImageSourcePropType;
+  /** Background for screen roots: `colors.background`, or transparent when a backdrop is showing. */
+  screenBackground: string;
 };
 
 type ThemeFamilyDefinition = {
@@ -39,6 +45,8 @@ type ThemeFamilyDefinition = {
   light: ThemeColors;
   dark: ThemeColors;
   displayFontFamily?: string;
+  /** Backdrop image per mode; modes without an entry use the plain background color. */
+  backdrop?: { light?: ImageSourcePropType; dark?: ImageSourcePropType };
 };
 
 // Square, flat design across every family: no rounded corners, no
@@ -343,11 +351,15 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
 
 export function buildTheme(family: ThemeFamilyId, mode: ThemeMode): Theme {
   const definition = THEME_FAMILIES[family] ?? THEME_FAMILIES.classic;
+  const colors = mode === "dark" ? definition.dark : definition.light;
+  const backdrop = definition.backdrop?.[mode];
   return {
     family,
     mode,
-    colors: mode === "dark" ? definition.dark : definition.light,
+    colors,
     radius: RADIUS,
     displayFontFamily: definition.displayFontFamily,
+    backdrop,
+    screenBackground: backdrop ? "transparent" : colors.background,
   };
 }

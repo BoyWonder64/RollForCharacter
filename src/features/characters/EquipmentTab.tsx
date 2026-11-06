@@ -32,7 +32,7 @@ import {
   type CustomArmorInput,
   type CustomWeaponInput,
 } from "./gearRepo";
-import { aggregateFeatEffects, getClassDefinitionForCharacter } from "./characterCalculations";
+import { aggregateFeatEffects, effectiveWeaponProficienciesForCharacter } from "./characterCalculations";
 import { listCharacterFeats } from "./featRepo";
 import { AddWeaponModal } from "../../components/AddWeaponModal";
 import { AddArmorModal } from "../../components/AddArmorModal";
@@ -52,7 +52,7 @@ type ArmorRow = Awaited<ReturnType<typeof listCharacterArmor>>[number];
 type MagicItemRow = Awaited<ReturnType<typeof listCharacterMagicItems>>[number];
 type GearItemRow = Awaited<ReturnType<typeof listGearItems>>[number];
 
-export function EquipmentTab({ character }: { character: Character }) {
+export function EquipmentTab({ character, onChanged }: { character: Character; onChanged?: () => void }) {
   const characterId = character.id;
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -61,7 +61,7 @@ export function EquipmentTab({ character }: { character: Character }) {
   const weaponCatalog = useMemo(() => listWeaponCatalog(character.ruleset), [character.ruleset]);
   const armorCatalog = useMemo(() => listArmorCatalog(character.ruleset), [character.ruleset]);
   const weaponProficiencies = useMemo(
-    () => getClassDefinitionForCharacter(character).weaponProficiencies,
+    () => effectiveWeaponProficienciesForCharacter(character),
     [character]
   );
 
@@ -177,6 +177,7 @@ export function EquipmentTab({ character }: { character: Character }) {
         onPress: async () => {
           await removeCharacterArmor(armorId);
           refreshArmor();
+          onChanged?.();
         },
       },
     ]);
@@ -185,6 +186,7 @@ export function EquipmentTab({ character }: { character: Character }) {
   async function handleToggleArmorEquipped(item: ArmorRow) {
     await setArmorEquipped(item.id, !item.equipped);
     refreshArmor();
+    onChanged?.();
   }
 
   async function handlePickMagicItem(catalogId: number) {
@@ -243,6 +245,10 @@ export function EquipmentTab({ character }: { character: Character }) {
       ) : (
         weapons.map((weapon) => {
           const proficient = isProficientWithWeapon(weapon, weaponProficiencies);
+          // Weapon Mastery (2024 5e only) is catalog-only rules text, not a
+          // per-character column, so it's looked up by catalogId rather than
+          // read off the weapon row.
+          const mastery = weaponCatalog.find((w) => w.id === weapon.catalogId)?.mastery;
           const attackBonus = weaponAttackBonus(
             weapon,
             character.strength,
@@ -274,6 +280,9 @@ export function EquipmentTab({ character }: { character: Character }) {
                   <Text style={styles.itemDescription}>
                     {parseWeaponProperties(weapon.properties).join(", ")}
                   </Text>
+                )}
+                {mastery && (
+                  <Text style={styles.itemDescription}>Mastery: {mastery.name}</Text>
                 )}
                 {weapon.description ? (
                   <Text style={styles.itemFlavor}>{weapon.description}</Text>

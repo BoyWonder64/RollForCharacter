@@ -1,9 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import {
   addDmNote,
   addDmTimelineEvent,
+  completeDmOnboarding,
+  createDmCampaign,
+  deleteDmCampaign,
+  isDmOnboarded,
+  loadDmCampaigns,
+  renameDmCampaign,
+  setActiveDmCampaign,
+  type DmCampaigns,
   listDmNotes,
   listDmTimelineEvents,
   migrateLegacySessionNotesIfNeeded,
@@ -43,6 +51,12 @@ export function DmSessionNotes() {
   const theme = useTheme();
   const styles = useMemo(() => createDmStyles(theme), [theme]);
 
+  const [campaigns, setCampaigns] = useState<DmCampaigns | null>(null);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
+  const [campaignEdit, setCampaignEdit] = useState<"new" | "rename" | null>(null);
+  const activeCampaign = campaigns?.active ?? "";
+
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<NoteRow | null>(null);
@@ -52,16 +66,60 @@ export function DmSessionNotes() {
   const [editingEvent, setEditingEvent] = useState<TimelineRow | null>(null);
 
   const refreshNotes = useCallback(() => {
-    listDmNotes().then(setNotes);
-  }, []);
+    if (!activeCampaign) return;
+    listDmNotes(activeCampaign).then(setNotes);
+  }, [activeCampaign]);
 
   const refreshEvents = useCallback(() => {
-    listDmTimelineEvents().then(setEvents);
+    if (!activeCampaign) return;
+    listDmTimelineEvents(activeCampaign).then(setEvents);
+  }, [activeCampaign]);
+
+  useEffect(() => {
+    (async () => {
+      const wasOnboarded = await isDmOnboarded();
+      setOnboarded(wasOnboarded);
+      // Pre-campaign notes are adopted into the first campaign once onboarding completes.
+      if (wasOnboarded) setCampaigns(await loadDmCampaigns());
+    })();
   }, []);
 
   useEffect(() => {
-    migrateLegacySessionNotesIfNeeded().then(refreshNotes);
-  }, [refreshNotes]);
+    if (!campaigns) return;
+    migrateLegacySessionNotesIfNeeded(campaigns.active).then(refreshNotes);
+  }, [campaigns, refreshNotes]);
+
+  async function handleFinishOnboarding() {
+    setCampaigns(await completeDmOnboarding(nameDraft));
+    setOnboarded(true);
+    setNameDraft("");
+  }
+
+  async function handleSubmitCampaignName() {
+    if (campaignEdit === "new") {
+      setCampaigns(await createDmCampaign(nameDraft));
+    } else if (campaignEdit === "rename" && campaigns) {
+      setCampaigns(await renameDmCampaign(campaigns.active, nameDraft));
+    }
+    setCampaignEdit(null);
+    setNameDraft("");
+  }
+
+  function handleDeleteCampaign() {
+    if (!campaigns || campaigns.names.length <= 1) return;
+    Alert.alert(
+      "Delete campaign?",
+      `Delete "${campaigns.active}" and all of its notes and timeline? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => setCampaigns(await deleteDmCampaign(campaigns.active)),
+        },
+      ]
+    );
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -84,7 +142,7 @@ export function DmSessionNotes() {
     if (editingNote) {
       await updateDmNote(editingNote.id, draft);
     } else {
-      await addDmNote(draft);
+      await addDmNote(draft, activeCampaign);
     }
     setNoteModalOpen(false);
     setEditingNote(null);
@@ -119,7 +177,7 @@ export function DmSessionNotes() {
     if (editingEvent) {
       await updateDmTimelineEvent(editingEvent.id, draft);
     } else {
-      await addDmTimelineEvent(draft);
+      await addDmTimelineEvent(draft, activeCampaign);
     }
     setEventModalOpen(false);
     setEditingEvent(null);
@@ -140,9 +198,96 @@ export function DmSessionNotes() {
     ]);
   }
 
+  if (onboarded === null) return null;
+
+  if (!onboarded) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Welcome, Dungeon Master</Text>
+        <Text style={[styles.hint, { marginVertical: 8 }]}>
+          Notes and your timeline are kept per campaign, so you can run more than one. Name your
+          first campaign to get started. You can rename it or add more any time.
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={nameDraft}
+          onChangeText={setNameDraft}
+          placeholder="e.g. Curse of the Crimson Throne"
+          placeholderTextColor={theme.colors.textMuted}
+        />
+        <Pressable style={[styles.primaryButton, { marginTop: 12 }]} onPress={handleFinishOnboarding}>
+          <Text style={styles.primaryButtonText}>Start Campaign</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View>
-      <View style={styles.headerRow}>
+      <Text style={styles.subTitle}>Campaign</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.row}>
+          {campaigns?.names.map((name) => (
+            <Pressable
+              key={name}
+              style={[styles.chip, name === activeCampaign && styles.chipActive]}
+              onPress={async () => setCampaigns(await setActiveDmCampaign(name))}
+            >
+              <Text style={[styles.chipText, name === activeCampaign && styles.chipTextActive]}>
+                {name}
+              </Text>
+            </Pressable>
+          ))}
+          <Pressable
+            style={styles.chip}
+            onPress={() => {
+              setNameDraft("");
+              setCampaignEdit("new");
+            }}
+          >
+            <Text style={styles.chipText}>+ New</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+
+      {campaignEdit ? (
+        <View style={[styles.row, { marginTop: 8 }]}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            value={nameDraft}
+            onChangeText={setNameDraft}
+            placeholder={campaignEdit === "new" ? "New campaign name" : "Campaign name"}
+            placeholderTextColor={theme.colors.textMuted}
+            autoFocus
+          />
+          <Pressable style={styles.primaryButton} onPress={handleSubmitCampaignName}>
+            <Text style={styles.primaryButtonText}>Save</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={() => setCampaignEdit(null)}>
+            <Text style={styles.secondaryButtonText}>Cancel</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={[styles.row, { marginTop: 8, gap: 16 }]}>
+          <Pressable
+            onPress={() => {
+              setNameDraft(activeCampaign);
+              setCampaignEdit("rename");
+            }}
+          >
+            <Text style={[styles.hint, { color: theme.colors.accent, fontWeight: "700" }]}>
+              Rename
+            </Text>
+          </Pressable>
+          {campaigns && campaigns.names.length > 1 ? (
+            <Pressable onPress={handleDeleteCampaign}>
+              <Text style={styles.bad}>Delete campaign</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      )}
+
+      <View style={[styles.headerRow, { marginTop: 16 }]}>
         <Text style={styles.sectionTitle}>Session notes</Text>
         <Pressable style={styles.primaryButton} onPress={handleOpenAddNote}>
           <Text style={styles.primaryButtonText}>+ Add Note</Text>

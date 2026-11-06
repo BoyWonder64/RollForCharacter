@@ -45,7 +45,7 @@ function SignedOutNotice({ styles }: { styles: ReturnType<typeof createDmStyles>
   const theme = useTheme();
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      style={{ flex: 1, backgroundColor: theme.screenBackground }}
       contentContainerStyle={{ padding: 16 }}
     >
       <Text style={styles.sectionTitle}>Sign in to use Party mode</Text>
@@ -238,7 +238,7 @@ export default function PartyScreen() {
 
   if (authLoading) {
     return (
-      <View style={[localStyles.center, { backgroundColor: theme.colors.background }]}>
+      <View style={[localStyles.center, { backgroundColor: theme.screenBackground }]}>
         <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
@@ -250,7 +250,7 @@ export default function PartyScreen() {
 
   if (partyLoading) {
     return (
-      <View style={[localStyles.center, { backgroundColor: theme.colors.background }]}>
+      <View style={[localStyles.center, { backgroundColor: theme.screenBackground }]}>
         <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
@@ -261,7 +261,7 @@ export default function PartyScreen() {
   const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email ?? "you";
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <View style={{ flex: 1, backgroundColor: theme.screenBackground }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
         <View style={styles.headerRow}>
           <Text style={styles.sectionTitle}>Signed in as {displayName}</Text>

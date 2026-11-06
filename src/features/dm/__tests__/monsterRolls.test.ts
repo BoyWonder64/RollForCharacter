@@ -136,6 +136,8 @@ describe("doubleDice", () => {
     expect(doubleDice("2d10+6")).toBe("4d10+6");
     expect(doubleDice("2d6+1d8-1")).toBe("4d6+2d8-1");
     expect(doubleDice("1d8")).toBe("2d8");
+    expect(doubleDice("2d6r<=2+3")).toBe("4d6r<=2+3");
+    expect(doubleDice("(1d6+2)*2")).toBe("(2d6+2)*2");
   });
 });
 

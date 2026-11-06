@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
-import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
   deleteCharacter,
@@ -33,7 +32,9 @@ import {
   listCharacterClasses,
   setClassRowSubclass,
 } from "../../../../features/characters/characterClassRepo";
-import { deletePortrait, persistPortrait } from "../../../../features/characters/portraitStorage";
+import { PortraitPicker, type PortraitChoice } from "../../../../components/PortraitPicker";
+import { findSpritePortrait } from "../../../../data/spritePortraits";
+import { deletePortrait, persistBundledPortrait, persistPortrait } from "../../../../features/characters/portraitStorage";
 import {
   ALIGNMENTS,
   CUSTOM_OPTION_ID,
@@ -191,6 +192,7 @@ function LoadingView() {
 function EditCharacterBody({ characterId }: { characterId: number }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const [portraitModalOpen, setPortraitModalOpen] = useState(false);
   const [form, setForm] = useState<FormState | null>(null);
   // Multiclassed characters have one row per class, each with its own subclass; single-class characters have none and use form.subclass.
   const [classRows, setClassRows] = useState<CharacterClass[]>([]);
@@ -293,19 +295,31 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
   }
 
-  async function handlePickPortrait() {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"] });
-    if (result.canceled) return;
+  async function handlePortraitChoice(choice: PortraitChoice) {
+    setPortraitModalOpen(false);
+    if (!choice) return;
     try {
-      const persistedUri = await persistPortrait(result.assets[0].uri, form?.portraitUri);
+      let persistedUri: string;
+      if (choice.kind === "upload") {
+        persistedUri = await persistPortrait(choice.uri, form?.portraitUri);
+      } else {
+        const sprite = findSpritePortrait(choice.id);
+        if (!sprite) return;
+        persistedUri = await persistBundledPortrait(sprite.source, form?.portraitUri);
+      }
+      // Save immediately: the old file was just deleted, so waiting for the
+      // Save button would leave the character pointing at a missing image.
+      await updateCharacter(characterId, { portraitUri: persistedUri });
       updateField("portraitUri", persistedUri);
-    } catch {
+    } catch (error) {
+      console.warn("Portrait save failed", error);
       Alert.alert("Couldn't set portrait", "Something went wrong saving that image.");
     }
   }
 
   function handleRemovePortrait() {
     deletePortrait(form?.portraitUri);
+    void updateCharacter(characterId, { portraitUri: null });
     updateField("portraitUri", null);
   }
 
@@ -392,21 +406,21 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
 
   return (
     <View style={styles.container}>
-      <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bottomOffset={24}>
+      <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bottomOffset={24} keyboardShouldPersistTaps="handled">
       <View style={styles.portraitRow}>
-        <Pressable onPress={handlePickPortrait}>
+        <Pressable onPress={() => setPortraitModalOpen(true)}>
           {form.portraitUri ? (
             <Image source={{ uri: form.portraitUri }} style={styles.portraitImage} />
           ) : (
             <View style={styles.portraitPlaceholder}>
-              <Text style={styles.portraitPlaceholderText}>Add Photo</Text>
+              <Text style={styles.portraitPlaceholderText}>Add Portrait</Text>
             </View>
           )}
         </Pressable>
         <View style={styles.portraitActions}>
-          <Pressable onPress={handlePickPortrait}>
+          <Pressable onPress={() => setPortraitModalOpen(true)}>
             <Text style={styles.portraitActionText}>
-              {form.portraitUri ? "Change Photo" : "Choose Photo"}
+              {form.portraitUri ? "Change Portrait" : "Choose Portrait"}
             </Text>
           </Pressable>
           {form.portraitUri && (
@@ -416,6 +430,17 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
           )}
         </View>
       </View>
+
+      <Modal visible={portraitModalOpen} animationType="slide" onRequestClose={() => setPortraitModalOpen(false)}>
+        <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.content}>
+            <PortraitPicker value={null} onChange={handlePortraitChoice} />
+            <Pressable onPress={() => setPortraitModalOpen(false)}>
+              <Text style={styles.portraitActionText}>Cancel</Text>
+            </Pressable>
+          </ScrollView>
+        </View>
+      </Modal>
 
       <Field label="Name" value={form.name} onChangeText={(v) => updateField("name", v)} />
       <View style={styles.row}>
@@ -971,7 +996,7 @@ function NewTraitForm({
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     content: { padding: 16, gap: 4 },
     portraitRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 18 },
     portraitImage: {

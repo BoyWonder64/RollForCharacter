@@ -1,7 +1,7 @@
 import type { MonsterTraitEntry } from "../../data/monsters";
 import { abilityModifier, ABILITY_LABELS } from "../characters/characterCalculations";
 import type { AbilityScoreKey } from "../../types/models";
-import { parseDiceExpression, rollExpression, type RollResult } from "../dice/diceEngine";
+import { parseDiceExpression, rollDie, rollExpression, type RollResult } from "../dice/diceEngine";
 import {
   rollD20,
   structuredRollToResult,
@@ -328,8 +328,23 @@ export function rollMonsterAttack(
   );
 }
 
+function isSimpleDiceExpression(expression: string): boolean {
+  try {
+    parseDiceExpression(expression);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** A critical hit rolls each damage die twice (flat bonuses are not doubled). */
 export function doubleDice(expression: string): string {
+  if (!isSimpleDiceExpression(expression)) {
+    // Richer notation (keep/drop, parentheses, ...): double every dice count in place.
+    return expression.replace(/(\d*)d(\d+|%)/gi, (_match, count: string, sides: string) => {
+      return `${(count ? parseInt(count, 10) : 1) * 2}d${sides}`;
+    });
+  }
   const { terms, modifier } = parseDiceExpression(expression);
   const dice = terms
     .map((term, index) => {
@@ -374,7 +389,7 @@ export function rollDamageParts(
 
 /** Rolls a recharge die; true when the ability recharges. */
 export function rollRecharge(min: number): { value: number; recharged: boolean } {
-  const value = Math.floor(Math.random() * 6) + 1;
+  const value = rollDie(6);
   return { value, recharged: value >= min };
 }
 

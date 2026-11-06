@@ -31,12 +31,31 @@ export async function persistPortrait(pickedUri: string, oldUri?: string | null)
   }
 
   const { File, Paths } = await import("expo-file-system");
-  const source = new File(pickedUri);
-  const extension = source.extension || ".jpg";
+  const isLocalFile = pickedUri.startsWith("file://");
+  const cleanUri = pickedUri.split("?")[0];
+  const match = /\.[a-zA-Z0-9]{2,5}$/.exec(cleanUri);
+  const extension = match ? match[0] : ".jpg";
   const uniqueName = `portrait-${Date.now()}-${Math.random().toString(36).slice(2, 10)}${extension}`;
   const destination = new File(Paths.document, uniqueName);
 
-  await source.copy(destination);
+  let copied = false;
+  if (isLocalFile) {
+    try {
+      new File(pickedUri).copy(destination);
+      copied = true;
+    } catch (error) {
+      console.warn("Portrait file copy failed, falling back to fetch", error);
+    }
+  }
+  if (!copied) {
+    // Bundled assets in dev builds resolve to http(s) (Metro) or blob/content
+    // URIs that File.copy can't read, so pull the bytes through fetch.
+    const response = await fetch(pickedUri);
+    if (!response.ok) throw new Error(`Couldn't read image (${response.status})`);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (!destination.exists) destination.create();
+    destination.write(bytes);
+  }
 
   if (oldUri) {
     try {
@@ -64,4 +83,19 @@ export function deletePortrait(uri: string | null | undefined): void {
       // Already gone -- nothing to do.
     }
   });
+}
+
+/**
+ * Persists a bundled sprite portrait (a `require()`d asset) the same way as an
+ * uploaded photo, so it syncs, displays and deletes through the one
+ * `portraitUri` code path.
+ */
+export async function persistBundledPortrait(
+  assetModule: number,
+  oldUri?: string | null
+): Promise<string> {
+  const { Asset } = await import("expo-asset");
+  const [asset] = await Asset.loadAsync(assetModule);
+  const uri = asset.localUri ?? asset.uri;
+  return persistPortrait(uri, oldUri);
 }

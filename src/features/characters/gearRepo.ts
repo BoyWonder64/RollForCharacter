@@ -10,6 +10,7 @@ import {
 import { getRulesetCatalog } from "../../data/rulesets";
 import type { ArmorDefinition, WeaponDefinition } from "../../data/rulesets";
 import { abilityModifier, type FeatEffectBundle } from "./characterCalculations";
+import { recomputeArmorClass } from "./armorClassRepo";
 import { touchCharacterUpdatedAt } from "./syncClock";
 
 export function listWeaponCatalog(ruleset: string): WeaponDefinition[] {
@@ -259,6 +260,7 @@ export async function addArmorFromHomebrew(
     magicBonus: definition.magicBonus,
   });
   await touchCharacterUpdatedAt(characterId);
+  if (options.equipped) await recomputeArmorClass(characterId);
 }
 
 export async function removeCharacterWeapon(weaponId: number): Promise<void> {
@@ -310,6 +312,7 @@ export async function addArmorFromCatalog(
     description: definition.description,
   });
   await touchCharacterUpdatedAt(characterId);
+  if (options.equipped) await recomputeArmorClass(characterId);
 }
 
 export async function addCustomArmor(
@@ -388,13 +391,19 @@ export async function removeGearItem(itemId: number): Promise<void> {
 export async function removeCharacterArmor(armorId: number): Promise<void> {
   const [row] = await db.select().from(characterArmor).where(eq(characterArmor.id, armorId));
   await db.delete(characterArmor).where(eq(characterArmor.id, armorId));
-  if (row) await touchCharacterUpdatedAt(row.characterId);
+  if (row) {
+    await touchCharacterUpdatedAt(row.characterId);
+    if (row.equipped) await recomputeArmorClass(row.characterId);
+  }
 }
 
 export async function setArmorEquipped(armorId: number, equipped: boolean): Promise<void> {
   const [row] = await db.select().from(characterArmor).where(eq(characterArmor.id, armorId));
   await db.update(characterArmor).set({ equipped }).where(eq(characterArmor.id, armorId));
-  if (row) await touchCharacterUpdatedAt(row.characterId);
+  if (row) {
+    await touchCharacterUpdatedAt(row.characterId);
+    await recomputeArmorClass(row.characterId);
+  }
 }
 
 /**
@@ -407,20 +416,38 @@ export function describeArmorAc(armor: {
   baseArmorClass: number;
   dexModifier: string;
   magicBonus?: number;
+  maxDexBonus?: number;
 }): string {
   const bonus = armor.magicBonus ?? 0;
   if (armor.category === "Shield") return `+${armor.baseArmorClass + bonus}`;
   const bonusSuffix = bonus ? ` +${bonus}` : "";
+  if (armor.maxDexBonus !== undefined) {
+    return `${armor.baseArmorClass} + Dex modifier (max ${armor.maxDexBonus})${bonusSuffix}`;
+  }
   if (armor.dexModifier === "full") return `${armor.baseArmorClass} + Dex modifier${bonusSuffix}`;
   if (armor.dexModifier === "max2") return `${armor.baseArmorClass} + Dex modifier (max 2)${bonusSuffix}`;
   return `${armor.baseArmorClass}${bonusSuffix}`;
 }
 
 /**
+ * "Crossbow, hand" (this app's/the SRD table's "Type, qualifier" sort
+ * order) vs. "Hand crossbow" (how 3.5e class data writes proficiency
+ * lists, in natural reading order) -- flips a comma-form name's two halves
+ * so both notations compare equal. No-op for a name with no comma.
+ */
+function normalizeWeaponName(name: string): string {
+  const [base, qualifier] = name.split(", ");
+  return qualifier ? `${qualifier} ${base}` : name;
+}
+
+/**
  * Whether a class's weapon proficiency list covers this weapon -- either a
  * blanket "Simple weapons"/"Martial weapons" grant matching the weapon's
- * category, or a specific weapon name (5e lists these in plural, e.g.
- * "Longswords", "Hand crossbows").
+ * category (2014/2024 5e's phrasing) or "All simple weapons"/"All martial
+ * weapons" (3.5e's), or a specific weapon name (5e lists these in plural,
+ * e.g. "Longswords", "Hand crossbows"; 3.5e lists them singular, in
+ * natural word order -- see `normalizeWeaponName` -- and sometimes
+ * combines two named weapons, e.g. "Crossbow (light or heavy)").
  */
 export function isProficientWithWeapon(
   weapon: { name: string; category: string; properties?: string | string[] },
@@ -428,16 +455,23 @@ export function isProficientWithWeapon(
 ): boolean {
   if (!weaponProficiencies || weaponProficiencies.length === 0) return false;
   const category = weapon.category.toLowerCase();
-  const name = weapon.name.toLowerCase();
+  const name = normalizeWeaponName(weapon.name.toLowerCase());
   const properties = (Array.isArray(weapon.properties) ? weapon.properties.join(",") : weapon.properties ?? "").toLowerCase();
   return weaponProficiencies.some((proficiency) => {
     const text = proficiency.toLowerCase();
-    if (text === "simple weapons" && category.startsWith("simple")) return true;
-    if (text === "martial weapons" && category.startsWith("martial")) return true;
+    if ((text === "simple weapons" || text === "all simple weapons") && category.startsWith("simple")) return true;
+    if ((text === "martial weapons" || text === "all martial weapons") && category.startsWith("martial")) return true;
     // e.g. 2024 Rogue: "Martial weapons with the Finesse or Light property".
     const qualified = text.match(/^martial weapons with the (.+) property$/);
     if (qualified && category.startsWith("martial")) {
       return qualified[1].split(/\s+or\s+/).some((property) => properties.includes(property.trim()));
+    }
+    // e.g. 3.5e Monk: "Crossbow (light or heavy)" covers both named weapons.
+    const combined = text.match(/^(\w+) \((.+)\)$/);
+    if (combined) {
+      return combined[2]
+        .split(/\s+or\s+/)
+        .some((qualifier) => normalizeWeaponName(`${combined[1]}, ${qualifier.trim()}`) === name);
     }
     return text === name || text === `${name}s`;
   });

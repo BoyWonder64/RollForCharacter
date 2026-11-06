@@ -542,7 +542,7 @@ function ChoiceRow({
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     body: { flex: 1 },
     bodyContent: { padding: 16 },
     title: {

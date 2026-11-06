@@ -10,9 +10,13 @@ import {
   armorCandidates,
   computeArmorClass,
   describeOption,
+  goldInsteadChoice,
   grantKey,
   isProficientWithArmor,
+  itemChoiceOptions,
   resolveStartingGear,
+  resolvedItemChoiceName,
+  rollGoldOption,
   weaponCandidates,
   type StartingEquipmentSelection,
 } from "../startingEquipment";
@@ -21,6 +25,7 @@ jest.mock("../../../db/client");
 
 const CATALOG_2024 = getRulesetCatalog("5e-2024");
 const CATALOG_2014 = getRulesetCatalog("5e");
+const CATALOG_35E = getRulesetCatalog("3.5e");
 
 function classOf(catalog: typeof CATALOG_2024, id: string): ClassDefinition {
   return catalog.classes.find((c) => c.id === id)!;
@@ -133,6 +138,7 @@ describe("every class's starting equipment", () => {
   for (const [label, catalog] of [
     ["2014", CATALOG_2014],
     ["2024", CATALOG_2024],
+    ["3.5e", CATALOG_35E],
   ] as const) {
     for (const klass of catalog.classes) {
       it(`${label} ${klass.name}: every grant resolves against the catalog`, () => {
@@ -244,5 +250,217 @@ describe("applyStartingGear", () => {
     await applyStartingGear(character.id, "5e-2024", gear);
     const weapons = await listCharacterWeapons(character.id);
     expect(weapons.find((w) => w.name === "Handaxe")?.quantity).toBe(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// "Your choice" items (instruments, artisan's tools) and 2014 rolled gold
+// ---------------------------------------------------------------------------
+
+describe("itemChoice grants", () => {
+  type ItemChoice = Extract<EquipmentGrant, { kind: "itemChoice" }>;
+  const instrument: ItemChoice = { kind: "itemChoice", category: "instrument" };
+  const toolsOrInstrument: ItemChoice = { kind: "itemChoice", category: ["artisanTools", "instrument"], quantity: 1 };
+  const lines: EquipmentGrant[][][] = [[[instrument]], [[toolsOrInstrument]]];
+  const view = CATALOG_2024;
+  const profs = classOf(CATALOG_2024, "bard");
+
+  it("lists a category's named options, and every category for a combined choice", () => {
+    const instruments = itemChoiceOptions(instrument);
+    expect(instruments).toContain("Lute");
+    expect(instruments).not.toContain("Smith's Tools");
+
+    const combined = itemChoiceOptions(toolsOrInstrument);
+    expect(combined).toEqual(expect.arrayContaining(["Lute", "Smith's Tools"]));
+    expect(combined.length).toBe(instruments.length + itemChoiceOptions({ kind: "itemChoice", category: "artisanTools" }).length);
+  });
+
+  it("defaults to the category's first option", () => {
+    expect(resolvedItemChoiceName(instrument, grantKey(0, 0, 0), EMPTY_SELECTION)).toBe(itemChoiceOptions(instrument)[0]);
+  });
+
+  it("resolves the player's pick into a named gear item", () => {
+    const selection: StartingEquipmentSelection = {
+      ...EMPTY_SELECTION,
+      picks: { [grantKey(0, 0, 0)]: "Lute", [grantKey(1, 0, 0)]: "Smith's Tools" },
+    };
+    const gear = resolveStartingGear(lines, selection, view, profs);
+    expect(gear.items).toEqual([
+      { name: "Lute", quantity: 1, description: "" },
+      { name: "Smith's Tools", quantity: 1, description: "" },
+    ]);
+    expect(describeOption(lines[0][0], 0, 0, selection, view, profs)).toBe("Lute");
+  });
+
+  it("supports a typed custom item, and drops it when left blank", () => {
+    const key = grantKey(0, 0, 0);
+    const typed: StartingEquipmentSelection = {
+      ...EMPTY_SELECTION,
+      picks: { [key]: CUSTOM_PICK },
+      customNames: { [key]: "  Hurdy-gurdy  " },
+    };
+    expect(resolveStartingGear([lines[0]], typed, view, profs).items).toEqual([
+      { name: "Hurdy-gurdy", quantity: 1, description: "" },
+    ]);
+    expect(describeOption(lines[0][0], 0, 0, typed, view, profs)).toBe("Hurdy-gurdy");
+
+    const blank: StartingEquipmentSelection = { ...EMPTY_SELECTION, picks: { [key]: CUSTOM_PICK } };
+    expect(resolveStartingGear([lines[0]], blank, view, profs).items).toEqual([]);
+    expect(describeOption(lines[0][0], 0, 0, blank, view, profs)).toBe("Custom item");
+  });
+
+  it("2024 Bard's kit offers an instrument of the player's choice", () => {
+    const bard = classOf(CATALOG_2024, "bard");
+    const grants = bard.startingEquipment!.flat(2);
+    expect(grants).toContainEqual({ kind: "itemChoice", category: "instrument", quantity: undefined });
+  });
+});
+
+describe("rolled starting gold (2014 \"gold instead\")", () => {
+  const goldRoll = { kind: "goldRoll", formula: "4d4" } as const;
+  const kitLine = [[{ kind: "item", name: "Explorer's Pack" }], [goldRoll]] as never;
+  const otherLine = [[{ kind: "item", name: "Torch", quantity: 2 }]] as never;
+  const view = CATALOG_2014;
+  const profs = classOf(CATALOG_2014, "fighter");
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it("rolls the formula x10 once and caches it", () => {
+    jest.spyOn(Math, "random").mockReturnValue(0.99); // every d4 rolls 4
+    const key = grantKey(0, 1, 0);
+    const rolled = rollGoldOption(goldRoll, key, EMPTY_SELECTION);
+    expect(rolled.rolledAmounts[key]).toBe(160);
+
+    jest.spyOn(Math, "random").mockReturnValue(0); // would roll all 1s
+    const again = rollGoldOption(goldRoll, key, rolled);
+    expect(again).toBe(rolled);
+    expect(again.rolledAmounts[key]).toBe(160);
+  });
+
+  it("stays within 4d4 x10 bounds", () => {
+    for (let i = 0; i < 50; i++) {
+      const amount = rollGoldOption(goldRoll, "k", EMPTY_SELECTION).rolledAmounts.k;
+      expect(amount).toBeGreaterThanOrEqual(40);
+      expect(amount).toBeLessThanOrEqual(160);
+      expect(amount % 10).toBe(0);
+    }
+  });
+
+  it("doesn't mutate the selection it's given", () => {
+    const before = { ...EMPTY_SELECTION, rolledAmounts: {} };
+    rollGoldOption(goldRoll, "k", before);
+    expect(before.rolledAmounts).toEqual({});
+  });
+
+  it("is only 'gold instead' when the lone goldRoll option is chosen", () => {
+    expect(goldInsteadChoice([kitLine, otherLine], EMPTY_SELECTION)).toBeUndefined();
+    const chosen = { ...EMPTY_SELECTION, optionIndex: { 0: 1 } };
+    expect(goldInsteadChoice([kitLine, otherLine], chosen)).toEqual({ lineIndex: 0, key: grantKey(0, 1, 0) });
+  });
+
+  it("forfeits every other line's gear when gold instead is chosen", () => {
+    const key = grantKey(0, 1, 0);
+    const selection = { ...EMPTY_SELECTION, optionIndex: { 0: 1 }, rolledAmounts: { [key]: 110 } };
+    expect(resolveStartingGear([kitLine, otherLine], selection, view, profs)).toEqual({
+      weapons: [],
+      armor: [],
+      items: [],
+      gold: 110,
+    });
+    expect(describeOption([goldRoll], 0, 1, selection, view, profs)).toBe("110 gp");
+  });
+
+  it("grants 0 gp, not NaN, before the roll has happened", () => {
+    const selection = { ...EMPTY_SELECTION, optionIndex: { 0: 1 } };
+    expect(resolveStartingGear([kitLine], selection, view, profs).gold).toBe(0);
+  });
+
+  it("keeps the normal kit when the kit option is chosen", () => {
+    const gear = resolveStartingGear([kitLine, otherLine], EMPTY_SELECTION, view, profs);
+    expect(gear.items.map((i) => i.name)).toEqual(["Explorer's Pack", "Torch"]);
+    expect(gear.gold).toBe(0);
+  });
+
+  it("every 2014 class's first line ends with a lone 4d4 gold option", () => {
+    for (const klass of CATALOG_2014.classes) {
+      if (!klass.startingEquipment?.length) continue;
+      const firstLine = klass.startingEquipment[0];
+      expect({ id: klass.id, last: firstLine[firstLine.length - 1] }).toEqual({ id: klass.id, last: [goldRoll] });
+    }
+  });
+
+  it("no 2024 class uses a rolled gold option (2024 gold is fixed)", () => {
+    const grants = CATALOG_2024.classes.flatMap((c) => c.startingEquipment ?? []).flat(2);
+    expect(grants.some((g) => g.kind === "goldRoll")).toBe(false);
+  });
+});
+
+describe("2014 Druid nonmetal shield", () => {
+  it("counts the generic SRD shield as nonmetal-compliant", () => {
+    const druid = classOf(CATALOG_2014, "druid");
+    const shield = (CATALOG_2014.armor ?? []).find((a) => a.id === "shield")!;
+    expect(isProficientWithArmor(shield, druid.armorProficiencies)).toBe(true);
+  });
+});
+
+describe("3.5e armor proficiency qualifiers", () => {
+  const find = (id: string) => CATALOG_35E.armor!.find((a) => a.id === id)!;
+
+  it("excludes the tower shield from an 'except tower shields' grant", () => {
+    const barbarianProfs = classOf(CATALOG_35E, "barbarian").armorProficiencies;
+    expect(isProficientWithArmor(find("shield-heavy-steel"), barbarianProfs)).toBe(true);
+    expect(isProficientWithArmor(find("shield-tower"), barbarianProfs)).toBe(false);
+  });
+
+  it("includes the tower shield when the grant says so", () => {
+    const fighterProfs = classOf(CATALOG_35E, "fighter").armorProficiencies;
+    expect(isProficientWithArmor(find("shield-tower"), fighterProfs)).toBe(true);
+  });
+
+  it("Druid's combined 'nonmetal, except tower shields' only allows wooden shields", () => {
+    const druidProfs = classOf(CATALOG_35E, "druid").armorProficiencies;
+    expect(isProficientWithArmor(find("shield-light-wooden"), druidProfs)).toBe(true);
+    expect(isProficientWithArmor(find("shield-light-steel"), druidProfs)).toBe(false);
+    expect(isProficientWithArmor(find("shield-tower"), druidProfs)).toBe(false);
+    expect(isProficientWithArmor(find("buckler"), druidProfs)).toBe(true);
+  });
+});
+
+describe("3.5e weapons/armor catalog", () => {
+  it("every id referenced by 3.5e classes resolves in the catalog", () => {
+    for (const klass of CATALOG_35E.classes) {
+      for (const line of klass.startingEquipment ?? []) {
+        for (const option of line) {
+          for (const grant of option) {
+            if (grant.kind === "weapon") {
+              expect(CATALOG_35E.weapons?.some((w) => w.id === grant.weaponId)).toBe(true);
+            }
+            if (grant.kind === "armor") {
+              expect(CATALOG_35E.armor?.some((a) => a.id === grant.armorId)).toBe(true);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("splits 3.5e shields into wooden/steel variants, unlike 5e's single generic Shield", () => {
+    const shieldIds = (CATALOG_35E.armor ?? []).filter((a) => a.category === "Shield").map((a) => a.id);
+    expect(shieldIds).toEqual(
+      expect.arrayContaining([
+        "buckler",
+        "shield-light-wooden",
+        "shield-light-steel",
+        "shield-heavy-wooden",
+        "shield-heavy-steel",
+        "shield-tower",
+      ])
+    );
+  });
+
+  it("double weapons keep both heads' damage dice", () => {
+    const urgrosh = CATALOG_35E.weapons!.find((w) => w.id === "urgrosh-dwarven")!;
+    expect(urgrosh.damageDice).toBe("1d8/1d6");
+    expect(urgrosh.damageType).toBe("Slashing or piercing");
   });
 });

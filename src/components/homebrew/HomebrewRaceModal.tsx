@@ -9,6 +9,7 @@ import {
   updateHomebrewRace,
   type HomebrewRaceInput,
 } from "../../features/characters/homebrewRepo";
+import { getRulesetCatalog } from "../../data/rulesets";
 import { TraitListEditor, type NamedTrait } from "./TraitListEditor";
 
 export type HomebrewRaceRow = { id: number } & HomebrewRaceInput;
@@ -46,7 +47,22 @@ export function HomebrewRaceModal({
   const [speedText, setSpeedText] = useState(String(initial?.speed ?? 30));
   const [traits, setTraits] = useState<NamedTrait[]>(initial?.traits ?? []);
 
+  const [baseRaceId, setBaseRaceId] = useState<string | null>(null);
+  const baseRaces = useMemo(() => getRulesetCatalog(ruleset).races, [ruleset]);
+
   const canSave = name.trim().length > 0;
+
+  // Subrace-style starting point: copies the chosen race's bonuses, size, speed
+  // and traits into the form so the user only edits what makes theirs different.
+  function pickBaseRace(raceId: string | null) {
+    setBaseRaceId(raceId);
+    const race = baseRaces.find((r) => r.id === raceId);
+    if (!race) return;
+    setAbilityBonuses({ ...race.abilityBonuses });
+    setSize(race.size);
+    setSpeedText(String(race.speed));
+    setTraits((race.traits ?? []).map((t) => ({ name: t.name, description: t.description })));
+  }
 
   function adjustBonus(key: AbilityScoreKey, delta: number) {
     setAbilityBonuses((prev) => ({
@@ -80,7 +96,37 @@ export function HomebrewRaceModal({
               style={{ maxHeight: 440 }}
               bottomOffset={60}
             >
-              <Text style={styles.hint}>Name</Text>
+              {!initial && baseRaces.length > 0 && (
+                <>
+                  <Text style={styles.subTitle}>Base Race / Subrace (optional)</Text>
+                  <Text style={styles.hint}>
+                    Start from an existing race or subrace, then change whatever makes yours different.
+                  </Text>
+                  <View style={styles.wrapRow}>
+                    <Pressable
+                      style={[styles.chip, baseRaceId === null && styles.chipActive]}
+                      onPress={() => setBaseRaceId(null)}
+                    >
+                      <Text style={[styles.chipText, baseRaceId === null && styles.chipTextActive]}>
+                        From scratch
+                      </Text>
+                    </Pressable>
+                    {baseRaces.map((r) => (
+                      <Pressable
+                        key={r.id}
+                        style={[styles.chip, baseRaceId === r.id && styles.chipActive]}
+                        onPress={() => pickBaseRace(r.id)}
+                      >
+                        <Text style={[styles.chipText, baseRaceId === r.id && styles.chipTextActive]}>
+                          {r.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </>
+              )}
+
+              <Text style={[styles.hint, { marginTop: 12 }]}>Name</Text>
               <TextInput
                 style={styles.input}
                 value={name}

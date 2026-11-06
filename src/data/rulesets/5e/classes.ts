@@ -1,5 +1,5 @@
 import type { ClassDefinition, EquipmentLine } from "../types";
-import { armor, item, weapon, weaponChoice } from "../equipmentHelpers";
+import { armor, goldRoll, item, itemChoice, weapon, weaponChoice } from "../equipmentHelpers";
 
 // Core classes from the 5e SRD: hit die, saving throw proficiencies,
 // spellcasting ability (where applicable), skill choices, armor/weapon
@@ -11,6 +11,12 @@ import { armor, item, weapon, weaponChoice } from "../equipmentHelpers";
 // automatically. Vague SRD phrasing like "any martial weapon" is resolved to
 // a `weaponChoice` grant, which onboarding expands into the full list of
 // matching weapons (with real stats) for the player to pick from.
+//
+// Each class's first line also offers `goldRoll("4d4")` -- 2014 5e's "take
+// gold instead of your whole kit" alternative. The PHB's real per-class gold
+// tables (e.g. Barbarian: 2d4x10gp) aren't in the SRD, so rather than add a
+// non-SRD source, every class gets the same generic roll instead -- see
+// TODO.md and `EquipmentGrant`'s `goldRoll` case.
 export const CLASSES_5E: ClassDefinition[] = [
   {
     id: "barbarian",
@@ -24,7 +30,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor", "Medium armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
     startingEquipment: [
-      [[weapon("greataxe")], [weaponChoice("Martial Melee")]],
+      [[weapon("greataxe")], [weaponChoice("Martial Melee")], [goldRoll("4d4")]],
       [[weapon("handaxe", 2)], [weaponChoice("Simple")]],
       [[item("Explorer's Pack"), weapon("javelin", 4)]],
     ] as EquipmentLine[],
@@ -48,9 +54,9 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["Simple weapons", "Hand crossbows", "Longswords", "Rapiers", "Shortswords"],
     startingEquipment: [
-      [[weapon("rapier")], [weapon("longsword")], [weaponChoice("Simple")]],
+      [[weapon("rapier")], [weapon("longsword")], [weaponChoice("Simple")], [goldRoll("4d4")]],
       [[item("Diplomat's Pack")], [item("Entertainer's Pack")]],
-      [[item("Musical Instrument")]],
+      [[itemChoice("instrument")]],
       [[armor("leather"), weapon("dagger")]],
     ] as EquipmentLine[],
     summary: "An inspiring magician whose power echoes through music.",
@@ -66,7 +72,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor", "Medium armor", "Shields"],
     weaponProficiencies: ["Simple weapons"],
     startingEquipment: [
-      [[weapon("mace")], [weapon("warhammer")]],
+      [[weapon("mace")], [weapon("warhammer")], [goldRoll("4d4")]],
       [[armor("scale-mail")], [armor("leather")], [armor("chain-mail")]],
       [[weapon("light-crossbow"), item("Crossbow Bolts", 20)], [weaponChoice("Simple")]],
       [[item("Priest's Pack")], [item("Explorer's Pack")]],
@@ -88,7 +94,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor", "Medium armor (nonmetal)", "Shields (nonmetal)"],
     weaponProficiencies: ["Clubs", "Daggers", "Darts", "Javelins", "Maces", "Quarterstaffs", "Scimitars", "Sickles", "Slings", "Spears"],
     startingEquipment: [
-      [[armor("shield")], [weaponChoice("Simple")]],
+      [[armor("shield")], [weaponChoice("Simple")], [goldRoll("4d4")]],
       [[weapon("scimitar")], [weaponChoice("Simple Melee")]],
       [[armor("leather"), item("Explorer's Pack"), item("Druidic Focus")]],
     ] as EquipmentLine[],
@@ -106,7 +112,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["All armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
     startingEquipment: [
-      [[armor("chain-mail")], [armor("leather"), weapon("longbow"), item("Arrows", 20)]],
+      [[armor("chain-mail")], [armor("leather"), weapon("longbow"), item("Arrows", 20)], [goldRoll("4d4")]],
       [[weaponChoice("Martial"), armor("shield")], [weaponChoice("Martial", 2)]],
       [[weapon("light-crossbow"), item("Crossbow Bolts", 20)], [weapon("handaxe", 2)]],
       [[item("Dungeoneer's Pack")], [item("Explorer's Pack")]],
@@ -122,7 +128,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: [],
     weaponProficiencies: ["Simple weapons", "Shortswords"],
     startingEquipment: [
-      [[weapon("shortsword")], [weaponChoice("Simple")]],
+      [[weapon("shortsword")], [weaponChoice("Simple")], [goldRoll("4d4")]],
       [[weapon("dart", 10)]],
       [[item("Dungeoneer's Pack")], [item("Explorer's Pack")]],
     ] as EquipmentLine[],
@@ -139,7 +145,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["All armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
     startingEquipment: [
-      [[weaponChoice("Martial"), armor("shield")], [weaponChoice("Martial", 2)]],
+      [[weaponChoice("Martial"), armor("shield")], [weaponChoice("Martial", 2)], [goldRoll("4d4")]],
       [[weapon("javelin", 5)], [weaponChoice("Simple Melee")]],
       [[item("Priest's Pack")], [item("Explorer's Pack")]],
       [[armor("chain-mail"), item("Holy Symbol")]],
@@ -160,7 +166,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor", "Medium armor", "Shields"],
     weaponProficiencies: ["Simple weapons", "Martial weapons"],
     startingEquipment: [
-      [[armor("scale-mail")], [armor("leather")]],
+      [[armor("scale-mail")], [armor("leather")], [goldRoll("4d4")]],
       [[weapon("shortsword", 2)], [weaponChoice("Simple Melee", 2)]],
       [[item("Dungeoneer's Pack")], [item("Explorer's Pack")]],
       [[weapon("longbow"), item("Arrows", 20)]],
@@ -182,7 +188,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["Simple weapons", "Hand crossbows", "Longswords", "Rapiers", "Shortswords"],
     startingEquipment: [
-      [[weapon("rapier")], [weapon("shortsword")]],
+      [[weapon("rapier")], [weapon("shortsword")], [goldRoll("4d4")]],
       [[weapon("shortbow"), item("Arrows", 20)], [weapon("shortsword")]],
       [[item("Burglar's Pack")], [item("Dungeoneer's Pack")], [item("Explorer's Pack")]],
       [[armor("leather"), item("Thieves' Tools"), weapon("dagger", 2)]],
@@ -200,7 +206,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: [],
     weaponProficiencies: ["Daggers", "Darts", "Slings", "Quarterstaffs", "Light crossbows"],
     startingEquipment: [
-      [[weapon("light-crossbow"), item("Crossbow Bolts", 20)], [weaponChoice("Simple")]],
+      [[weapon("light-crossbow"), item("Crossbow Bolts", 20)], [weaponChoice("Simple")], [goldRoll("4d4")]],
       [[item("Component Pouch")], [item("Arcane Focus")]],
       [[item("Dungeoneer's Pack")], [item("Explorer's Pack")]],
       [[weapon("dagger", 2)]],
@@ -218,7 +224,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["Simple weapons"],
     startingEquipment: [
-      [[weapon("light-crossbow"), item("Crossbow Bolts", 20)], [weaponChoice("Simple")]],
+      [[weapon("light-crossbow"), item("Crossbow Bolts", 20)], [weaponChoice("Simple")], [goldRoll("4d4")]],
       [[item("Component Pouch")], [item("Arcane Focus")]],
       [[item("Scholar's Pack")], [item("Dungeoneer's Pack")]],
       [[armor("leather"), weaponChoice("Simple"), weapon("dagger", 2)]],
@@ -236,7 +242,7 @@ export const CLASSES_5E: ClassDefinition[] = [
     armorProficiencies: [],
     weaponProficiencies: ["Daggers", "Darts", "Slings", "Quarterstaffs", "Light crossbows"],
     startingEquipment: [
-      [[weapon("quarterstaff")], [weapon("dagger")]],
+      [[weapon("quarterstaff")], [weapon("dagger")], [goldRoll("4d4")]],
       [[item("Component Pouch")], [item("Arcane Focus")]],
       [[item("Scholar's Pack")], [item("Explorer's Pack")]],
       [[item("Spellbook")]],

@@ -17,7 +17,7 @@ import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button } from "../../components/Button";
-import { InvalidDiceExpressionError, parseDiceExpression, rollExpression, type RollResult } from "../../features/dice/diceEngine";
+import { isValidDiceExpression, parseDiceExpression, rollExpression, type RollResult } from "../../features/dice/diceEngine";
 import { clearRollHistory, recentRolls, saveRoll } from "../../features/dice/diceRepo";
 import {
   buildStructuredRollPlan,
@@ -383,14 +383,9 @@ export default function DiceRollerScreen() {
 
   async function rollFreeform(expr: string) {
     if (isRolling) return;
-    try {
-      parseDiceExpression(expr);
-    } catch (err) {
-      if (err instanceof InvalidDiceExpressionError) {
-        setError(err.message);
-        return;
-      }
-      throw err;
+    if (!isValidDiceExpression(expr)) {
+      setError(`"${expr}" is not a valid dice expression`);
+      return;
     }
     setError(null);
     const dieType = inferDieType(expr);
@@ -605,6 +600,9 @@ export default function DiceRollerScreen() {
                 onSubmitEditing={() => rollFreeform(expression)}
               />
             </View>
+            <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 6 }}>
+              2d20kh1 advantage · 2d20kl1 disadvantage · 4d6dl1 drop lowest · 1d6r&lt;=2 reroll 1s and 2s
+            </Text>
             <View style={styles.quickRow}>
               {DIE_TYPES.map((die) => (
                 <Pressable
@@ -1117,7 +1115,7 @@ export default function DiceRollerScreen() {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     scrollContent: { padding: 16, paddingBottom: 40 },
     titleRow: {
       flexDirection: "row",

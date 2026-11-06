@@ -1,5 +1,6 @@
 import "../db/client";
 import { useEffect } from "react";
+import { Image, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -33,9 +34,18 @@ function ThemedRoot() {
   const theme = useTheme();
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: theme.backdrop ? theme.colors.border : theme.colors.background }}>
+      {theme.backdrop ? (
+        <Image
+          source={theme.backdrop}
+          style={StyleSheet.absoluteFill}
+          resizeMode="stretch"
+          pointerEvents="none"
+        />
+      ) : null}
       <Stack
         screenOptions={{
+          contentStyle: { backgroundColor: "transparent" },
           headerStyle: { backgroundColor: theme.colors.surface },
           headerTintColor: theme.colors.text,
           headerTitleStyle: {
@@ -48,7 +58,7 @@ function ThemedRoot() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
-    </>
+    </View>
   );
 }
 

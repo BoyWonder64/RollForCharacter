@@ -8,11 +8,14 @@ import { formatMulticlassLabel } from "../../../features/characters/multiclass";
 import { deletePortrait } from "../../../features/characters/portraitStorage";
 import { getRulesetCatalog } from "../../../data/rulesets";
 import type { Character, CharacterClass } from "../../../types/models";
+import { duplicateCharacter } from "../../../features/dev/devTools";
+import { useDeveloperMode } from "../../../features/settings/DeveloperModeContext";
 import { useTheme } from "../../../theme/ThemeContext";
 import type { Theme } from "../../../theme/colors";
 
 export default function CharacterListScreen() {
   const theme = useTheme();
+  const { developerMode } = useDeveloperMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [classRowsById, setClassRowsById] = useState<Record<number, CharacterClass[]>>({});
@@ -38,6 +41,22 @@ export default function CharacterListScreen() {
       refresh();
     }, [refresh])
   );
+
+  // Developer mode only: long-press offers Duplicate (to test risky changes
+  // on a copy) or Delete.
+  function handleDeveloperMenu(character: Character) {
+    Alert.alert(character.name, "Developer actions", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Duplicate",
+        onPress: async () => {
+          await duplicateCharacter(character.id);
+          refresh();
+        },
+      },
+      { text: "Delete…", style: "destructive", onPress: () => handleDelete(character) },
+    ]);
+  }
 
   function handleDelete(character: Character) {
     Alert.alert(
@@ -73,8 +92,8 @@ export default function CharacterListScreen() {
           </Pressable>
         </View>
 
-        {characters.length > 0 && (
-          <Text style={styles.hint}>Long-press a character to delete it.</Text>
+        {characters.length > 0 && developerMode && (
+          <Text style={styles.hint}>Developer mode: long-press a character to duplicate or delete it.</Text>
         )}
 
         <FlatList
@@ -93,7 +112,7 @@ export default function CharacterListScreen() {
                   params: { characterId: String(item.id) },
                 })
               }
-              onLongPress={() => handleDelete(item)}
+              onLongPress={developerMode ? () => handleDeveloperMenu(item) : undefined}
             >
               {item.portraitUri ? (
                 <Image source={{ uri: item.portraitUri }} style={styles.rowPortrait} />
@@ -125,7 +144,7 @@ export default function CharacterListScreen() {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     content: { flex: 1, padding: 16 },
     headerRow: {
       flexDirection: "row",

@@ -1,15 +1,5 @@
-import type { ClassDefinition, EquipmentLine } from "../types";
-
-// 3.5e has no weapon/armor stat catalog in this app (see the file-top note
-// below on `startingEquipment` being representative-only), so each gear line
-// here becomes a plain `item` grant with no resolvable stats -- just the SRD
-// text, split on "or" into pickable alternatives where the SRD offers a
-// choice.
-function flavorLines(lines: string[]): EquipmentLine[] {
-  return lines.map((line) =>
-    line.split(/\s*,?\s+or\s+/i).map((part) => [{ kind: "item" as const, name: part.trim() }])
-  );
-}
+import type { ClassDefinition } from "../types";
+import { armor, item, itemChoice, weapon, weaponChoice } from "../equipmentHelpers";
 
 // Core classes from the 3.5e SRD (d20srd.org, "The Hypertext d20 SRD", the
 // v3.5 d20 System Reference Document -- Open Game Content under the OGL
@@ -32,10 +22,15 @@ function flavorLines(lines: string[]): EquipmentLine[] {
 //   list (skill ids) for reference/filtering only.
 // - Base Attack Bonus (full/3-4/half progression per class, confirmed from
 //   each class's SRD level table) isn't in `ClassDefinition` at all -- there
-//   is no field for it. It's noted in `summary` as flavor text only, same
-//   as `startingEquipment` below being a representative gear list rather
-//   than an enforced grant (the SRD class pages don't publish the PHB's
-//   "starting package" tables -- those aren't open content).
+//   is no field for it. It's noted in `summary` as flavor text only.
+// - `startingEquipment` below resolves to real weapon/armor stats (see
+//   weapons.ts/armor.ts) the same way 2014/2024 5e's does, but the SRD
+//   class pages don't publish the PHB's own "starting package" table (not
+//   open content) -- so the specific *combinations* below are this app's
+//   own representative picks inferred from each class's proficiencies, not
+//   a transcription of the real PHB table. Every weapon/armor grant is
+//   still swappable for anything else the class is proficient with, same
+//   as every other ruleset.
 // - Hit die: `ClassDefinition.hitDie` only allows 6 | 8 | 10 | 12, but the
 //   3.5e SRD Sorcerer and Wizard both have a d4 hit die. Rather than edit
 //   the shared type, they're set to 6 here (the closest allowed value,
@@ -50,7 +45,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["climb", "craft", "handle-animal", "intimidate", "jump", "listen", "ride", "survival", "swim"],
     armorProficiencies: ["Light armor", "Medium armor", "Shields (except tower shields)"],
     weaponProficiencies: ["All simple weapons", "All martial weapons"],
-    startingEquipment: flavorLines(["A greataxe or other martial weapon", "A hide or other light/medium armor", "A few javelins or throwing weapons"]),
+    startingEquipment: [
+      [[weapon("greataxe")], [weaponChoice("Martial")]],
+      [[armor("hide")]],
+      [[weapon("javelin", 4)]],
+    ],
     summary: "A ferocious warrior fueled by rage, with full base attack bonus progression and the fastest land speed of any class.",
   },
   {
@@ -68,7 +67,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     ],
     armorProficiencies: ["Light armor", "Shields (except tower shields)"],
     weaponProficiencies: ["All simple weapons", "Longsword", "Rapier", "Sap", "Short sword", "Shortbow", "Whip"],
-    startingEquipment: flavorLines(["A rapier or other light weapon", "Light armor", "A musical instrument"]),
+    startingEquipment: [
+      [[weapon("rapier")]],
+      [[armor("leather")]],
+      [[itemChoice("instrument")]],
+    ],
     summary: "An arcane spellcaster and jack-of-all-skills whose bardic music inspires allies; 3/4 base attack bonus progression.",
   },
   {
@@ -79,7 +82,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["concentration", "craft", "diplomacy", "heal", "knowledge-arcana", "knowledge-history", "knowledge-religion", "knowledge-the-planes", "profession", "spellcraft"],
     armorProficiencies: ["Light armor", "Medium armor", "Heavy armor", "Shields (except tower shields)"],
     weaponProficiencies: ["All simple weapons"],
-    startingEquipment: flavorLines(["A mace or other simple weapon", "Scale mail or other medium armor", "A shield and a holy symbol"]),
+    startingEquipment: [
+      [[weapon("mace-heavy")], [weaponChoice("Simple")]],
+      [[armor("scale-mail")]],
+      [[armor("shield-light-wooden"), item("Holy Symbol")]],
+    ],
     summary: "A divine spellcaster who chooses two domains from their deity, with 3/4 base attack bonus progression and the ability to turn or rebuke undead.",
   },
   {
@@ -90,7 +97,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["concentration", "craft", "diplomacy", "handle-animal", "heal", "knowledge-nature", "listen", "profession", "ride", "spellcraft", "spot", "survival", "swim"],
     armorProficiencies: ["Light armor (nonmetal)", "Medium armor (nonmetal)", "Shields (nonmetal, except tower shields)"],
     weaponProficiencies: ["Club", "Dagger", "Dart", "Quarterstaff", "Scimitar", "Sickle", "Shortspear", "Sling", "Spear"],
-    startingEquipment: flavorLines(["A scimitar or sickle", "Leather or hide armor (nonmetal)", "A wooden shield and a druidic focus"]),
+    startingEquipment: [
+      [[weapon("scimitar")], [weapon("sickle")]],
+      [[armor("leather")], [armor("hide")]],
+      [[armor("shield-light-wooden"), item("Druidic Focus")]],
+    ],
     summary: "A divine spellcaster devoted to nature, able to wild shape into animals and summon nature's allies; 3/4 base attack bonus progression.",
   },
   {
@@ -100,7 +111,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["climb", "craft", "handle-animal", "intimidate", "jump", "ride", "swim"],
     armorProficiencies: ["Light armor", "Medium armor", "Heavy armor", "Shields (including tower shields)"],
     weaponProficiencies: ["All simple weapons", "All martial weapons"],
-    startingEquipment: flavorLines(["A longsword or other martial weapon", "Chain shirt or other armor", "A shield"]),
+    startingEquipment: [
+      [[weapon("longsword")], [weaponChoice("Martial")]],
+      [[armor("chain-shirt")]],
+      [[armor("shield-heavy-steel")]],
+    ],
     summary: "A master of martial combat with the most bonus feats of any class, and full base attack bonus progression.",
   },
   {
@@ -111,7 +126,9 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["balance", "climb", "concentration", "craft", "diplomacy", "escape-artist", "hide", "jump", "knowledge-arcana", "knowledge-religion", "listen", "move-silently", "perform", "profession", "sense-motive", "spot", "swim", "tumble"],
     armorProficiencies: [],
     weaponProficiencies: ["Club", "Crossbow (light or heavy)", "Dagger", "Handaxe", "Javelin", "Kama", "Nunchaku", "Quarterstaff", "Sai", "Shuriken", "Siangham", "Sling"],
-    startingEquipment: flavorLines(["A few shuriken or a quarterstaff", "No armor (unarmed combat relies on AC bonus, lost in armor)"]),
+    startingEquipment: [
+      [[weapon("shuriken", 5)], [weapon("quarterstaff")]],
+    ],
     summary: "A martial artist who fights unarmed and unarmored, with all three saves good and 3/4 base attack bonus progression -- unique among core classes.",
   },
   {
@@ -122,7 +139,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["concentration", "craft", "diplomacy", "handle-animal", "heal", "knowledge-nobility-royalty", "knowledge-religion", "profession", "ride", "sense-motive"],
     armorProficiencies: ["Light armor", "Medium armor", "Heavy armor", "Shields (except tower shields)"],
     weaponProficiencies: ["All simple weapons", "All martial weapons"],
-    startingEquipment: flavorLines(["A longsword or other martial weapon", "Chain mail or other heavy armor", "A shield and a holy symbol"]),
+    startingEquipment: [
+      [[weapon("longsword")], [weaponChoice("Martial")]],
+      [[armor("banded-mail")]],
+      [[armor("shield-heavy-steel"), item("Holy Symbol")]],
+    ],
     summary: "A holy warrior with smite evil, divine grace, and (from 4th level) a small number of divine spells; full base attack bonus progression.",
   },
   {
@@ -133,7 +154,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["climb", "concentration", "craft", "handle-animal", "heal", "hide", "jump", "knowledge-dungeoneering", "knowledge-geography", "knowledge-nature", "listen", "move-silently", "profession", "ride", "search", "spot", "survival", "swim", "use-rope"],
     armorProficiencies: ["Light armor", "Shields (except tower shields)"],
     weaponProficiencies: ["All simple weapons", "All martial weapons"],
-    startingEquipment: flavorLines(["A longbow or other martial weapon", "Two shortswords or a melee weapon", "Leather or other light armor"]),
+    startingEquipment: [
+      [[weapon("longbow")], [weaponChoice("Martial")]],
+      [[weapon("sword-short", 2)], [weaponChoice("Martial Melee")]],
+      [[armor("leather")]],
+    ],
     summary: "A warrior of the wilds with a favored enemy and (from 4th level) a small number of divine spells; full base attack bonus progression.",
   },
   {
@@ -148,7 +173,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     ],
     armorProficiencies: ["Light armor"],
     weaponProficiencies: ["All simple weapons", "Hand crossbow", "Rapier", "Sap", "Shortbow", "Short sword"],
-    startingEquipment: flavorLines(["A short sword or rapier", "A shortbow and arrows", "Leather armor and thieves' tools"]),
+    startingEquipment: [
+      [[weapon("sword-short")], [weapon("rapier")]],
+      [[weapon("shortbow"), item("Arrows", 20)]],
+      [[armor("leather"), item("Thieves' Tools")]],
+    ],
     summary: "A skillful, stealthy opportunist with sneak attack and the most class skills of any core class; 3/4 base attack bonus progression.",
   },
   {
@@ -159,7 +188,10 @@ export const CLASSES_35E: ClassDefinition[] = [
     classSkills: ["bluff", "concentration", "craft", "knowledge-arcana", "profession", "spellcraft"],
     armorProficiencies: [],
     weaponProficiencies: ["All simple weapons"],
-    startingEquipment: flavorLines(["A dagger or light crossbow", "A component pouch or arcane focus", "No armor (interferes with spellcasting)"]),
+    startingEquipment: [
+      [[weapon("dagger")], [weapon("crossbow-light")]],
+      [[item("Component Pouch")], [item("Arcane Focus")]],
+    ],
     summary: "An innate arcane spellcaster who casts spells known without preparation, from a magical bloodline; half base attack bonus progression.",
   },
   {
@@ -175,7 +207,11 @@ export const CLASSES_35E: ClassDefinition[] = [
     ],
     armorProficiencies: [],
     weaponProficiencies: ["Club", "Dagger", "Heavy crossbow", "Light crossbow", "Quarterstaff"],
-    startingEquipment: flavorLines(["A quarterstaff or dagger", "A spellbook and a component pouch or arcane focus", "No armor (interferes with spellcasting)"]),
+    startingEquipment: [
+      [[weapon("quarterstaff")], [weapon("dagger")]],
+      [[item("Component Pouch")], [item("Arcane Focus")]],
+      [[item("Spellbook")]],
+    ],
     summary: "A scholarly arcane spellcaster who prepares spells from a spellbook; half base attack bonus progression.",
   },
 ];

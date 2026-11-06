@@ -10,6 +10,7 @@ import {
 } from "./characterCalculations";
 import type { AbilityScoreKey, Character } from "../../types/models";
 import { touchCharacterUpdatedAt } from "./syncClock";
+import { recomputeArmorClass } from "./armorClassRepo";
 
 // Writes the ability score columns directly (not via characterRepo's
 // `updateCharacter`) to avoid a circular import -- characterRepo.ts itself
@@ -81,6 +82,7 @@ export async function addResolvedFeat(character: Character, feat: ResolvedFeatPi
     effects: serializeFeatEffects(feat.effects),
   });
   await touchCharacterUpdatedAt(character.id);
+  if (feat.effects.some((e) => e.kind === "armorClassBonus")) await recomputeArmorClass(character.id);
 }
 
 /** Adds a feat picked from the catalog, with its player choices already resolved into `effects`. */
@@ -106,16 +108,26 @@ export async function addCustomFeat(
   });
 }
 
+function hasArmorClassBonus(effectsJson: string): boolean {
+  return parseFeatEffects(effectsJson).some((e) => e.kind === "armorClassBonus");
+}
+
 export async function setFeatEnabled(characterFeatId: number, enabled: boolean): Promise<void> {
   const [row] = await db.select().from(characterFeats).where(eq(characterFeats.id, characterFeatId));
   await db.update(characterFeats).set({ enabled }).where(eq(characterFeats.id, characterFeatId));
-  if (row) await touchCharacterUpdatedAt(row.characterId);
+  if (row) {
+    await touchCharacterUpdatedAt(row.characterId);
+    if (hasArmorClassBonus(row.effects)) await recomputeArmorClass(row.characterId);
+  }
 }
 
 export async function removeCharacterFeat(characterFeatId: number): Promise<void> {
   const [row] = await db.select().from(characterFeats).where(eq(characterFeats.id, characterFeatId));
   await db.delete(characterFeats).where(eq(characterFeats.id, characterFeatId));
-  if (row) await touchCharacterUpdatedAt(row.characterId);
+  if (row) {
+    await touchCharacterUpdatedAt(row.characterId);
+    if (hasArmorClassBonus(row.effects)) await recomputeArmorClass(row.characterId);
+  }
 }
 
 // --- Shared homebrew library -----------------------------------------------

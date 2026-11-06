@@ -2,6 +2,7 @@ import {
   InvalidDiceExpressionError,
   parseDiceExpression,
   rollExpression,
+  setDiceOverride,
 } from "../diceEngine";
 
 describe("parseDiceExpression", () => {
@@ -159,4 +160,29 @@ describe("rollExpression", () => {
       }
     }
   );
+});
+
+describe("rollExpression with advanced notation", () => {
+  afterEach(() => {
+    setDiceOverride("random");
+  });
+
+  it("rolls advantage and keeps only the kept die in rolls", () => {
+    setDiceOverride("max");
+    const result = rollExpression("2d20kh1+5");
+    expect(result.total).toBe(25);
+    expect(result.rolls).toEqual([{ sides: 20, value: 20 }]);
+  });
+
+  it("honors the seeded override so results repeat", () => {
+    setDiceOverride("seeded", 42);
+    const first = rollExpression("4d6kh3").total;
+    setDiceOverride("seeded", 42);
+    expect(rollExpression("4d6kh3").total).toBe(first);
+  });
+
+  it("still throws for invalid advanced input", () => {
+    expect(() => rollExpression("2d20kh")).not.toThrow();
+    expect(() => rollExpression("2d20k(")).toThrow(InvalidDiceExpressionError);
+  });
 });

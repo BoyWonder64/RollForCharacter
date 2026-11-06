@@ -16,6 +16,8 @@ type ColumnMigration = {
 // `ALTER TABLE ... ADD COLUMN ...`, which is safe to re-run: an "already
 // exists" failure is expected and swallowed, anything else is rethrown.
 const COLUMN_MIGRATIONS: ColumnMigration[] = [
+  { table: "dm_notes", column: "campaign", definition: "TEXT NOT NULL DEFAULT ''" },
+  { table: "dm_timeline_events", column: "campaign", definition: "TEXT NOT NULL DEFAULT ''" },
   { table: "dm_creatures", column: "dexterity", definition: "INTEGER NOT NULL DEFAULT 10" },
   { table: "dm_creatures", column: "initiative", definition: "INTEGER" },
   { table: "dm_creatures", column: "conditions", definition: "TEXT NOT NULL DEFAULT ''" },

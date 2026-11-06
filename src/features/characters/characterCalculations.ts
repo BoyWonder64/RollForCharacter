@@ -75,6 +75,53 @@ export function armorClassBaseline(dexterityScore: number): number {
 }
 
 /**
+ * Armor Class from whatever's actually equipped: the best single equipped
+ * body armor (base AC + Dex per its rule, or unarmored 10+Dex with none
+ * equipped), plus every equipped shield's bonus, plus each piece's
+ * enchantment (`magicBonus`, e.g. a "+1 Breastplate") and any feat-granted
+ * flat bonus (`aggregateFeatEffects(...).armorClassBonus`). This is the
+ * single source of truth other derived stats (`maxHp`, `proficiencyBonus`)
+ * already follow: recomputed and written back into the `characters` row
+ * whenever an AC input changes (equip/unequip, a Dex ASI, a feat toggle --
+ * see `armorClassRepo.recomputeArmorClass`), rather than trusted as a stored
+ * value. `startingEquipment.ts`'s `computeArmorClass` (onboarding, before
+ * any magic/feat bonuses exist) delegates here with both omitted.
+ */
+export function computeEquippedArmorClass(
+  dexterityScore: number,
+  equippedArmor: {
+    category: string;
+    baseArmorClass: number;
+    dexModifier: string;
+    magicBonus?: number;
+    /** 3.5e's precise numeric Dex cap, used instead of `dexModifier`'s coarse bucket when present. */
+    maxDexBonus?: number;
+  }[],
+  featArmorClassBonus = 0
+): number {
+  const dex = abilityModifier(dexterityScore);
+  const body = equippedArmor.filter((a) => a.category !== "Shield");
+  const shields = equippedArmor.filter((a) => a.category === "Shield");
+  const bodyAc = body.length
+    ? Math.max(
+        ...body.map((a) => {
+          const dexPart =
+            a.maxDexBonus !== undefined
+              ? Math.min(dex, a.maxDexBonus)
+              : a.dexModifier === "full"
+                ? dex
+                : a.dexModifier === "max2"
+                  ? Math.min(dex, 2)
+                  : 0;
+          return a.baseArmorClass + dexPart + (a.magicBonus ?? 0);
+        })
+      )
+    : 10 + dex;
+  const shieldBonus = shields.reduce((sum, s) => sum + s.baseArmorClass + (s.magicBonus ?? 0), 0);
+  return bodyAc + shieldBonus + featArmorClassBonus;
+}
+
+/**
  * A mechanical benefit a feat (catalog or homebrew) grants -- always fully
  * resolved (any player choice, like which ability or which skills, already
  * baked in), stored as JSON on a `character_feats` row. `abilityScoreIncrease`
@@ -338,6 +385,43 @@ export function getClassProgressionForCharacter(character: Character): ClassProg
 
 export function findSubclass(progression: ClassProgression, subclassId: string): Subclass | undefined {
   return progression.subclasses?.find((s) => s.id === subclassId);
+}
+
+/**
+ * A class's armor/weapon proficiencies plus whatever bonus proficiencies its
+ * chosen subclass grants (e.g. 2014 Life Domain Cleric's heavy armor --
+ * see `Subclass.bonusArmorProficiencies`). Every proficiency check should
+ * read through these rather than `classDef.armorProficiencies`/
+ * `weaponProficiencies` directly, so a subclass bonus isn't silently
+ * dropped. Takes the class/subclass directly (not a `Character`) so it
+ * works equally at onboarding, before a `Character` row exists.
+ */
+export function effectiveArmorProficiencies(
+  classDef: Pick<ClassDefinition, "armorProficiencies">,
+  subclass?: Pick<Subclass, "bonusArmorProficiencies">
+): string[] {
+  return [...(classDef.armorProficiencies ?? []), ...(subclass?.bonusArmorProficiencies ?? [])];
+}
+
+export function effectiveWeaponProficiencies(
+  classDef: Pick<ClassDefinition, "weaponProficiencies">,
+  subclass?: Pick<Subclass, "bonusWeaponProficiencies">
+): string[] {
+  return [...(classDef.weaponProficiencies ?? []), ...(subclass?.bonusWeaponProficiencies ?? [])];
+}
+
+/** `effectiveArmorProficiencies`/`effectiveWeaponProficiencies` for an existing character's current class + chosen subclass. */
+export function getSubclassForCharacter(character: Character): Subclass | undefined {
+  const progression = getClassProgressionForCharacter(character);
+  return progression && character.subclass ? findSubclass(progression, character.subclass) : undefined;
+}
+
+export function effectiveArmorProficienciesForCharacter(character: Character): string[] {
+  return effectiveArmorProficiencies(getClassDefinitionForCharacter(character), getSubclassForCharacter(character));
+}
+
+export function effectiveWeaponProficienciesForCharacter(character: Character): string[] {
+  return effectiveWeaponProficiencies(getClassDefinitionForCharacter(character), getSubclassForCharacter(character));
 }
 
 /** See `parseCustomRaceTraits` -- same JSON-array-of-{name,description} encoding, for a custom class's hand-entered traits. */

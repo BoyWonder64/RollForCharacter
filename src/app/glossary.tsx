@@ -69,7 +69,7 @@ export default function GlossaryScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Glossary" }} />
-      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: theme.screenBackground }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         <Text style={styles.hint}>
           Abbreviations and terms used throughout the app, explained.
         </Text>

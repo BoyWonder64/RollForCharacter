@@ -46,3 +46,8 @@ yarn-error.*
 !TODO.md
 !docs/
 !docs/*.md
+
+# Reference-only official SRD source documents (RTF/PDF, ~28MB) kept
+# locally for manual compliance audits -- not read by the app at runtime,
+# not meant to bloat repo history.
+/legal/

@@ -1,3 +1,4 @@
+import { Image, StyleSheet, View } from "react-native";
 import { ThemeContext, resolveTheme, useThemeContext } from "./ThemeContext";
 import type { ThemeFamilyId } from "./colors";
 import type { FontChoiceId } from "./fonts";
@@ -33,5 +34,21 @@ export function CharacterThemeProvider({
     fontChoice,
   };
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  // The root layout paints the global theme's backdrop; a character with its
+  // own theme paints its own so transparent screens don't show the wrong one.
+  return (
+    <ThemeContext.Provider value={value}>
+      <View style={{ flex: 1, backgroundColor: theme.backdrop ? theme.colors.border : theme.colors.background }}>
+        {theme.backdrop ? (
+          <Image
+            source={theme.backdrop}
+            style={StyleSheet.absoluteFill}
+            resizeMode="stretch"
+            pointerEvents="none"
+          />
+        ) : null}
+        {children}
+      </View>
+    </ThemeContext.Provider>
+  );
 }

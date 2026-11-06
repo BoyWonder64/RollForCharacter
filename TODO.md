@@ -5,7 +5,8 @@ Last reviewed: 2026-11-03. Items marked "(from code)" are limitations the source
 ## Needs a device check
 Built and covered by Jest, but nobody has run these on a device or the web build yet (there is no render-test library installed). Once each one is confirmed, move it to README Features.
 - [ ] **Custom abilities and trackers**: the Class Resources card's "+ Create" modal (name, description, max uses by fixed / level / ability modifier, recharge, pips or counter, icon), "Use + Roll", and "Adjust" to change or hide a built-in ability. Logic: `resourceRepo.test.ts`, `rollFormula.ts`.
-- [ ] **Starting equipment screen**: 2024 kit packages (A / B / C / gold), swapping weapons and armor by proficiency, Gear & Supplies, auto-equip and the Armor Class preview. Logic: `startingEquipment.test.ts`.
+- [ ] **Starting equipment screen**: 2024 kit packages (A / B / C / gold), swapping weapons and armor by proficiency, Gear & Supplies, auto-equip and the Armor Class preview; also the newer "your choice" item picker (musical instrument/artisan's tools), 2014's "take gold instead" roll, the 3.5e weapon/armor catalog and swap picker, and 2024 weapon Mastery showing on the Equipment tab. Logic: `startingEquipment.test.ts`, `gearRepo.test.ts`, `weaponMastery.test.ts`.
+- [ ] **Armor Class now recomputes live** from equipped armor/shields, feat bonuses, and Dex ASIs (previously fixed at creation) -- check equipping/unequipping armor and a shield updates the sheet immediately without leaving the Equipment tab, and that a Dex ASI at level-up updates it too. Logic: `armorClass.test.ts`, `gearRepo.test.ts`.
 - [ ] **DM Encounter tab**: party roller, bestiary browser (filters, quantity, roll HP, custom creatures), creature stat-block rolls, initiative tracker and saved encounters. Logic: `monsterRolls.test.ts`, `dmCreatureRepo.test.ts`. The roll buttons come from parsing stat-block text, so look at a few odd monsters as well as common ones.
 - [ ] **Homebrew Library screen** (Settings → Homebrew Library, [homebrew.tsx](src/app/homebrew.tsx)): browse, create, edit and delete library races, classes, subclasses, weapons, armor, magic items, feats, monsters, abilities and spells, plus "Add to Character" to clone a library entry onto a chosen character. Logic: `homebrewRepo.ts`, `gearRepo.ts`, `magicItemRepo.ts`, `featRepo.ts`, `dmCreatureRepo.ts`, `resourceRepo.ts`, `spellRepo.ts`.
 
@@ -29,15 +30,17 @@ Goal: anything the app ships as a catalog entry, a player can also create, edit 
 ### Content and legal wording
 - [x] The `feats` table comment in [schema.ts](src/db/schema.ts) said the app "only ships official D&D content" -- reworded to note homebrew feats share the same table (`sourceKey: "homebrew"`) and aren't SRD/CC-BY/OGL content.
 - [x] Credits/content-sources moved off the main Settings screen into their own [legal.tsx](src/app/legal.tsx) screen (Settings → Legal & Licenses), which now also states that Homebrew Library content isn't covered by the SRD/CC-BY/OGL licenses listed there.
+- [x] Icon packs: Shikashi (v2) added as selectable icon styles with credit to Matt Firth (shikashipx) and game-icons.net; 32rogues credit present; license terms reviewed and accepted by user 2026-11-05 (see [docs/ICON_PACKS.md](docs/ICON_PACKS.md)).
 
-## Starting equipment: still open
-- [ ] 3.5e kits are text only ("A greataxe or other martial weapon"), with no swap and no stats, and the text ends up as gear items. This needs a 3.5e weapon, armor and shield catalog (from d20srd.org) and a proficiency model.
-- [ ] 2014 "take starting gold instead" (rolled by class, unlike 2024's fixed amount) is not offered.
-- [ ] Subclass proficiencies are not modeled (e.g. Life or War Domain Cleric heavy armor or martial weapons). Use the "show items I'm not proficient with" toggle for now.
-- [ ] 2014 Druid: the picker follows the "(nonmetal)" proficiency, but "Shield" is assumed to be wooden.
-- [ ] Sheet Armor Class is fixed at creation. Equipping or removing armor, levelling up or changing Dex does not recompute it. It should be derived from equipped armor.
-- [ ] 2024 weapon Mastery properties are not modeled (the 2014 weapon table is shared with 2024).
-- [ ] Kit items that say "your choice" (musical instrument, artisan's tools) are added as generic gear with no specific pick.
+## Starting equipment: done (2026-11-04), needs a device check
+All seven items below are implemented and covered by Jest (`startingEquipment.test.ts`, `gearRepo.test.ts`, `armorClass.test.ts`, `weaponMastery.test.ts`) -- see the "Needs a device check" section at the top. Once confirmed on a device, fold this into README Features.
+- [x] **3.5e weapon/armor/shield catalog + proficiency model**: `WEAPONS_35E`/`ARMOR_35E` ([3.5e/weapons.ts](src/data/rulesets/3.5e/weapons.ts), [3.5e/armor.ts](src/data/rulesets/3.5e/armor.ts)), sourced from d20srd.org (see [LEGAL.md](src/data/rulesets/3.5e/LEGAL.md)). `isProficientWithWeapon`/`isProficientWithArmor` now understand 3.5e's phrasing ("All simple weapons", comma-form names, "Crossbow (light or heavy)", "(except tower shields)", combined qualifiers). 3.5e classes' `startingEquipment` now grants real catalog items instead of flavor text. Known gaps: Medium-creature damage only (no size-based damage), armor's check-penalty/spell-failure/speed fields are stored but nothing computes with them yet (3.5e's AC/attack math is still 5e-shaped -- see [docs/EDITION_3_5E_GAPS.md](docs/EDITION_3_5E_GAPS.md)).
+- [x] **2014 "take starting gold instead"**: every 2014 class's first starting-equipment line now offers a `goldRoll("4d4")` option alongside its kit. Deliberately a generic, non-PHB-specific formula (the real per-class PHB table isn't SRD-licensed) -- picking it forfeits the character's whole kit, not just that line.
+- [x] **Subclass proficiencies**: `Subclass.bonusArmorProficiencies`/`bonusWeaponProficiencies` (types.ts), set on 2014 Life Domain Cleric (heavy armor); unioned in via `effectiveArmorProficiencies`/`effectiveWeaponProficiencies` (characterCalculations.ts) at every proficiency-check call site. "War Domain" from the original TODO wording doesn't exist in this app's catalog and never will -- it's non-SRD (see `project_subclass_policy` memory) -- so Life Domain's heavy armor was the only real case in scope.
+- [x] **2014 Druid nonmetal shield**: `isProficientWithArmor` now runs shields through the same nonmetal check as other armor (the one generic 5e Shield entry counts as the default wooden-equivalent option) instead of exempting shields from the check entirely.
+- [x] **Armor Class now derives from equipped armor**: `computeEquippedArmorClass` (characterCalculations.ts) + `recomputeArmorClass` (new `armorClassRepo.ts`), called from equip/unequip/add/remove armor, a Dex ASI at level-up, and feat add/toggle/remove. The manual AC field on the Edit screen stays, matching how Max HP/Proficiency Bonus are also manually overridable there.
+- [x] **2024 weapon Mastery**: `WeaponDefinition.mastery` (types.ts), populated in `5e-2024/weapons.ts` from open5e's SRD 5.2 data, shown on the Equipment tab's weapon card.
+- [x] **"Your choice" kit items**: new `itemChoice` equipment grant (types.ts) resolves to a real named pick from `toolsAndInstruments.ts` (artisan's tools, musical instruments, gaming sets) or a typed custom name, same pattern as the existing weapon swap picker.
 
 ## DM mode: follow-ups
 - [ ] The SRD data we ship has no monster saving-throw or skill proficiencies, so creature saves and checks use the raw ability modifier (the Bonus box covers proficiency).
@@ -54,6 +57,10 @@ Design decisions made (2026-11-03), not yet built:
 - [ ] Player discovery is automatic via Bonjour/mDNS (DM's party appears in a list, no manual IP entry) rather than manual IP or QR code.
 - [ ] Blocked on: this requires a native TCP/socket module (e.g. `react-native-tcp-socket`) plus an mDNS module (e.g. `react-native-zeroconf`), which means the app can no longer run in Expo Go for this feature and needs a dev-client rebuild (`npx expo run:ios|android` or an EAS dev build). User put a pin in accepting that tradeoff on 2026-11-03 -- revisit before implementing.
 
+## Mini campaigns (not started)
+- [ ] Mini campaigns: short, self-contained adventures a DM can run from the app.
+- [ ] Extra: ship a set of campaigns written by the project owner. These are hand-written, **not AI-generated** -- don't draft, expand or fill in campaign content with AI; the app only provides the structure to hold and display them.
+
 ## Known gaps (from code)
 - [ ] Provisions: `tracksProvisions` is stored at onboarding, but no mechanic uses it.
 - [ ] Conditions on characters are a checklist only and don't change derived stats.
@@ -68,7 +75,7 @@ Found in the 2026-11-02 class and race review against open5e v2 (srd-2014) and d
 - [ ] Cleric Divine Intervention: the 7-day cooldown after a success is not tracked (a long rest refills the single use).
 - [ ] Sorcerer Sorcerous Restoration (regain 4 Sorcery Points on a short rest) and Fiend Fiendish Resilience (pick a damage type per rest) have no tracker; they are not use counters.
 - [ ] Race traits that grant proficiencies or choices (Elf Weapon Training, Keen Senses, Skill Versatility, High Elf cantrip, Dwarven Combat Training, tool picks) are text only and aren't applied. The same goes for 2024 Keen Senses, Skillful and lineage cantrips.
-- [ ] Races were split into SRD subraces (Hill Dwarf, High Elf, Lightfoot Halfling, Rock Gnome). Old saves named "Dwarf" etc. resolve through `aliases`; check that nothing else keys on the old race ids.
+- [x] Races were split into SRD subraces (Hill Dwarf, High Elf, Lightfoot Halfling, Rock Gnome). Old saves named "Dwarf" etc. resolve through `aliases`. Audited: every race lookup goes through `getRaceDefinition` (name, id, then alias), so nothing keys on the old ids.
 
 ### 3.5e
 - [ ] 3.5e has no language, weapon or armor catalog, and class progressions are partial.
@@ -81,3 +88,12 @@ Found in the 2026-11-02 class and race review against open5e v2 (srd-2014) and d
 ## Docs
 - [x] `LEGAL.md` (3.5e OGL notes, at `src/data/rulesets/3.5e/LEGAL.md`), `docs/DND_CONTENT_SOURCES.md`, `FEATURES.md`, `ART_ONBOARDING.md` and `EQUIPMENT_ICON_CATALOG.md` all exist now -- the old "points to files that don't exist" note was stale.
 - [ ] Keep README.md and [docs/DATA_LAYER.md](docs/DATA_LAYER.md) in step with any schema change (see Checks in README).
+
+
+
+## Programmer additions 
+- [x] Long-press delete only works with Developer mode on (done 2026-11-05). Long-press now offers Duplicate or Delete.
+- [x] Developer mode review done (2026-11-05). Built, needs a device check: dice override (Settings → Developer mode; random / nat 20 / nat 1 / max / min / seeded), sample character generator (5e, 2024, 3.5e at levels 1/5/10/20), duplicate character, data health check, red DEV badge in the tab header, diagnostics now share the Supabase host and "signed in: yes/no" instead of the full URL and email. Logic: `diceOverride.test.ts`, `devTools.test.ts`.
+- [ ] Developer mode ideas not built yet: sync inspector with force push/pull, character JSON export/import, feature-flag toggles, in-app error log (many `.catch(() => {})` swallow failures), theme/font preview sheet, reset tools, hiding the toggle behind a hidden gesture, and gating other destructive actions (homebrew delete, character reset) the same way as character delete.
+
+- [x] Profile picture not saving (fixed 2026-11-05, needs a device check): sprite/upload portraits now persist via `persistPortrait` for non-`file://` URIs, the Edit screen saves a changed/removed portrait immediately, and the wizard alerts if the portrait save fails. Check: new character with a sprite and with an upload, then change it from Edit; it should show on the list, sheet header and after restart.

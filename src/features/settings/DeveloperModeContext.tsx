@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setDevD20Override } from "../dice/diceEngine";
+
+import { setDiceOverride } from "../dice/diceEngine";
 
 const STORAGE_KEY = "rollforcharacter.developerMode";
 
@@ -20,12 +21,10 @@ export function DeveloperModeProvider({ children }: { children: React.ReactNode 
     });
   }, []);
 
-  useEffect(() => {
-    setDevD20Override(developerMode);
-  }, [developerMode]);
-
   function setDeveloperMode(value: boolean) {
     setDeveloperModeState(value);
+    // Never leave forced dice running once developer mode is off.
+    if (!value) setDiceOverride("random");
     AsyncStorage.setItem(STORAGE_KEY, String(value)).catch(() => {});
   }
 

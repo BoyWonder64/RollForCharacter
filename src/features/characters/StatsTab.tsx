@@ -12,7 +12,7 @@ import {
 import {
   aggregateFeatEffects,
   classFeaturesForCharacter,
-  getClassDefinitionForCharacter,
+  effectiveWeaponProficienciesForCharacter,
   initiativeModifier,
   isSavingThrowProficient,
   isSkillProficient,
@@ -204,7 +204,7 @@ export function StatsTab({
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const catalog = getRulesetCatalog(character.ruleset);
-  const classDef = getClassDefinitionForCharacter(character);
+  const weaponProficiencies = effectiveWeaponProficienciesForCharacter(character);
   const racialTraits = racialTraitsForCharacter(character);
   const knownLanguages = parseLanguages(character)
     .map((id) => catalog.languages?.find((l) => l.id === id))
@@ -375,7 +375,7 @@ export function StatsTab({
           label="Armor Class"
           value={
             featEffects.armorClassBonus > 0
-              ? `${character.armorClass} (+${featEffects.armorClassBonus} feat)`
+              ? `${character.armorClass} (incl. +${featEffects.armorClassBonus} feat)`
               : String(character.armorClass)
           }
         />
@@ -517,7 +517,7 @@ export function StatsTab({
       ) : (
         <>
           {weapons.map((weapon) => {
-            const proficient = isProficientWithWeapon(weapon, classDef.weaponProficiencies);
+            const proficient = isProficientWithWeapon(weapon, weaponProficiencies);
             const attackBonus = weaponAttackBonus(
               weapon,
               character.strength,

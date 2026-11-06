@@ -1,4 +1,5 @@
 import type { AbilityScoreKey } from "../../types/models";
+import type { ToolOrInstrumentCategory } from "./toolsAndInstruments";
 
 /** One named racial trait (e.g. Darkvision, Stonecunning), verbatim SRD rules text. */
 export type RaceTrait = {
@@ -88,8 +89,26 @@ export type EquipmentGrant =
   | { kind: "armor"; armorId: string }
   /** A generic item with no catalog stats (a pack, a holy symbol, ammunition, etc). */
   | { kind: "item"; name: string; quantity?: number; description?: string }
-  /** Starting money (gold pieces) -- either the "+ 7 GP" that comes with a kit, or a whole "take gold instead" option. */
-  | { kind: "gold"; amount: number };
+  /** Starting money (gold pieces) -- the "+ 7 GP" that comes bundled with a kit, or a fixed-amount "take gold instead" option (2024 5e, by class). */
+  | { kind: "gold"; amount: number }
+  /**
+   * A generic, non-PHB-specific "take gold instead" option (2014 5e, which
+   * has no SRD-licensed per-class gold table to draw real amounts from --
+   * see TODO.md). Rolled once via `formula` (a dice-engine expression, e.g.
+   * "4d4*10") the first time the player selects it, same for every 2014
+   * class rather than copying WotC's per-class PHB numbers; the rolled
+   * total is cached in `StartingEquipmentSelection.rolledAmounts`
+   * (startingEquipment.ts) so re-renders don't re-roll it.
+   */
+  | { kind: "goldRoll"; formula: string }
+  /**
+   * One of a named "your choice" gear category the SRD leaves open (a
+   * musical instrument, a type of artisan's tools, a gaming set) -- see
+   * `toolsAndInstruments.ts`. `category` can list more than one when the
+   * kit itself offers a combined choice (e.g. 2024 Monk's "artisan's tools
+   * or musical instrument").
+   */
+  | { kind: "itemChoice"; category: ToolOrInstrumentCategory | ToolOrInstrumentCategory[]; quantity?: number };
 
 /** One alternative within a startingEquipment line -- every grant in it is received together if this option is the one chosen. */
 export type EquipmentOption = EquipmentGrant[];
@@ -159,6 +178,16 @@ export type Subclass = {
   features: ClassFeature[];
   /** This subclass's own limited-use resources (Wholeness of Body, Holy Nimbus, ...), on top of whatever the base class grants. Sparse -- only populated where the SRD-licensed subclass actually has one. */
   resources?: ClassResourceDefinition[];
+  /**
+   * Extra armor/weapon proficiencies this subclass grants on top of its base
+   * class's (e.g. 2014 Life Domain Cleric's "Bonus Proficiency: heavy armor"
+   * feature) -- same free-text phrasing as `ClassDefinition.armorProficiencies`/
+   * `weaponProficiencies`, unioned in by `effectiveArmorProficiencies`/
+   * `effectiveWeaponProficiencies` (characterCalculations.ts) rather than
+   * read directly, since most subclasses grant none.
+   */
+  bonusArmorProficiencies?: string[];
+  bonusWeaponProficiencies?: string[];
 };
 
 /**
@@ -260,22 +289,54 @@ export type SpellDefinition = {
   description: string;
 };
 
-export type WeaponCategory = "Simple Melee" | "Simple Ranged" | "Martial Melee" | "Martial Ranged";
+export type WeaponCategory =
+  | "Simple Melee"
+  | "Simple Ranged"
+  | "Martial Melee"
+  | "Martial Ranged"
+  // 3.5e's third proficiency tier, above Martial -- requires the Exotic
+  // Weapon Proficiency feat unless a class grants the specific weapon.
+  | "Exotic Melee"
+  | "Exotic Ranged";
 
 export type WeaponDefinition = {
   id: string;
   name: string;
   category: WeaponCategory;
   cost: string;
-  /** e.g. "1d8", "2d6" -- empty for the Net, which deals no damage. */
+  /**
+   * e.g. "1d8", "2d6" -- empty for the Net, which deals no damage. A double
+   * weapon (3.5e only, e.g. Dwarven Urgrosh) has two head's worth separated
+   * by "/", e.g. "1d6/1d4" -- `damageType` pairs up the same way when the
+   * two heads differ.
+   */
   damageDice: string;
-  damageType: "Bludgeoning" | "Piercing" | "Slashing" | "";
+  /**
+   * e.g. "Piercing or slashing" (3.5e's Dagger) when a weapon's own SRD
+   * entry lists more than one type, or "Bludgeoning/Piercing" (3.5e's
+   * paired-head double weapons) -- not a strict enum since 3.5e's real data
+   * doesn't fit one cleanly, unlike 5e's single-type weapons.
+   */
+  damageType: string;
   /** Pounds. */
   weight: number;
   /** Human-readable property list, e.g. ["Finesse", "Light", "Thrown (range 20/60)"]. */
   properties: string[];
   /** What this weapon is and how it's used -- shown to the player in the Equipment tab. */
   description: string;
+  /**
+   * 2024 5e's Weapon Mastery property (e.g. Longsword: Sap) -- undefined for
+   * 2014/3.5e weapons, which don't have masteries. SRD 5.2, CC-BY licensed.
+   */
+  mastery?: { name: string; description: string };
+  /**
+   * 3.5e-only mechanical fields the 5e catalog has no equivalent for
+   * (5e's `properties` strings and flat x2 crit cover the same ground
+   * differently) -- undefined for 2014/2024 weapons.
+   */
+  threatRange?: number; // e.g. 19 for "19-20/x2"; omitted when the weapon has no expanded threat range (a plain x2/x3/x4).
+  criticalMultiplier?: number; // e.g. 2, 3, 4.
+  rangeIncrement?: number; // Feet, for a thrown or projectile weapon. Omitted for a pure melee weapon.
 };
 
 export type ArmorCategory = "Light" | "Medium" | "Heavy" | "Shield";
@@ -294,11 +355,28 @@ export type ArmorDefinition = {
   /** How the wearer's Dex modifier applies on top of `baseArmorClass`. Shields don't use Dex at all. */
   dexModifier: "full" | "max2" | "none";
   strengthRequirement?: number;
+  /**
+   * 5e's coarse "does this armor impose Stealth disadvantage" flag.
+   * Derived from `armorCheckPenalty` for 3.5e armor (which has a graduated
+   * penalty instead) -- true whenever that penalty is nonzero.
+   */
   stealthDisadvantage: boolean;
   /** Pounds. */
   weight: number;
   /** What this armor is and how it's worn -- shown to the player in the Equipment tab. */
   description: string;
+  /**
+   * 3.5e-only mechanical fields with no 5e equivalent -- undefined for
+   * 2014/2024 armor. `maxDexBonus`, where present, is the precise number to
+   * use instead of the coarse `dexModifier` bucket above.
+   */
+  maxDexBonus?: number;
+  armorCheckPenalty?: number;
+  /** Percent, e.g. 15 for "15%". */
+  arcaneSpellFailure?: number;
+  /** The reduced speed (feet) for a wearer whose unencumbered speed is 30 or 20 ft -- unchanged from base for light armor/shields, lower for medium/heavy. */
+  speedWith30FtBase?: number;
+  speedWith20FtBase?: number;
 };
 
 export type RulesetCatalog = {

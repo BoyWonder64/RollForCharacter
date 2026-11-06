@@ -32,6 +32,7 @@ import { saveRoll } from "../dice/diceRepo";
 import { resetSpellSlotUsage, setSpellSlot } from "../spells/spellRepo";
 import { applyShortRestRecharge, restoreAllResources } from "./resourceRepo";
 import { addResolvedFeat } from "./featRepo";
+import { recomputeArmorClass } from "./armorClassRepo";
 
 export { ABILITY_LABELS, abilityModifier };
 
@@ -388,6 +389,10 @@ export async function levelUp(
   }
 
   await updateCharacter(id, updates);
+
+  if (choices.asiChoice?.type === "ability" && "dexterity" in updates) {
+    await recomputeArmorClass(id);
+  }
 
   if (choices.asiChoice?.type === "feat") {
     await addResolvedFeat(character, choices.asiChoice.feat);

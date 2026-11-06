@@ -24,9 +24,17 @@ import {
   rollMonsterD20,
   rollMonsterInitiative,
   rollRecharge,
+  type MonsterRollOutcome,
   type MonsterScores,
   type ParsedEntry,
 } from "../features/dm/monsterRolls";
+import {
+  annotateWithConditions,
+  attacksAgainstNotes,
+  combineAdvantage,
+  conditionRollEffect,
+  type ConditionRollKind,
+} from "../features/dm/conditionEffects";
 import type { RollSink } from "../features/dm/rollLog";
 import type { AbilityScoreKey } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
@@ -117,28 +125,45 @@ export function DmCreatureCard({
     return change(() => updateDmCreatureHp(creature.id, next));
   }
 
+  /**
+   * Rolls a d20 with the creature's active conditions applied: their
+   * advantage/disadvantage merges with the manual toggle, and the SRD rule
+   * text (plus any automatic failure) is written into the roll log entry.
+   */
+  function rollWithConditions(
+    kind: ConditionRollKind,
+    ability: AbilityScoreKey | undefined,
+    roll: (mode: AdvantageMode) => MonsterRollOutcome
+  ): MonsterRollOutcome {
+    const effect = conditionRollEffect(activeConditions, kind, ability);
+    const outcome = annotateWithConditions(roll(combineAdvantage(advantage, effect)), effect);
+    // An automatic failure has no meaningful natural die, so don't flag a nat 20.
+    onRoll(outcome, effect.autoFail.length > 0 ? null : outcome.natural);
+    return outcome;
+  }
+
   function rollInitiative() {
     const dex = scores?.dexterity ?? creature.dexterity;
-    const outcome = rollMonsterInitiative(creature.name, dex, advantage, bonus);
-    onRoll(outcome, outcome.natural);
+    // Initiative is a Dexterity check, so check-affecting conditions apply.
+    const outcome = rollWithConditions("check", "dexterity", (mode) =>
+      rollMonsterInitiative(creature.name, dex, mode, bonus)
+    );
     return change(() => setDmCreatureInitiative(creature.id, outcome.total));
   }
 
   function rollAbility(ability: AbilityScoreKey, kind: "check" | "save") {
     if (!scores) return;
-    const outcome = rollMonsterCheck(creature.name, scores, ability, kind, bonus, advantage);
-    onRoll(outcome, outcome.natural);
+    rollWithConditions(kind, ability, (mode) =>
+      rollMonsterCheck(creature.name, scores, ability, kind, bonus, mode)
+    );
   }
 
   function rollAttack(entry: ParsedEntry): number | null {
     if (!entry.attack) return null;
-    const outcome = rollMonsterD20(
-      `${creature.name}: ${entry.baseName} attack`,
-      entry.attack.bonus + bonus,
-      "attack bonus",
-      advantage
+    const attackBonus = entry.attack.bonus + bonus;
+    const outcome = rollWithConditions("attack", undefined, (mode) =>
+      rollMonsterD20(`${creature.name}: ${entry.baseName} attack`, attackBonus, "attack bonus", mode)
     );
-    onRoll(outcome, outcome.natural);
     setLastNatural((prev) => ({ ...prev, [entry.name]: outcome.natural ?? 0 }));
     return outcome.natural;
   }
@@ -453,6 +478,11 @@ export function DmCreatureCard({
                 {CONDITIONS.find((c) => c.id === id)?.description}
               </Text>
             ))}
+          {attacksAgainstNotes(activeConditions).map((line) => (
+            <Text key={line} style={[styles.hint, { marginTop: 4 }]}>
+              {line}
+            </Text>
+          ))}
         </View>
       )}
 

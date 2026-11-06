@@ -15,10 +15,14 @@ import {
   chosenOptionIndex,
   computeArmorClass,
   describeOption,
+  goldInsteadChoice,
   grantKey,
+  itemChoiceOptions,
   resolveStartingGear,
   resolvedArmorId,
+  resolvedItemChoiceName,
   resolvedWeaponId,
+  rollGoldOption,
   swapKind,
   weaponCandidates,
   type StartingEquipmentSelection,
@@ -71,10 +75,25 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
     [lines, selection, catalog, classDef]
   );
   const armorClass = computeArmorClass(dexterity, gear.armor);
+  // "Take gold instead" (2014 5e) replaces the whole kit -- see
+  // `goldInsteadChoice` -- so the other lines' own choices are moot while
+  // it's active; they're hidden rather than shown-but-ignored.
+  const goldInstead = goldInsteadChoice(lines, selection);
 
   function chooseOption(lineIndex: number, optionIndex: number) {
     // Swaps belong to the option they were made in, so switching packages starts that package fresh.
-    onChange({ ...selection, optionIndex: { ...selection.optionIndex, [lineIndex]: optionIndex } });
+    let next: StartingEquipmentSelection = {
+      ...selection,
+      optionIndex: { ...selection.optionIndex, [lineIndex]: optionIndex },
+    };
+    // Roll any "take gold instead" option's dice the moment it's picked, so
+    // the amount is fixed rather than re-rolling on every re-render.
+    (lines[lineIndex]?.[optionIndex] ?? []).forEach((grant, grantIndex) => {
+      if (grant.kind === "goldRoll") {
+        next = rollGoldOption(grant, grantKey(lineIndex, optionIndex, grantIndex), next);
+      }
+    });
+    onChange(next);
     setOpenKey(null);
   }
 
@@ -88,7 +107,13 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
   function optionTitle(line: EquipmentGrant[][], optionIndex: number): string {
     const option = line[optionIndex];
     if (option.length === 1 && option[0].kind === "gold") return `Take ${option[0].amount} gp instead`;
-    if (line.length === 2 && line.some((o) => o.length === 1 && o[0].kind === "gold")) return "Starting gear";
+    if (option.length === 1 && option[0].kind === "goldRoll") return "Take gold instead";
+    if (
+      line.length === 2 &&
+      line.some((o) => o.length === 1 && (o[0].kind === "gold" || o[0].kind === "goldRoll"))
+    ) {
+      return "Starting gear";
+    }
     return `Option ${String.fromCharCode(65 + optionIndex)}`;
   }
 
@@ -101,6 +126,32 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
       return (
         <View key={grantIndex} style={styles.grant}>
           <Text style={styles.grantLabel}>{grant.amount} gp</Text>
+        </View>
+      );
+    }
+    if (grant.kind === "goldRoll") {
+      const amount = selection.rolledAmounts[key];
+      return (
+        <View key={grantIndex} style={styles.grant}>
+          <Text style={styles.grantLabel}>{amount !== undefined ? `${amount} gp` : "Rolling…"}</Text>
+        </View>
+      );
+    }
+    if (grant.kind === "itemChoice") {
+      const customPicked = selection.picks[key] === CUSTOM_PICK;
+      const label = customPicked
+        ? `${qty}${(selection.customNames[key] ?? "").trim() || "Custom item"}`
+        : `${qty}${resolvedItemChoiceName(grant, key, selection) ?? "Item"}`;
+      const open = openKey === key;
+      return (
+        <View key={grantIndex} style={styles.grant}>
+          <View style={styles.grantHeader}>
+            <Text style={[styles.grantLabel, styles.grantLabelFlex]}>{label}</Text>
+            <Pressable onPress={() => setOpenKey(open ? null : key)} hitSlop={8}>
+              <Text style={styles.changeLink}>{open ? "Done" : "Change"}</Text>
+            </Pressable>
+          </View>
+          {open && renderItemChoicePicker(grant, key)}
         </View>
       );
     }
@@ -237,6 +288,35 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
     );
   }
 
+  function renderItemChoicePicker(grant: Extract<EquipmentGrant, { kind: "itemChoice" }>, key: string) {
+    const options = itemChoiceOptions(grant);
+    const current = selection.picks[key] === CUSTOM_PICK ? CUSTOM_PICK : resolvedItemChoiceName(grant, key, selection);
+    return (
+      <View style={styles.picker}>
+        {options.map((name) => (
+          <Pressable
+            key={name}
+            style={[styles.pickRow, current === name && styles.pickRowActive]}
+            onPress={() => pick(key, name)}
+          >
+            <View style={styles.pickText}>
+              <Text style={[styles.pickName, current === name && styles.pickNameActive]}>{name}</Text>
+            </View>
+          </Pressable>
+        ))}
+        <Pressable
+          style={[styles.pickRow, current === CUSTOM_PICK && styles.pickRowActive]}
+          onPress={() => pick(key, CUSTOM_PICK)}
+        >
+          <View style={styles.pickText}>
+            <Text style={[styles.pickName, current === CUSTOM_PICK && styles.pickNameActive]}>Custom…</Text>
+          </View>
+        </Pressable>
+        {current === CUSTOM_PICK && renderCustomInput(key, "Item name")}
+      </View>
+    );
+  }
+
   function renderShowAll() {
     return (
       <View style={styles.toggleRow}>
@@ -247,7 +327,7 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
   }
 
   // A render function, not a component: a nested component would remount (and drop focus) on every keystroke.
-  function renderCustomInput(key: string) {
+  function renderCustomInput(key: string, placeholder = "Weapon name") {
     const value = selection.customNames[key] ?? "";
     const setName = (text: string) =>
       onChange({ ...selection, customNames: { ...selection.customNames, [key]: text } });
@@ -256,7 +336,7 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
         style={styles.input}
         value={value}
         onChangeText={setName}
-        placeholder="Weapon name"
+        placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
         {...customInputProps?.(key, value, setName)}
       />
@@ -274,18 +354,24 @@ export function StartingEquipmentStep({ classDef, catalog, dexterity, selection,
       <View style={styles.summary}>
         <Text style={styles.summaryLabel}>Your kit</Text>
         <Text style={styles.summaryText}>
-          {lines
-            .map((line, i) => {
-              const optionIndex = chosenOptionIndex(selection, i);
-              return describeOption(line[optionIndex] ?? line[0], i, optionIndex, selection, catalog, classDef);
-            })
-            .filter(Boolean)
-            .join("; ") || "Nothing"}
+          {goldInstead
+            ? `${gear.gold} gp instead of your starting gear`
+            : lines
+                .map((line, i) => {
+                  const optionIndex = chosenOptionIndex(selection, i);
+                  return describeOption(line[optionIndex] ?? line[0], i, optionIndex, selection, catalog, classDef);
+                })
+                .filter(Boolean)
+                .join("; ") || "Nothing"}
         </Text>
-        <Text style={styles.summaryText}>Armor Class: {armorClass}</Text>
+        {!goldInstead && <Text style={styles.summaryText}>Armor Class: {armorClass}</Text>}
       </View>
 
       {lines.map((line, lineIndex) => {
+        // Every other line is moot once "take gold instead" is chosen on
+        // one of them -- only that line stays visible, so the player can
+        // still switch back.
+        if (goldInstead && lineIndex !== goldInstead.lineIndex) return null;
         if (line.length === 1) {
           return (
             <View key={lineIndex} style={styles.group}>

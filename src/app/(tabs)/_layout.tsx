@@ -1,9 +1,10 @@
-import { Image } from "react-native";
+import { Image, Text, View } from "react-native";
 import { Tabs } from "expo-router";
 import { useTheme } from "../../theme/ThemeContext";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
+import { useDeveloperMode } from "../../features/settings/DeveloperModeContext";
 import { usePartyMode } from "../../features/settings/PartyModeContext";
 
 function TabIcon({ tabName, focused }: { tabName: string; focused: boolean }) {
@@ -25,10 +26,12 @@ export default function TabLayout() {
   const { iconsEnabled } = useIconSettings();
   const { dmMode } = useDmMode();
   const { partyMode } = usePartyMode();
+  const { developerMode } = useDeveloperMode();
 
   return (
     <Tabs
       screenOptions={{
+        sceneStyle: { backgroundColor: "transparent" },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {
@@ -53,6 +56,22 @@ export default function TabLayout() {
           ...(theme.displayFontFamily ? { fontFamily: theme.displayFontFamily } : null),
         },
         headerShadowVisible: false,
+        // A reminder on every tab that forced dice / delete shortcuts are live.
+        headerRight: developerMode
+          ? () => (
+              <View
+                style={{
+                  backgroundColor: theme.colors.danger,
+                  borderRadius: theme.radius,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                  marginRight: 12,
+                }}
+              >
+                <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>DEV</Text>
+              </View>
+            )
+          : undefined,
       }}
     >
       <Tabs.Screen

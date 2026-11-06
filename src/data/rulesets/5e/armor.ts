@@ -20,6 +20,9 @@ export const ARMOR_5E: ArmorDefinition[] = [
   { id: "splint", name: "Splint", category: "Heavy", cost: "200 gp", baseArmorClass: 17, dexModifier: "none", strengthRequirement: 15, stealthDisadvantage: true, weight: 60, description: "Narrow vertical metal strips riveted to a leather backing, strong protection at the cost of agility." },
   { id: "plate", name: "Plate", category: "Heavy", cost: "1500 gp", baseArmorClass: 18, dexModifier: "none", strengthRequirement: 15, stealthDisadvantage: true, weight: 65, description: "A full suit of shaped, fitted metal plates covering the entire body -- the pinnacle of armor, and priced like it." },
 
-  // Shield
+  // Shield. The SRD doesn't split this into wooden/metal variants (unlike
+  // 3.5e) -- treated as the default nonmetal-compliant option for classes
+  // with a "(nonmetal)" armor restriction, see NONMETAL_ARMOR_IDS in
+  // startingEquipment.ts.
   { id: "shield", name: "Shield", category: "Shield", cost: "10 gp", baseArmorClass: 2, dexModifier: "none", stealthDisadvantage: false, weight: 6, description: "A broad wooden or metal shield strapped to one arm, adding extra protection on top of whatever else is worn." },
 ];

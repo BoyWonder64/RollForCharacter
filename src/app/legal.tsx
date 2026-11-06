@@ -19,6 +19,18 @@ const CREDITS: { title: string; text: string }[] = [
     text: "By LullabyJazz.",
   },
   {
+    title: "32rogues Character Portraits",
+    text:
+      "\"32rogues\" pixel-art sprites by Seth Boyles, Copyright 2024. Used under the author's license for " +
+      "in-app character portraits (cropped and enlarged). Not redistributed as an asset pack.",
+  },
+  {
+    title: "Shikashi's Fantasy Icons Pack",
+    text:
+      "Icons by Matt Firth (shikashipx). Many are based on designs from game-icons.net (CC BY 4.0). " +
+      "Credit: Matt Firth (shikashipx) and game-icons.net.",
+  },
+  {
     title: "Dice Rolling Sounds",
     text: "Kenney Casino Audio pack by Kenney (kenney.nl), CC0 1.0.",
   },
@@ -192,7 +204,7 @@ export default function LegalScreen() {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: theme.screenBackground },
     content: { padding: 16, paddingBottom: 32 },
     sectionTitle: { color: theme.colors.text, fontSize: 16, fontWeight: "700", marginBottom: 12 },
     sectionTitleSpaced: { marginTop: 24 },

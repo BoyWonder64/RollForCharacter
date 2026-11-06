@@ -8,6 +8,7 @@ import {
   getMonsterCatalog,
   type MonsterCatalogRow,
 } from "../features/dm/dmCreatureRepo";
+import { matchesDmEdition, useDmMode } from "../features/settings/DmModeContext";
 import { createDmStyles } from "./dmStyles";
 
 const PAGE_SIZE = 40;
@@ -21,12 +22,6 @@ const CR_BANDS: CrBand[] = [
   { key: "5-10", label: "CR 5–10", min: 5, max: 10 },
   { key: "11-16", label: "CR 11–16", min: 11, max: 16 },
   { key: "17+", label: "CR 17+", min: 17, max: Infinity },
-];
-
-const EDITIONS = [
-  { key: "all", label: "All" },
-  { key: "srd-2014", label: "2014" },
-  { key: "srd-2024", label: "2024" },
 ];
 
 /** "1/2" -> 0.5, "10" -> 10. Unparseable ratings sort as 0. */
@@ -70,7 +65,7 @@ export function DmCreaturePickerModal({
   const [tab, setTab] = useState<"catalog" | "custom">("catalog");
   const [catalog, setCatalog] = useState<MonsterCatalogRow[]>([]);
   const [search, setSearch] = useState("");
-  const [edition, setEdition] = useState("all");
+  const { dmEdition } = useDmMode();
   const [typeFilter, setTypeFilter] = useState("all");
   const [crBand, setCrBand] = useState("all");
   const [quantity, setQuantity] = useState(1);
@@ -98,7 +93,7 @@ export function DmCreaturePickerModal({
     return catalog
       .filter((m) => {
         if (needle && !m.name.toLowerCase().includes(needle)) return false;
-        if (edition !== "all" && m.sourceKey !== edition) return false;
+        if (!matchesDmEdition(m.sourceKey, dmEdition)) return false;
         if (typeFilter !== "all" && baseType(m.type) !== typeFilter) return false;
         const cr = challengeValue(m.challengeRating);
         return cr >= band.min && cr <= band.max;
@@ -108,7 +103,7 @@ export function DmCreaturePickerModal({
           challengeValue(a.challengeRating) - challengeValue(b.challengeRating) ||
           a.name.localeCompare(b.name)
       );
-  }, [catalog, search, edition, typeFilter, crBand]);
+  }, [catalog, search, dmEdition, typeFilter, crBand]);
 
   function describeAdded(names: string[]): string {
     if (names.length === 0) return "Nothing added.";
@@ -193,17 +188,6 @@ export function DmCreaturePickerModal({
                 />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
                   <View style={styles.row}>
-                    {EDITIONS.map((e) => (
-                      <Pressable
-                        key={e.key}
-                        style={[styles.chip, edition === e.key && styles.chipActive]}
-                        onPress={() => setFilterAndReset(setEdition, e.key)}
-                      >
-                        <Text style={[styles.chipText, edition === e.key && styles.chipTextActive]}>
-                          {e.label}
-                        </Text>
-                      </Pressable>
-                    ))}
                     {CR_BANDS.map((b) => (
                       <Pressable
                         key={b.key}
