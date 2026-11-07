@@ -72,6 +72,7 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
   const [magicItems, setMagicItems] = useState<MagicItemRow[]>([]);
   const [gearItems, setGearItems] = useState<GearItemRow[]>([]);
   const [newGearName, setNewGearName] = useState("");
+  const [newGearDescription, setNewGearDescription] = useState("");
   const [addWeaponOpen, setAddWeaponOpen] = useState(false);
   const [addArmorOpen, setAddArmorOpen] = useState(false);
   const [addMagicItemOpen, setAddMagicItemOpen] = useState(false);
@@ -117,8 +118,9 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
 
   async function handleAddGear() {
     if (!newGearName.trim()) return;
-    await addGearItem(characterId, { name: newGearName });
+    await addGearItem(characterId, { name: newGearName, description: newGearDescription });
     setNewGearName("");
+    setNewGearDescription("");
     refreshGear();
   }
 
@@ -400,19 +402,29 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
           </View>
         ))
       )}
-      <View style={styles.addGearRow}>
+      <View style={styles.addGearBlock}>
+        <View style={styles.addGearRow}>
+          <TextInput
+            style={styles.addGearInput}
+            value={newGearName}
+            onChangeText={setNewGearName}
+            placeholder="Add an item (rope, rations, torch…)"
+            placeholderTextColor={theme.colors.textMuted}
+            onSubmitEditing={handleAddGear}
+            returnKeyType="next"
+          />
+          <Pressable style={styles.actionLink} onPress={handleAddGear}>
+            <Text style={styles.actionLinkText}>Add</Text>
+          </Pressable>
+        </View>
         <TextInput
-          style={styles.addGearInput}
-          value={newGearName}
-          onChangeText={setNewGearName}
-          placeholder="Add an item (rope, rations, torch…)"
+          style={[styles.addGearInput, styles.addGearDescription]}
+          value={newGearDescription}
+          onChangeText={setNewGearDescription}
+          placeholder="Description (optional)"
           placeholderTextColor={theme.colors.textMuted}
-          onSubmitEditing={handleAddGear}
-          returnKeyType="done"
+          multiline
         />
-        <Pressable style={styles.actionLink} onPress={handleAddGear}>
-          <Text style={styles.actionLinkText}>Add</Text>
-        </Pressable>
       </View>
 
       <View style={styles.sectionHeaderRow}>
@@ -536,7 +548,9 @@ function createStyles(theme: Theme) {
     },
     itemActions: { alignItems: "flex-end", gap: 8 },
     qtyRow: { flexDirection: "row", gap: 18 },
-    addGearRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 20 },
+    addGearBlock: { marginBottom: 20, gap: 8 },
+    addGearRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+    addGearDescription: { minHeight: 60, textAlignVertical: "top" },
     addGearInput: {
       flex: 1,
       backgroundColor: theme.colors.surfaceAlt,

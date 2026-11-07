@@ -17,6 +17,14 @@ const CREDITS: { title: string; text: string }[] = [
     text: "Equipment, spell school, and tab bar icons.",
   },
   {
+    title: "Pixel GUI Frames, Banners and Ribbons",
+    text: "Custom Border and Panels and Retro Pixel Ribbons, Banners and Frames by bdragon1727.",
+  },
+  {
+    title: "Nature Landscape Backgrounds",
+    text: "Pixel-art nature background layers from CraftPix.net, used under the CraftPix file license.",
+  },
+  {
     title: "Pixel Dice Sprites",
     text: "By LullabyJazz.",
   },

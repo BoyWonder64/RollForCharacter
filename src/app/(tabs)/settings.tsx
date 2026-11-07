@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { ThemeBackdropArt } from "../../components/ThemeBackdropArt";
+import { CustomThemeEditor } from "../../components/CustomThemeEditor";
 import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import {
   DICE_OVERRIDE_MODES,
@@ -6,17 +8,7 @@ import {
   setDiceOverride,
   type DiceOverrideMode,
 } from "../../features/dice/diceEngine";
-import {
-  Alert,
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  Share,
-  StyleSheet,
-  Switch,
-  View,
-} from "react-native";
+import { Alert, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Switch, View } from "react-native";
 import { Text, TextInput } from "../../components/AppText";
 import Constants from "expo-constants";
 import { router } from "expo-router";
@@ -57,19 +49,24 @@ const MODE_OPTIONS: { key: ThemePreference; label: string }[] = [
 const FAMILY_ORDER: ThemeFamilyId[] = [
   "crimson",
   "classic",
-  "parchment",
   "grimdark",
   "journal",
   "steampunk",
   "scifi",
   "shadow",
+  "darkmagic",
   "western",
   "galaxy",
+  "water",
+  "custom",
 ];
 
 // Developer-mode only: which pixel-art packs the app currently draws from.
 const PIXEL_PACKS_IN_USE: { name: string; usedFor: string }[] = [
-  { name: "Raven Fantasy Icons (Clockwork Raven)", usedFor: "equipment, spell school, tab bar, condition icons" },
+  {
+    name: "Raven Fantasy Icons (Clockwork Raven)",
+    usedFor: "equipment, spell school, tab bar, condition icons",
+  },
   { name: "Pixel Dice Sprites (LullabyJazz)", usedFor: "dice faces" },
   { name: "32rogues (Seth Boyles)", usedFor: "character portraits" },
   { name: "Medieval Pixel font (Alkhemikal)", usedFor: "pixel font option" },
@@ -86,11 +83,11 @@ function supabaseHost(): string {
   }
 }
 
-const FEEDBACK_EMAIL ="maitland.andrus@gmail.com";
+const FEEDBACK_EMAIL = "maitland.andrus@gmail.com";
 const DONATE_URL = "";
 
 export default function SettingsScreen() {
-  const { theme, preference, setPreference, family, setFamily, fontChoice, setFontChoice } =
+  const { theme, preference, setPreference, family, setFamily, fontChoice, setFontChoice, activeCharacterName } =
     useThemeContext();
   const { fontScale, setFontScale } = useFontScale();
   const { keepScreenOn, setKeepScreenOn } = useKeepAwakeSetting();
@@ -143,7 +140,7 @@ export default function SettingsScreen() {
       [
         { text: "Cancel", style: "cancel" },
         { text: "Turn on", onPress: () => setPartyMode(true) },
-      ]
+      ],
     );
   };
 
@@ -152,7 +149,7 @@ export default function SettingsScreen() {
       ? `Bug report or feature suggestion:\n\n\n\n---\nDiagnostics\n${buildDiagnostics()}`
       : "Bug report or feature suggestion:\n\n";
     const url = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(
-      "RollForCharacter feedback"
+      "RollForCharacter feedback",
     )}&body=${encodeURIComponent(body)}`;
     try {
       const supported = await Linking.canOpenURL(url);
@@ -161,10 +158,7 @@ export default function SettingsScreen() {
       }
       await Linking.openURL(url);
     } catch {
-      Alert.alert(
-        "Couldn't open email app",
-        `Send feedback to ${FEEDBACK_EMAIL}`
-      );
+      Alert.alert("Couldn't open email app", `Send feedback to ${FEEDBACK_EMAIL}`);
     }
   };
 
@@ -181,356 +175,366 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-    >
-      <SectionHeading title="Account" textStyle={styles.sectionTitle} centered />
-      <AccountSection />
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={{ flexGrow: 1 }}>
+        <ThemeBackdropArt />
+        <SectionHeading title="Homebrew" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <Button title="Homebrew Library" fullWidth onPress={() => router.push("/homebrew")} />
 
-      <SectionHeading title="Homebrew" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <Button title="Homebrew Library" fullWidth onPress={() => router.push("/homebrew")} />
+        <SectionHeading title="Appearance" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <View style={styles.optionRow}>
+          {MODE_OPTIONS.map((option) => {
+            const active = preference === option.key;
+            return (
+              <Button
+                key={option.key}
+                title={option.label}
+                selected={active}
+                style={styles.optionButtonWrap}
+                onPress={() => setPreference(option.key)}
+              />
+            );
+          })}
+        </View>
 
-      <SectionHeading title="Appearance" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <View style={styles.optionRow}>
-        {MODE_OPTIONS.map((option) => {
-          const active = preference === option.key;
+        <SectionHeading title="Theme" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <Text style={styles.hint}>
+          {activeCharacterName
+            ? `Theme for ${activeCharacterName}. Each character keeps their own; switch characters on the Characters tab.`
+            : "Default theme. Open a character to give them their own."}
+        </Text>
+        {FAMILY_ORDER.map((familyId) => {
+          const definition = THEME_FAMILIES[familyId];
+          const active = family === familyId;
+          const swatchColors = theme.mode === "dark" ? definition.dark : definition.light;
           return (
-            <Button
-              key={option.key}
-              title={option.label}
-              selected={active}
-              style={styles.optionButtonWrap}
-              onPress={() => setPreference(option.key)}
-            />
+            <Pressable
+              key={familyId}
+              style={[styles.familyRow, active && styles.familyRowActive]}
+              onPress={() => setFamily(familyId)}
+            >
+              <PixelFrameOverlay scale={0.75} />
+              <View style={[styles.swatch, { backgroundColor: swatchColors.primary }]} />
+              <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>{definition.label}</Text>
+            </Pressable>
           );
         })}
-      </View>
 
-      <SectionHeading title="Theme" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <Text style={styles.hint}>
-        Default for characters without their own look (set in Edit → Appearance).
-      </Text>
-      {FAMILY_ORDER.map((familyId) => {
-        const definition = THEME_FAMILIES[familyId];
-        const active = family === familyId;
-        const swatchColors = theme.mode === "dark" ? definition.dark : definition.light;
-        return (
-          <Pressable
-            key={familyId}
-            style={[styles.familyRow, active && styles.familyRowActive]}
-            onPress={() => setFamily(familyId)}
-          >
-            <PixelFrameOverlay scale={0.75} />
-            <View
-              style={[styles.swatch, { backgroundColor: swatchColors.primary }]}
-            />
-            <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
-              {definition.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+        {family === "custom" && <CustomThemeEditor />}
 
-      <SectionHeading title="Font" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      {FONT_CHOICE_ORDER.map((fontId) => {
-        const option = FONT_CHOICES[fontId];
-        const active = fontChoice === fontId;
-        return (
-          <Pressable
-            key={fontId}
-            style={[styles.familyRow, active && styles.familyRowActive]}
-            onPress={() => setFontChoice(fontId)}
-          >
-            <PixelFrameOverlay scale={0.75} />
-            <Text
-              style={[
-                styles.familyLabel,
-                active && styles.familyLabelActive,
-                option.fontFamily ? { fontFamily: option.fontFamily } : null,
-              ]}
+        <SectionHeading title="Font" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        {FONT_CHOICE_ORDER.map((fontId) => {
+          const option = FONT_CHOICES[fontId];
+          const active = fontChoice === fontId;
+          return (
+            <Pressable
+              key={fontId}
+              style={[styles.familyRow, active && styles.familyRowActive]}
+              onPress={() => setFontChoice(fontId)}
             >
-              {option.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-
-      <SectionHeading title="Accessibility" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <Text style={styles.toggleLabel}>Text size: {Math.round(fontScale * 100)}%</Text>
-      <Text style={styles.hint}>Scales text throughout the app.</Text>
-      <View style={styles.optionRow}>
-        <Button
-          title="A−"
-          style={styles.optionButtonWrap}
-          disabled={fontScale <= FONT_SCALE_MIN}
-          onPress={() => setFontScale(fontScale - FONT_SCALE_STEP)}
-        />
-        <Button
-          title="Reset"
-          style={styles.optionButtonWrap}
-          disabled={fontScale === 1}
-          onPress={() => setFontScale(1)}
-        />
-        <Button
-          title="A+"
-          style={styles.optionButtonWrap}
-          disabled={fontScale >= FONT_SCALE_MAX}
-          onPress={() => setFontScale(fontScale + FONT_SCALE_STEP)}
-        />
-      </View>
-
-      <SectionHeading title="Icons & Sound" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <View style={styles.toggleRow}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>Show icons</Text>
-        <Switch
-          value={iconsEnabled}
-          onValueChange={setIconsEnabled}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-      {iconsEnabled && (
-        <View style={styles.iconStyleList}>
-          <Text style={styles.toggleLabel}>Icon style</Text>
-          {(["auto", ...ICON_STYLE_ORDER] as IconStylePreference[]).map((styleId) => {
-            const option = styleId === "auto" ? AUTO_ICON_STYLE_OPTION : ICON_STYLES[styleId];
-            const active = iconStylePreference === styleId;
-            return (
-              <Pressable
-                key={styleId}
-                style={[styles.familyRow, active && styles.familyRowActive]}
-                onPress={() => setIconStyle(styleId)}
+              <PixelFrameOverlay scale={0.75} />
+              <Text
+                style={[
+                  styles.familyLabel,
+                  active && styles.familyLabelActive,
+                  option.fontFamily ? { fontFamily: option.fontFamily } : null,
+                ]}
               >
-                <PixelFrameOverlay scale={0.75} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
-                    {option.label}
-                  </Text>
-                  <Text style={styles.iconStyleDescription}>{option.description}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+
+        <SectionHeading title="Accessibility" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <Text style={styles.toggleLabel}>Text size: {Math.round(fontScale * 100)}%</Text>
+        <Text style={styles.hint}>Scales text throughout the app.</Text>
+        <View style={styles.optionRow}>
+          <Button
+            title="A−"
+            style={styles.optionButtonWrap}
+            disabled={fontScale <= FONT_SCALE_MIN}
+            onPress={() => setFontScale(fontScale - FONT_SCALE_STEP)}
+          />
+          <Button
+            title="Reset"
+            style={styles.optionButtonWrap}
+            disabled={fontScale === 1}
+            onPress={() => setFontScale(1)}
+          />
+          <Button
+            title="A+"
+            style={styles.optionButtonWrap}
+            disabled={fontScale >= FONT_SCALE_MAX}
+            onPress={() => setFontScale(fontScale + FONT_SCALE_STEP)}
+          />
         </View>
-      )}
 
-      <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>Sound effects</Text>
-        <Switch
-          value={soundEnabled}
-          onValueChange={setSoundEnabled}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-
-      <SectionHeading title="Device" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <View style={styles.toggleRow}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>Keep screen on</Text>
-        <Switch
-          value={keepScreenOn}
-          onValueChange={setKeepScreenOn}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-
-      <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>Roll history</Text>
-        <Switch
-          value={historyEnabled}
-          onValueChange={setHistoryEnabled}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-      <Text style={styles.toggleHint}>
-        Log of recent rolls on the Dice Roller.
-      </Text>
-
-      <SectionHeading title="Game Modes" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <View style={styles.toggleRow}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>DM mode</Text>
-        <Switch
-          value={dmMode}
-          onValueChange={setDmMode}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-      <Text style={styles.toggleHint}>
-        Adds an Encounter tab with party rolls and the SRD bestiary.
-      </Text>
-
-      {dmMode && (
-        <View
-          style={{
-            marginTop: 8,
-            marginLeft: 4,
-            paddingLeft: 12,
-            borderLeftWidth: 3,
-            borderLeftColor: theme.colors.primary,
-          }}
-        >
-          <Text style={styles.toggleLabel}>DM edition</Text>
-          {DM_EDITION_OPTIONS.map((option) => {
-            const active = dmEdition === option.key;
-            return (
-              <Pressable
-                key={option.key}
-                style={[styles.familyRow, active && styles.familyRowActive]}
-                onPress={() => setDmEdition(option.key)}
-              >
-                <PixelFrameOverlay scale={0.75} />
-                <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      )}
-
-      <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>Party mode (Premium)</Text>
-        <Switch
-          value={partyMode}
-          onValueChange={handlePartyModeChange}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-      <Text style={styles.toggleHint}>
-        Adds a Party tab to share characters with your group online.
-      </Text>
-
-      <SectionHeading title="Help" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <Button
-        title="Glossary"
-        fullWidth
-        onPress={() => router.push("/glossary")}
-      />
-
-      <Button
-        title="Legal & Licenses"
-        fullWidth
-        style={styles.toggleRowSpaced}
-        onPress={() => router.push("/legal")}
-      />
-
-      <SectionHeading title="Feedback & Support" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <Button
-        title="Report a Bug / Suggest a Feature"
-        textStyle={styles.feedbackButtonText}
-        fullWidth
-        onPress={handleSendFeedback}
-      />
-      <Button
-        title="Donate"
-        textStyle={styles.feedbackButtonText}
-        fullWidth
-        style={styles.toggleRowSpaced}
-        onPress={handleDonate}
-      />
-
-      <SectionHeading title="Advanced" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-      <View style={styles.toggleRow}>
-        <PixelFrameOverlay scale={0.75} />
-        <Text style={styles.toggleLabel}>Developer mode</Text>
-        <Switch
-          value={developerMode}
-          onValueChange={(value) => {
-            setDeveloperMode(value);
-            if (!value) setDiceMode("random");
-          }}
-          trackColor={{ false: theme.colors.surfaceAlt, true: theme.colors.primary }}
-          thumbColor={theme.colors.primaryText}
-        />
-      </View>
-      <Text style={styles.toggleHint}>
-        Shows diagnostics and attaches them to bug reports.
-      </Text>
-
-      {developerMode && (
-        <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+        <SectionHeading title="Icons & Sound" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <View style={styles.toggleRow}>
           <PixelFrameOverlay scale={0.75} />
-          <Text style={styles.creditText}>{buildDiagnostics()}</Text>
+          <Text style={styles.toggleLabel}>Show icons</Text>
+          <Switch
+            value={iconsEnabled}
+            onValueChange={setIconsEnabled}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
         </View>
-      )}
-      {developerMode && (
-        <View style={[styles.creditRow, styles.toggleRowSpaced]}>
-          <PixelFrameOverlay scale={0.75} />
-          <Text style={styles.toggleLabel}>Pixel packs in use</Text>
-          {PIXEL_PACKS_IN_USE.map((pack) => (
-            <Text key={pack.name} style={styles.creditText}>
-              {`• ${pack.name} — ${pack.usedFor}`}
-            </Text>
-          ))}
-        </View>
-      )}
-      {developerMode && (
-        <View style={[styles.creditRow, styles.toggleRowSpaced]}>
-          <PixelFrameOverlay scale={0.75} />
-          <Text style={styles.toggleLabel}>Dice override</Text>
-          <Text style={styles.toggleHint}>
-            Every roll in the app (dice roller, character sheet, level-up HP, stat rolling, DM
-            monster rolls) is made one die at a time. Normally each die is random. Pick a mode below
-            to control the dice while testing. It resets to Random when Developer mode is turned off
-            or the app restarts.
-          </Text>
-          <Text style={styles.diceModeDescription}>
-            {DICE_OVERRIDE_MODES.find((m) => m.key === diceMode)?.description}
-          </Text>
-          <View style={styles.diceOverrideRow}>
-            {DICE_OVERRIDE_MODES.map((option) => {
-              const active = diceMode === option.key;
+        {iconsEnabled && (
+          <View style={styles.iconStyleList}>
+            <Text style={styles.toggleLabel}>Icon style</Text>
+            {(["auto", ...ICON_STYLE_ORDER] as IconStylePreference[]).map((styleId) => {
+              const option = styleId === "auto" ? AUTO_ICON_STYLE_OPTION : ICON_STYLES[styleId];
+              const active = iconStylePreference === styleId;
               return (
                 <Pressable
-                  key={option.key}
-                  style={[styles.familyRow, styles.diceOverrideChip, active && styles.familyRowActive]}
-                  onPress={() => handleDiceModeChange(option.key)}
+                  key={styleId}
+                  style={[styles.familyRow, active && styles.familyRowActive]}
+                  onPress={() => setIconStyle(styleId)}
                 >
                   <PixelFrameOverlay scale={0.75} />
-                  <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>
-                    {option.label}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>{option.label}</Text>
+                    <Text style={styles.iconStyleDescription}>{option.description}</Text>
+                  </View>
                 </Pressable>
               );
             })}
           </View>
-          {diceMode === "seeded" && (
-            <View style={styles.seedRow}>
-              <DoneAccessory id="done-settings" />
-              <TextInput
-                style={styles.seedInput}
-                value={seedText}
-                onChangeText={setSeedText}
-                keyboardType="number-pad" inputAccessoryViewID="done-settings"
-                placeholder="Seed"
-                placeholderTextColor={theme.colors.textMuted}
-              />
-              <Button title="Restart sequence" onPress={() => handleDiceModeChange("seeded")} />
-            </View>
-          )}
+        )}
+
+        <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>Sound effects</Text>
+          <Switch
+            value={soundEnabled}
+            onValueChange={setSoundEnabled}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
         </View>
-      )}
-      {developerMode && <DevToolsSection />}
-      {developerMode && (
+
+        <SectionHeading title="Device" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <View style={styles.toggleRow}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>Keep screen on</Text>
+          <Switch
+            value={keepScreenOn}
+            onValueChange={setKeepScreenOn}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
+        </View>
+
+        <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>Roll history</Text>
+          <Switch
+            value={historyEnabled}
+            onValueChange={setHistoryEnabled}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
+        </View>
+        <Text style={styles.toggleHint}>Log of recent rolls on the Dice Roller.</Text>
+
+        <SectionHeading title="Game Modes" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <View style={styles.toggleRow}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>DM mode</Text>
+          <Switch
+            value={dmMode}
+            onValueChange={setDmMode}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
+        </View>
+        <Text style={styles.toggleHint}>Adds an Encounter tab with party rolls and the SRD bestiary.</Text>
+
+        {dmMode && (
+          <View
+            style={{
+              marginTop: 8,
+              marginLeft: 4,
+              paddingLeft: 12,
+              borderLeftWidth: 3,
+              borderLeftColor: theme.colors.primary,
+            }}
+          >
+            <Text style={styles.toggleLabel}>DM edition</Text>
+            {DM_EDITION_OPTIONS.map((option) => {
+              const active = dmEdition === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  style={[styles.familyRow, active && styles.familyRowActive]}
+                  onPress={() => setDmEdition(option.key)}
+                >
+                  <PixelFrameOverlay scale={0.75} />
+                  <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>{option.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
+
+        <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>Party mode (Premium)</Text>
+          <Switch
+            value={partyMode}
+            onValueChange={handlePartyModeChange}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
+        </View>
+        <Text style={styles.toggleHint}>Adds a Party tab to share characters with your group online.</Text>
+
+        <SectionHeading title="Help" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <Button title="Glossary" fullWidth onPress={() => router.push("/glossary")} />
+
         <Button
-          title="Share Diagnostics"
+          title="Legal & Licenses"
+          fullWidth
+          style={styles.toggleRowSpaced}
+          onPress={() => router.push("/legal")}
+        />
+
+        <SectionHeading
+          title="Feedback & Support"
+          textStyle={[styles.sectionTitle, styles.themeSectionTitle]}
+          centered
+        />
+        <Button
+          title="Report a Bug / Suggest a Feature"
+          textStyle={styles.feedbackButtonText}
+          fullWidth
+          onPress={handleSendFeedback}
+        />
+        <Button
+          title="Donate"
           textStyle={styles.feedbackButtonText}
           fullWidth
           style={styles.toggleRowSpaced}
-          onPress={handleShareDiagnostics}
+          onPress={handleDonate}
         />
-      )}
+
+        <SectionHeading title="Advanced" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+        <View style={styles.toggleRow}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>Developer mode</Text>
+          <Switch
+            value={developerMode}
+            onValueChange={(value) => {
+              setDeveloperMode(value);
+              if (!value) setDiceMode("random");
+            }}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
+        </View>
+        <Text style={styles.toggleHint}>Shows diagnostics and attaches them to bug reports.</Text>
+
+        {developerMode && (
+          <>
+            <SectionHeading title="Account" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
+            <AccountSection />
+          </>
+        )}
+        {developerMode && (
+          <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+            <PixelFrameOverlay scale={0.75} />
+            <Text style={styles.creditText}>{buildDiagnostics()}</Text>
+          </View>
+        )}
+        {developerMode && (
+          <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+            <PixelFrameOverlay scale={0.75} />
+            <Text style={styles.toggleLabel}>Pixel packs in use</Text>
+            {PIXEL_PACKS_IN_USE.map((pack) => (
+              <Text key={pack.name} style={styles.creditText}>
+                {`• ${pack.name} — ${pack.usedFor}`}
+              </Text>
+            ))}
+          </View>
+        )}
+        {developerMode && (
+          <View style={[styles.creditRow, styles.toggleRowSpaced]}>
+            <PixelFrameOverlay scale={0.75} />
+            <Text style={styles.toggleLabel}>Dice override</Text>
+            <Text style={styles.toggleHint}>
+              Every roll in the app (dice roller, character sheet, level-up HP, stat rolling, DM monster rolls) is made
+              one die at a time. Normally each die is random. Pick a mode below to control the dice while testing. It
+              resets to Random when Developer mode is turned off or the app restarts.
+            </Text>
+            <Text style={styles.diceModeDescription}>
+              {DICE_OVERRIDE_MODES.find((m) => m.key === diceMode)?.description}
+            </Text>
+            <View style={styles.diceOverrideRow}>
+              {DICE_OVERRIDE_MODES.map((option) => {
+                const active = diceMode === option.key;
+                return (
+                  <Pressable
+                    key={option.key}
+                    style={[styles.familyRow, styles.diceOverrideChip, active && styles.familyRowActive]}
+                    onPress={() => handleDiceModeChange(option.key)}
+                  >
+                    <PixelFrameOverlay scale={0.75} />
+                    <Text style={[styles.familyLabel, active && styles.familyLabelActive]}>{option.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {diceMode === "seeded" && (
+              <View style={styles.seedRow}>
+                <DoneAccessory id="done-settings" />
+                <TextInput
+                  style={styles.seedInput}
+                  value={seedText}
+                  onChangeText={setSeedText}
+                  keyboardType="number-pad"
+                  inputAccessoryViewID="done-settings"
+                  placeholder="Seed"
+                  placeholderTextColor={theme.colors.textMuted}
+                />
+                <Button title="Restart sequence" onPress={() => handleDiceModeChange("seeded")} />
+              </View>
+            )}
+          </View>
+        )}
+        {developerMode && <DevToolsSection />}
+        {developerMode && (
+          <Button
+            title="Share Diagnostics"
+            textStyle={styles.feedbackButtonText}
+            fullWidth
+            style={styles.toggleRowSpaced}
+            onPress={handleShareDiagnostics}
+          />
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -538,7 +542,7 @@ export default function SettingsScreen() {
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.screenBackground },
-    content: { padding: 16, paddingBottom: 32 },
+    content: { padding: 16, paddingBottom: 32, flexGrow: 1 },
     // Settings intentionally never uses theme.displayFontFamily -- this
     // screen stays legible in the system font no matter which font is
     // currently selected elsewhere in the app.
@@ -549,10 +553,24 @@ function createStyles(theme: Theme) {
       marginBottom: 12,
     },
     themeSectionTitle: { marginTop: 24 },
-    diceModeDescription: { color: theme.colors.text, fontSize: 13, marginTop: 10 },
-    diceOverrideRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    diceModeDescription: {
+      color: theme.colors.text,
+      fontSize: 13,
+      marginTop: 10,
+    },
+    diceOverrideRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 8,
+    },
     diceOverrideChip: { paddingHorizontal: 14 },
-    seedRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },
+    seedRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 10,
+    },
     seedInput: {
       flex: 1,
       color: theme.colors.text,
@@ -599,9 +617,18 @@ function createStyles(theme: Theme) {
     },
     toggleRowSpaced: { marginTop: 12 },
     toggleLabel: { color: theme.colors.text, fontWeight: "600" },
-    toggleHint: { color: theme.colors.textMuted, fontSize: 12, marginTop: 6, marginBottom: 4 },
+    toggleHint: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      marginTop: 6,
+      marginBottom: 4,
+    },
     iconStyleList: { marginTop: 8 },
-    iconStyleDescription: { color: theme.colors.textMuted, fontSize: 12, marginTop: 2 },
+    iconStyleDescription: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      marginTop: 2,
+    },
     creditRow: {
       backgroundColor: theme.colors.surface,
       borderWidth: theme.pixel ? 0 : 1,

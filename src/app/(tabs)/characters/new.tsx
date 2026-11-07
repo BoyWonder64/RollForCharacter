@@ -54,7 +54,6 @@ import {
 import { addResolvedFeat } from "../../../features/characters/featRepo";
 import { rollDie } from "../../../features/dice/diceEngine";
 import { FeatPickerModal } from "../../../components/FeatPickerModal";
-import { CreatingOverlay } from "../../../components/CreatingOverlay";
 import {
   addCatalogSpellToCharacter,
   setSpellSlot,
@@ -2481,7 +2480,6 @@ export default function NewCharacterScreen() {
           </Pressable>
         )}
       </View>
-      <CreatingOverlay visible={creating} />
     </View>
   );
 }

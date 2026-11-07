@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
-import { diceRollHistory } from "../../db/schema";
+import { characters, diceRollHistory } from "../../db/schema";
 import type { RollResult } from "./diceEngine";
 
 export async function saveRoll(roll: RollResult, characterId?: number) {
@@ -13,11 +13,15 @@ export async function saveRoll(roll: RollResult, characterId?: number) {
 }
 
 export async function recentRolls(characterId?: number, limit = 20) {
-  const query = db.select().from(diceRollHistory);
+  const query = db
+    .select({ roll: diceRollHistory, characterName: characters.name })
+    .from(diceRollHistory)
+    .leftJoin(characters, eq(diceRollHistory.characterId, characters.id));
   const rows = characterId
     ? await query.where(eq(diceRollHistory.characterId, characterId))
     : await query;
   return rows
+    .map((row) => ({ ...row.roll, characterName: row.characterName }))
     .sort((a, b) => b.id - a.id)
     .slice(0, limit);
 }

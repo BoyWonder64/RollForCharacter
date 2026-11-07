@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { ThemeBackdropArt } from "../../components/ThemeBackdropArt";
 import { SectionHeading } from "../../components/PixelFrame";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "../../components/AppText";
@@ -70,8 +71,12 @@ export default function EncounterScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
-      getMonsterCatalog().then(setCatalog);
+      // Defer past the tab-switch paint so the tap feels instant.
+      const t = setTimeout(() => {
+        refresh();
+        getMonsterCatalog().then(setCatalog);
+      }, 0);
+      return () => clearTimeout(t);
     }, [refresh])
   );
 
@@ -159,7 +164,9 @@ export default function EncounterScreen() {
         ))}
       </View>
 
-      <ScrollView style={styles.tabContent} contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
+      <ScrollView style={styles.tabContent} contentContainerStyle={{ padding: 16, paddingBottom: 48, flexGrow: 1 }}>
+        <View style={{ flexGrow: 1 }}>
+        <ThemeBackdropArt />
         {activeTab === "encounter" && (
           <>
             <DmInitiativeTracker
@@ -274,6 +281,7 @@ export default function EncounterScreen() {
         )}
 
         {activeTab === "notes" && <DmSessionNotes />}
+        </View>
       </ScrollView>
 
       <DmCreaturePickerModal

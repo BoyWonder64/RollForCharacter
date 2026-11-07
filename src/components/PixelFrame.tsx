@@ -139,7 +139,8 @@ export function PixelBanner({
     );
   }
 
-  const spec = pixel[variant];
+  // Dark mode swaps in the darker banner art, which carries white text.
+  const spec = (theme.mode === "dark" && pixel.dark ? pixel.dark : pixel)[variant];
   const h = spec.height * scale;
   return (
     <View
@@ -206,6 +207,10 @@ export function SectionHeading({
   return (
     <PixelBanner
       title={title}
+      // Match the screen's own heading font (its chosen font, or the system font on
+      // screens like Settings that deliberately skip it) instead of always forcing
+      // the theme's display font.
+      textStyle={{ fontFamily: flat.fontFamily }}
       style={{
         alignSelf: centered ? "center" : "flex-start",
         marginTop: typeof flat.marginTop === "number" ? flat.marginTop : 0,

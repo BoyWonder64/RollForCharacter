@@ -1,6 +1,6 @@
 import { Image, StyleSheet, View } from "react-native";
 import { ThemeContext, resolveTheme, useThemeContext } from "./ThemeContext";
-import type { ThemeFamilyId } from "./colors";
+import { normalizeFamilyId } from "./colors";
 import type { FontChoiceId } from "./fonts";
 import type { Character } from "../types/models";
 
@@ -23,9 +23,9 @@ export function CharacterThemeProvider({
   children: React.ReactNode;
 }) {
   const global = useThemeContext();
-  const family = (character.themeFamily as ThemeFamilyId | null) ?? global.family;
-  const fontChoice = (character.fontChoice as FontChoiceId | null) ?? global.fontChoice;
-  const theme = resolveTheme(family, global.theme.mode, fontChoice);
+  const family = normalizeFamilyId(character.themeFamily) ?? global.defaultFamily;
+  const fontChoice = (character.fontChoice as FontChoiceId | null) ?? global.defaultFontChoice;
+  const theme = resolveTheme(family, global.theme.mode, fontChoice, global.customTheme);
 
   const value = {
     ...global,

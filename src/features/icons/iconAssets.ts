@@ -125,9 +125,13 @@ const SPELL_SCHOOL_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> =
   shikashi: shikashi.SHIKASHI_SPELL_SCHOOLS,
 };
 
+// The Dice Roller tab is a d20 in every icon style (cut from the d20 art in
+// assets/icons/dice/d20, scaled to true pixel size).
+const D20_TAB_ICON: number = require("../../../assets/icons/tabs/dice-roller-d20.png");
+
 const TAB_ICONS_BY_STYLE: Record<IconStyleId, Record<string, number>> = {
-  pixel: TAB_ICONS_PIXEL,
-  shikashi: shikashi.SHIKASHI_TABS,
+  pixel: { ...TAB_ICONS_PIXEL, "dice-roller": D20_TAB_ICON },
+  shikashi: { ...shikashi.SHIKASHI_TABS, "dice-roller": D20_TAB_ICON },
 };
 
 const CAMPAIGN_ITEM_ICONS_BY_STYLE: Record<

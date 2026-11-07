@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ThemeBackdropArt } from "../../components/ThemeBackdropArt";
 import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import {
   ActivityIndicator,
@@ -183,7 +184,9 @@ export default function PartyScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
+      // Defer past the tab-switch paint so the tap feels instant.
+      const t = setTimeout(refresh, 0);
+      return () => clearTimeout(t);
     }, [refresh])
   );
 
@@ -263,7 +266,9 @@ export default function PartyScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.screenBackground }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48, flexGrow: 1 }}>
+        <View style={{ flexGrow: 1 }}>
+        <ThemeBackdropArt />
         <View style={styles.headerRow}>
           <Text style={styles.sectionTitle}>Signed in as {displayName}</Text>
           <Pressable onPress={signOut}>
@@ -386,6 +391,7 @@ export default function PartyScreen() {
             )}
           </>
         )}
+        </View>
       </ScrollView>
 
       <CreatePartyModal

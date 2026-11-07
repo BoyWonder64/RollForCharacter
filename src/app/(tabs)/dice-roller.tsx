@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ThemeBackdropArt } from "../../components/ThemeBackdropArt";
 import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import {
   Alert,
@@ -17,7 +18,12 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Button } from "../../components/Button";
-import { isValidDiceExpression, parseDiceExpression, rollExpression, type RollResult } from "../../features/dice/diceEngine";
+import {
+  isValidDiceExpression,
+  parseDiceExpression,
+  rollExpression,
+  type RollResult,
+} from "../../features/dice/diceEngine";
 import { clearRollHistory, recentRolls, saveRoll } from "../../features/dice/diceRepo";
 import {
   buildStructuredRollPlan,
@@ -34,18 +40,12 @@ import { ABILITY_LABELS, isSkillProficient, type CharacterFeat } from "../../fea
 import { listCharacters } from "../../features/characters/characterRepo";
 import { listCharacterFeats } from "../../features/characters/featRepo";
 import { DEFAULT_RULESET, getRulesetCatalog } from "../../data/rulesets";
-import {
-  DIE_TYPES,
-  getDieFaceIcon,
-  sidesForDieType,
-  type DieType,
-} from "../../features/dice/diceFaceAssets";
+import { DIE_TYPES, getDieFaceIcon, sidesForDieType, type DieType } from "../../features/dice/diceFaceAssets";
 import type { AbilityScoreKey, Character } from "../../types/models";
-import { useTheme } from "../../theme/ThemeContext";
+import { useTheme, useThemeContext } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
-import { useDeveloperMode } from "../../features/settings/DeveloperModeContext";
 import { useDmMode } from "../../features/settings/DmModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
 import { useSoundEffects } from "../../features/sound/useSoundEffects";
@@ -72,39 +72,27 @@ type InitiativeEntry = { id: string; label: string; value: number };
 
 function randomDieFace(die: DieType): DieFace {
   const sides = sidesForDieType(die);
-  return { die, value: die === "d100" ? 100 : 1 + Math.floor(Math.random() * sides) };
+  return {
+    die,
+    value: die === "d100" ? 100 : 1 + Math.floor(Math.random() * sides),
+  };
 }
 
 function representativeDieFace(die: DieType): DieFace {
   return { die, value: sidesForDieType(die) };
 }
 
-function DieFaceImage({
-  face,
-  imageStyle,
-}: {
-  face: DieFace;
-  imageStyle: StyleProp<ImageStyle>;
-}) {
+function DieFaceImage({ face, imageStyle }: { face: DieFace; imageStyle: StyleProp<ImageStyle> }) {
   const icon = getDieFaceIcon(face.die, face.value);
   if (!icon) return null;
   // fadeDuration=0 kills the platform's default crossfade on source change --
   // without it, every face swap (several times a second while cycling, plus
   // the final landed result) visibly fades in instead of snapping, which
   // reads as lag even though the image itself is already preloaded/cached.
-  return (
-    <Image source={icon} style={imageStyle} resizeMode="contain" fadeDuration={0} />
-  );
+  return <Image source={icon} style={imageStyle} resizeMode="contain" fadeDuration={0} />;
 }
 
-const ABILITIES: AbilityScoreKey[] = [
-  "strength",
-  "dexterity",
-  "constitution",
-  "intelligence",
-  "wisdom",
-  "charisma",
-];
+const ABILITIES: AbilityScoreKey[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
 const ATTACK_ABILITIES: AbilityScoreKey[] = ["strength", "dexterity"];
 
 type ScreenMode = "freeform" | RollMode;
@@ -132,14 +120,14 @@ const ROLL_ANIMATION_MS = 650;
 const BURST_PARTICLE_COUNT = 14;
 const BURST_ANGLES = Array.from(
   { length: BURST_PARTICLE_COUNT },
-  (_, i) => (i / BURST_PARTICLE_COUNT) * Math.PI * 2 + (i % 2 ? 0.15 : -0.15)
+  (_, i) => (i / BURST_PARTICLE_COUNT) * Math.PI * 2 + (i % 2 ? 0.15 : -0.15),
 );
 
 export default function DiceRollerScreen() {
   const theme = useTheme();
+  const { setActiveCharacter } = useThemeContext();
   const { iconsEnabled, iconStyle } = useIconSettings();
   const { dmMode } = useDmMode();
-  const { developerMode } = useDeveloperMode();
   const { historyEnabled } = useRollHistorySetting();
   const playSound = useSoundEffects();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -214,15 +202,13 @@ export default function DiceRollerScreen() {
       ? lockedCharacterId
       : selectedCharacterId && characters.some((c) => c.id === selectedCharacterId)
         ? selectedCharacterId
-        : characters[0]?.id ?? null;
+        : (characters[0]?.id ?? null);
   const selectedCharacter = characters.find((c) => c.id === effectiveCharacterId) ?? null;
   const showCharacterSwitcher = dmMode && !lockedCharacterId;
   const [selectedCharacterFeats, setSelectedCharacterFeats] = useState<CharacterFeat[]>([]);
 
   useEffect(() => {
-    (selectedCharacter ? listCharacterFeats(selectedCharacter) : Promise.resolve([])).then(
-      setSelectedCharacterFeats
-    );
+    (selectedCharacter ? listCharacterFeats(selectedCharacter) : Promise.resolve([])).then(setSelectedCharacterFeats);
   }, [selectedCharacter]);
 
   const refreshHistory = useCallback(() => {
@@ -256,14 +242,18 @@ export default function DiceRollerScreen() {
   // like it "already rolled" something you never asked for.
   useFocusEffect(
     useCallback(() => {
-      refreshHistory();
-      refreshCharacters();
+      // Fetches run after the tab-switch paint so the tap feels instant.
+      const t = setTimeout(() => {
+        refreshHistory();
+        refreshCharacters();
+      }, 0);
       setLastRoll(null);
       setLastRollFace(undefined);
       setAttackCritFlag(null);
       setNaturalFlag(null);
       setError(null);
-    }, [refreshHistory, refreshCharacters])
+      return () => clearTimeout(t);
+    },[refreshHistory, refreshCharacters]),
   );
 
   function selectMode(next: ScreenMode) {
@@ -285,6 +275,8 @@ export default function DiceRollerScreen() {
 
   function selectCharacter(id: number) {
     setSelectedCharacterId(id);
+    // Switching who's rolling also switches the app's theme to that character's.
+    setActiveCharacter(id);
     AsyncStorage.setItem(SELECTED_CHARACTER_KEY, String(id)).catch(() => {});
   }
 
@@ -325,8 +317,16 @@ export default function DiceRollerScreen() {
     playSound("diceLand");
     punch.setValue(1);
     Animated.sequence([
-      Animated.timing(punch, { toValue: 1.2, duration: 90, useNativeDriver: true }),
-      Animated.timing(punch, { toValue: 1, duration: 140, useNativeDriver: true }),
+      Animated.timing(punch, {
+        toValue: 1.2,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(punch, {
+        toValue: 1,
+        duration: 140,
+        useNativeDriver: true,
+      }),
     ]).start();
   }
 
@@ -336,8 +336,16 @@ export default function DiceRollerScreen() {
     setFlashColor(isNat20 ? "#FFFFFF" : theme.colors.danger);
     flash.setValue(0);
     Animated.sequence([
-      Animated.timing(flash, { toValue: 1, duration: 150, useNativeDriver: true }),
-      Animated.timing(flash, { toValue: 0, duration: isNat20 ? 550 : 400, useNativeDriver: true }),
+      Animated.timing(flash, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(flash, {
+        toValue: 0,
+        duration: isNat20 ? 550 : 400,
+        useNativeDriver: true,
+      }),
     ]).start();
     if (isNat20) triggerHolyBurst();
     if (flag === "nat1") triggerDoomBurst();
@@ -357,8 +365,16 @@ export default function DiceRollerScreen() {
         useNativeDriver: true,
       }),
       Animated.sequence([
-        Animated.timing(screenFlash, { toValue: 1, duration: 120, useNativeDriver: true }),
-        Animated.timing(screenFlash, { toValue: 0, duration: 550, useNativeDriver: true }),
+        Animated.timing(screenFlash, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(screenFlash, {
+          toValue: 0,
+          duration: 550,
+          useNativeDriver: true,
+        }),
       ]),
     ]).start(() => setShowHolyBurst(false));
   }
@@ -377,8 +393,16 @@ export default function DiceRollerScreen() {
         useNativeDriver: true,
       }),
       Animated.sequence([
-        Animated.timing(screenFlash, { toValue: 1, duration: 120, useNativeDriver: true }),
-        Animated.timing(screenFlash, { toValue: 0, duration: 550, useNativeDriver: true }),
+        Animated.timing(screenFlash, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(screenFlash, {
+          toValue: 0,
+          duration: 550,
+          useNativeDriver: true,
+        }),
       ]),
     ]).start(() => setShowDoomBurst(false));
   }
@@ -394,11 +418,7 @@ export default function DiceRollerScreen() {
     await playRollAnimation(dieType);
     const result = rollExpression(expr);
     setLastRoll(result);
-    setLastRollFace(
-      dieType && result.rolls.length === 1
-        ? { die: dieType, value: result.rolls[0].value }
-        : undefined
-    );
+    setLastRollFace(dieType && result.rolls.length === 1 ? { die: dieType, value: result.rolls[0].value } : undefined);
     setAttackCritFlag(null);
     const flag = detectSingleD20Flag(result.rolls);
     setNaturalFlag(flag);
@@ -425,7 +445,7 @@ export default function DiceRollerScreen() {
       character: selectedCharacter,
       feats: selectedCharacterFeats,
       ability: ability ?? undefined,
-      skillId: mode === "check" && checkBy === "skill" ? skillId ?? undefined : undefined,
+      skillId: mode === "check" && checkBy === "skill" ? (skillId ?? undefined) : undefined,
       proficient,
       extraModifier: parsedExtraModifier(),
       advantageMode,
@@ -493,7 +513,7 @@ export default function DiceRollerScreen() {
   const diceIcon = iconsEnabled ? getTabIcon(iconStyle, "dice-roller") : undefined;
   const caster = selectedCharacter ? spellSaveDc(selectedCharacter) : undefined;
   const skillCatalog = getRulesetCatalog(selectedCharacter?.ruleset ?? DEFAULT_RULESET).skills;
-  const idleDieType: DieType = mode === "freeform" ? inferDieType(expression) ?? "d20" : "d20";
+  const idleDieType: DieType = mode === "freeform" ? (inferDieType(expression) ?? "d20") : "d20";
   const idleFace = representativeDieFace(idleDieType);
 
   // Derived into one value rather than three separate conditional JSX
@@ -502,11 +522,7 @@ export default function DiceRollerScreen() {
   // the native image view being torn down and recreated on every state
   // change (which read as a visible delay even with fadeDuration=0).
   const isIdleDisplay = !isRolling && !lastRoll;
-  const displayFace: DieFace | null = isRolling
-    ? rollingFace ?? null
-    : lastRoll
-      ? lastRollFace ?? null
-      : idleFace;
+  const displayFace: DieFace | null = isRolling ? (rollingFace ?? null) : lastRoll ? (lastRollFace ?? null) : idleFace;
   const displayNumber = isRolling ? rollingNumber : lastRoll ? lastRoll.total : null;
 
   // Live preview of the computed modifier -- shown before rolling so
@@ -519,14 +535,17 @@ export default function DiceRollerScreen() {
           character: selectedCharacter,
           feats: selectedCharacterFeats,
           ability: ability ?? undefined,
-          skillId: mode === "check" && checkBy === "skill" ? skillId ?? undefined : undefined,
+          skillId: mode === "check" && checkBy === "skill" ? (skillId ?? undefined) : undefined,
           proficient,
           extraModifier: parsedExtraModifier(),
           advantageMode,
         })
       : null;
 
-  const spinDeg = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "1080deg"] });
+  const spinDeg = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "1080deg"],
+  });
 
   return (
     <View style={styles.container}>
@@ -542,570 +561,525 @@ export default function DiceRollerScreen() {
             style={[styles.modeTab, mode === m.key && styles.modeTabActive]}
             onPress={() => selectMode(m.key)}
           >
-            <Text
-              style={[styles.modeTabLabel, mode === m.key && styles.modeTabLabelActive]}
-              numberOfLines={1}
-            >
+            <Text style={[styles.modeTabLabel, mode === m.key && styles.modeTabLabelActive]} numberOfLines={1}>
               {m.label}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent} bottomOffset={24}>
-        {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
-          <View style={styles.section}>
-            <SectionHeading title="Character" textStyle={styles.sectionTitle} centered />
-            {characters.length === 0 ? (
-              <Text style={[styles.hint, styles.centerText]}>Create a character first to use {mode} rolls.</Text>
-            ) : showCharacterSwitcher ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.chipScrollContent}
-              >
-                <View style={styles.chipRow}>
-                  {characters.map((c) => (
-                    <Pressable
-                      key={c.id}
-                      disabled={isRolling}
-                      style={[styles.chip, effectiveCharacterId === c.id && styles.chipActive]}
-                      onPress={() => selectCharacter(c.id)}
-                    >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          effectiveCharacterId === c.id && styles.chipTextActive,
-                        ]}
+      <KeyboardAwareScrollView
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}
+        bottomOffset={24}
+      >
+        <View style={{ flexGrow: 1 }}>
+          <ThemeBackdropArt />
+          {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
+            <View style={styles.section}>
+              <SectionHeading title="Character" textStyle={styles.sectionTitle} centered />
+              {characters.length === 0 ? (
+                <Text style={[styles.hint, styles.centerText]}>Create a character first to use {mode} rolls.</Text>
+              ) : showCharacterSwitcher ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipScrollContent}
+                >
+                  <View style={styles.chipRow}>
+                    {characters.map((c) => (
+                      <Pressable
+                        key={c.id}
+                        disabled={isRolling}
+                        style={[styles.chip, effectiveCharacterId === c.id && styles.chipActive]}
+                        onPress={() => selectCharacter(c.id)}
                       >
-                        {c.name}
+                        <Text style={[styles.chipText, effectiveCharacterId === c.id && styles.chipTextActive]}>
+                          {c.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              ) : (
+                <Text style={[styles.hint, styles.centerText]}>
+                  Rolling as {selectedCharacter?.name ?? "your character"}. Turn on DM mode in Settings to roll for
+                  other characters.
+                </Text>
+              )}
+            </View>
+          )}
+
+          {mode === "freeform" && (
+            <View style={styles.section}>
+              <View style={[styles.quickRow, styles.quickRowCentered]}>
+                {DIE_TYPES.map((die) => (
+                  <Pressable
+                    key={die}
+                    disabled={isRolling}
+                    style={styles.quickDie}
+                    onPress={() => {
+                      setExpression(`1${die}`);
+                      rollFreeform(`1${die}`);
+                    }}
+                  >
+                    <DieFaceImage face={representativeDieFace(die)} imageStyle={styles.quickDieImage} />
+                    <Text style={styles.quickDieLabel}>{die}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {mode === "check" && (
+            <View style={styles.section}>
+              <View style={styles.advantageRow}>
+                {(["skill", "ability"] as const).map((option) => (
+                  <Pressable
+                    key={option}
+                    disabled={isRolling}
+                    style={[styles.advantageButton, checkBy === option && styles.advantageButtonActive]}
+                    onPress={() => {
+                      setCheckBy(option);
+                      setAbility(null);
+                      setSkillId(null);
+                    }}
+                  >
+                    <Text style={[styles.advantageText, checkBy === option && styles.advantageTextActive]}>
+                      {option === "skill" ? "By skill" : "By ability"}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {mode === "attack" && (
+            <View style={styles.section}>
+              <View style={styles.advantageRow}>
+                {(["weapon", "spell", "initiative"] as const).map((option) => (
+                  <Pressable
+                    key={option}
+                    disabled={isRolling}
+                    style={[styles.advantageButton, attackType === option && styles.advantageButtonActive]}
+                    onPress={() => {
+                      setAttackType(option);
+                      setAbility(null);
+                      setLastRoll(null);
+                      setLastRollFace(undefined);
+                      setAttackCritFlag(null);
+                      setNaturalFlag(null);
+                      setError(null);
+                    }}
+                  >
+                    <Text style={[styles.advantageText, attackType === option && styles.advantageTextActive]}>
+                      {option === "weapon" ? "Weapon" : option === "spell" ? "Spell" : "Initiative"}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {mode === "check" && checkBy === "skill" && (
+            <View style={styles.section}>
+              <SectionHeading title="Skill" textStyle={styles.sectionTitle} centered />
+              <View style={[styles.quickRow, styles.quickRowCentered]}>
+                {skillCatalog.map((skill) => {
+                  const active = skillId === skill.id;
+                  const prof = selectedCharacter
+                    ? isSkillProficient(selectedCharacter, skill.id, selectedCharacterFeats)
+                    : false;
+                  return (
+                    <Pressable
+                      key={skill.id}
+                      disabled={isRolling}
+                      style={[styles.skillChip, active && styles.skillChipActive]}
+                      onPress={() => setSkillId(skill.id)}
+                    >
+                      <Text style={[styles.skillChipText, active && styles.skillChipTextActive]}>
+                        {skill.name}
+                        {prof ? " ✓" : ""}
                       </Text>
                     </Pressable>
-                  ))}
-                </View>
-              </ScrollView>
-            ) : (
-              <Text style={[styles.hint, styles.centerText]}>
-                Rolling as {selectedCharacter?.name ?? "your character"}. Turn on DM mode in
-                Settings to roll for other characters.
-              </Text>
-            )}
-          </View>
-        )}
-
-        {mode === "freeform" && (
-          <View style={styles.section}>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.input}
-                value={expression}
-                onChangeText={setExpression}
-                placeholder="e.g. 2d6+3"
-                placeholderTextColor={theme.colors.textMuted}
-                autoCapitalize="none"
-                onSubmitEditing={() => rollFreeform(expression)}
-              />
-            </View>
-            {developerMode && (
-              <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 6 }}>
-                2d20kh1 advantage · 2d20kl1 disadvantage · 4d6dl1 drop lowest · 1d6r&lt;=2 reroll 1s and 2s
-              </Text>
-            )}
-            <View style={styles.quickRow}>
-              {DIE_TYPES.map((die) => (
-                <Pressable
-                  key={die}
-                  disabled={isRolling}
-                  style={styles.quickDie}
-                  onPress={() => {
-                    setExpression(`1${die}`);
-                    rollFreeform(`1${die}`);
-                  }}
-                >
-                  <DieFaceImage
-                    face={representativeDieFace(die)}
-                    imageStyle={styles.quickDieImage}
-                  />
-                  <Text style={styles.quickDieLabel}>{die}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {mode === "check" && (
-          <View style={styles.section}>
-            <View style={styles.advantageRow}>
-              {(["skill", "ability"] as const).map((option) => (
-                <Pressable
-                  key={option}
-                  disabled={isRolling}
-                  style={[styles.advantageButton, checkBy === option && styles.advantageButtonActive]}
-                  onPress={() => {
-                    setCheckBy(option);
-                    setAbility(null);
-                    setSkillId(null);
-                  }}
-                >
-                  <Text
-                    style={[styles.advantageText, checkBy === option && styles.advantageTextActive]}
-                  >
-                    {option === "skill" ? "By skill" : "By ability"}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {mode === "attack" && (
-          <View style={styles.section}>
-            <View style={styles.advantageRow}>
-              {(["weapon", "spell", "initiative"] as const).map((option) => (
-                <Pressable
-                  key={option}
-                  disabled={isRolling}
-                  style={[
-                    styles.advantageButton,
-                    attackType === option && styles.advantageButtonActive,
-                  ]}
-                  onPress={() => {
-                    setAttackType(option);
-                    setAbility(null);
-                    setLastRoll(null);
-                    setLastRollFace(undefined);
-                    setAttackCritFlag(null);
-                    setNaturalFlag(null);
-                    setError(null);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.advantageText,
-                      attackType === option && styles.advantageTextActive,
-                    ]}
-                  >
-                    {option === "weapon" ? "Weapon" : option === "spell" ? "Spell" : "Initiative"}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {mode === "check" && checkBy === "skill" && (
-          <View style={styles.section}>
-            <SectionHeading title="Skill" textStyle={styles.sectionTitle} />
-            <View style={styles.quickRow}>
-              {skillCatalog.map((skill) => {
-                const active = skillId === skill.id;
-                const prof = selectedCharacter
-                  ? isSkillProficient(selectedCharacter, skill.id, selectedCharacterFeats)
-                  : false;
-                return (
-                  <Pressable
-                    key={skill.id}
-                    disabled={isRolling}
-                    style={[styles.skillChip, active && styles.skillChipActive]}
-                    onPress={() => setSkillId(skill.id)}
-                  >
-                    <Text style={[styles.skillChipText, active && styles.skillChipTextActive]}>
-                      {skill.name}
-                      {prof ? " ✓" : ""}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
-        {((mode === "check" && checkBy === "ability") ||
-          mode === "save" ||
-          (mode === "attack" && attackType === "weapon")) && (
-          <View style={styles.section}>
-            <SectionHeading title="Ability" textStyle={styles.sectionTitle} />
-            <View style={styles.quickRow}>
-              {abilityChoices.map((key) => {
-                const active = ability === key;
-                return (
-                  <Pressable
-                    key={key}
-                    disabled={isRolling}
-                    style={[styles.dieFace, active && styles.dieFaceActive]}
-                    onPress={() => setAbility(key)}
-                  >
-                    <Text style={[styles.dieFaceText, active && styles.dieFaceTextActive]}>
-                      {ABILITY_LABELS[key]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
-        {mode === "attack" && attackType === "spell" && (
-          <View style={styles.section}>
-            {selectedCharacter ? (
-              caster !== undefined ? (
-                <Text style={styles.hint}>
-                  {selectedCharacter.className} spell save DC {caster}. Rolling uses the
-                  spellcasting ability automatically.
-                </Text>
-              ) : (
-                <Text style={styles.hint}>
-                  {selectedCharacter.className || "This class"} has no spellcasting ability.
-                </Text>
-              )
-            ) : null}
-          </View>
-        )}
-
-        {mode === "attack" && attackType === "initiative" && (
-          <View style={styles.section}>
-            <Text style={styles.hint}>Rolling uses DEX automatically.</Text>
-          </View>
-        )}
-
-        {mode === "attack" && attackType === "initiative" && initiativeRolls.length > 0 && (
-          <View style={styles.section}>
-            <SectionHeading title="Initiative Order" textStyle={styles.sectionTitle} />
-            {initiativeRolls.map((entry) => (
-              <View key={entry.id} style={styles.initiativeRow}>
-                <PixelFrameOverlay scale={0.75} />
-                <Text style={styles.initiativeValue}>{entry.value}</Text>
-                <Text style={styles.initiativeLabel} numberOfLines={1}>
-                  {entry.label}
-                </Text>
-                <Pressable
-                  style={styles.initiativeRemoveButton}
-                  onPress={() => removeInitiativeRoll(entry.id)}
-                >
-                  <Text style={styles.initiativeRemoveButtonText}>✕</Text>
-                </Pressable>
+                  );
+                })}
               </View>
-            ))}
-          </View>
-        )}
-
-        {mode !== "freeform" && (
-          <View style={styles.section}>
-            <View style={styles.optionsRow}>
-              {((mode === "check" && checkBy === "ability") ||
-                (mode === "attack" && attackType === "weapon")) && (
-                <Pressable
-                  style={styles.proficientToggle}
-                  onPress={() => setProficient((v) => !v)}
-                  disabled={isRolling}
-                >
-                  <View style={[styles.checkbox, proficient && styles.checkboxChecked]} />
-                  <Text style={styles.proficientLabel}>Proficient</Text>
-                </Pressable>
-              )}
-              <TextInput
-                style={styles.extraInput}
-                value={extraModifierText}
-                onChangeText={setExtraModifierText}
-                placeholder="+0"
-                placeholderTextColor={theme.colors.textMuted}
-                keyboardType="numbers-and-punctuation"
-              />
             </View>
-            <View style={styles.advantageRow}>
-              {(["disadvantage", "normal", "advantage"] as AdvantageMode[]).map((option) => (
-                <Pressable
-                  key={option}
-                  disabled={isRolling}
-                  style={[
-                    styles.advantageButton,
-                    advantageMode === option && styles.advantageButtonActive,
-                  ]}
-                  onPress={() => setAdvantageMode(option)}
-                >
-                  <Text
-                    style={[
-                      styles.advantageText,
-                      advantageMode === option && styles.advantageTextActive,
-                    ]}
-                  >
-                    {option}
+          )}
+
+          {((mode === "check" && checkBy === "ability") ||
+            mode === "save" ||
+            (mode === "attack" && attackType === "weapon")) && (
+            <View style={styles.section}>
+              <SectionHeading title="Ability" textStyle={styles.sectionTitle} centered />
+              <View style={[styles.quickRow, styles.quickRowCentered]}>
+                {abilityChoices.map((key) => {
+                  const active = ability === key;
+                  return (
+                    <Pressable
+                      key={key}
+                      disabled={isRolling}
+                      style={[styles.dieFace, active && styles.dieFaceActive]}
+                      onPress={() => setAbility(key)}
+                    >
+                      <Text style={[styles.dieFaceText, active && styles.dieFaceTextActive]}>
+                        {ABILITY_LABELS[key]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {mode === "attack" && attackType === "spell" && (
+            <View style={styles.section}>
+              {selectedCharacter ? (
+                caster !== undefined ? (
+                  <Text style={styles.hint}>
+                    {selectedCharacter.className} spell save DC {caster}. Rolling uses the spellcasting ability
+                    automatically.
                   </Text>
-                </Pressable>
+                ) : (
+                  <Text style={styles.hint}>
+                    {selectedCharacter.className || "This class"} has no spellcasting ability.
+                  </Text>
+                )
+              ) : null}
+            </View>
+          )}
+
+          {mode === "attack" && attackType === "initiative" && (
+            <View style={styles.section}>
+              <Text style={styles.hint}>Rolling uses DEX automatically.</Text>
+            </View>
+          )}
+
+          {mode === "attack" && attackType === "initiative" && initiativeRolls.length > 0 && (
+            <View style={styles.section}>
+              <SectionHeading title="Initiative Order" textStyle={styles.sectionTitle} />
+              {initiativeRolls.map((entry) => (
+                <View key={entry.id} style={styles.initiativeRow}>
+                  <PixelFrameOverlay scale={0.75} />
+                  <Text style={styles.initiativeValue}>{entry.value}</Text>
+                  <Text style={styles.initiativeLabel} numberOfLines={1}>
+                    {entry.label}
+                  </Text>
+                  <Pressable style={styles.initiativeRemoveButton} onPress={() => removeInitiativeRoll(entry.id)}>
+                    <Text style={styles.initiativeRemoveButtonText}>✕</Text>
+                  </Pressable>
+                </View>
               ))}
             </View>
-          </View>
-        )}
-
-        {rollPreview && !("error" in rollPreview) && (
-          <Text style={styles.previewText}>
-            {rollPreview.label}: {rollPreview.modifierBreakdown || "+0"} ={" "}
-            {rollPreview.modifier >= 0 ? "+" : ""}
-            {rollPreview.modifier}
-          </Text>
-        )}
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
-        <View style={styles.rollStageWrap}>
-          <Animated.View
-            style={[
-              styles.rollStage,
-              { transform: [{ rotate: spinDeg }, { scale: punch }] },
-            ]}
-          >
-            {displayFace ? (
-              <DieFaceImage
-                face={displayFace}
-                imageStyle={[styles.rollStageImage, isIdleDisplay && styles.rollStageIdleImage]}
-              />
-            ) : (
-              <Text style={isIdleDisplay ? styles.rollStageIdleText : styles.rollStageText}>
-                {displayNumber ?? "?"}
-              </Text>
-            )}
-            <Animated.View
-              pointerEvents="none"
-              style={[styles.critFlashOverlay, { backgroundColor: flashColor ?? "transparent", opacity: flash }]}
-            />
-          </Animated.View>
-
-          {showHolyBurst && (
-            <View pointerEvents="none" style={styles.burstField}>
-              <Animated.View
-                style={[
-                  styles.burstGlow,
-                  {
-                    opacity: holyBurst.interpolate({
-                      inputRange: [0, 0.2, 1],
-                      outputRange: [0, 0.6, 0],
-                    }),
-                    transform: [
-                      {
-                        scale: holyBurst.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.4, 2.6],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              />
-              {BURST_ANGLES.map((angle, i) => {
-                const distance = 85 + (i % 3) * 28;
-                return (
-                  <Animated.Text
-                    key={i}
-                    style={[
-                      styles.burstSparkle,
-                      {
-                        opacity: holyBurst.interpolate({
-                          inputRange: [0, 0.15, 0.7, 1],
-                          outputRange: [0, 1, 1, 0],
-                        }),
-                        transform: [
-                          {
-                            translateX: holyBurst.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, Math.cos(angle) * distance],
-                            }),
-                          },
-                          {
-                            translateY: holyBurst.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, Math.sin(angle) * distance],
-                            }),
-                          },
-                          {
-                            scale: holyBurst.interpolate({
-                              inputRange: [0, 0.2, 1],
-                              outputRange: [0.3, 1.3, 0.5],
-                            }),
-                          },
-                          {
-                            rotate: holyBurst.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: i % 2 ? ["0deg", "180deg"] : ["0deg", "-180deg"],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    {i % 3 === 0 ? "✦" : "✨"}
-                  </Animated.Text>
-                );
-              })}
-            </View>
           )}
 
-          {showDoomBurst && (
-            <View pointerEvents="none" style={styles.burstField}>
-              <Animated.View
-                style={[
-                  styles.doomGlow,
-                  {
-                    opacity: doomBurst.interpolate({
-                      inputRange: [0, 0.2, 1],
-                      outputRange: [0, 0.6, 0],
-                    }),
-                    transform: [
-                      {
-                        scale: doomBurst.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.4, 2.6],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              />
-              {BURST_ANGLES.map((angle, i) => {
-                const distance = 85 + (i % 3) * 28;
-                return (
-                  <Animated.Text
-                    key={i}
-                    style={[
-                      styles.doomSkull,
-                      {
-                        opacity: doomBurst.interpolate({
-                          inputRange: [0, 0.15, 0.7, 1],
-                          outputRange: [0, 1, 1, 0],
-                        }),
-                        transform: [
-                          {
-                            translateX: doomBurst.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, Math.cos(angle) * distance],
-                            }),
-                          },
-                          {
-                            translateY: doomBurst.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, Math.sin(angle) * distance],
-                            }),
-                          },
-                          {
-                            scale: doomBurst.interpolate({
-                              inputRange: [0, 0.2, 1],
-                              outputRange: [0.3, 1.3, 0.5],
-                            }),
-                          },
-                          {
-                            rotate: doomBurst.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: i % 2 ? ["0deg", "180deg"] : ["0deg", "-180deg"],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
+          {mode !== "freeform" && (
+            <View style={styles.section}>
+              <View style={styles.optionsRow}>
+                {((mode === "check" && checkBy === "ability") || (mode === "attack" && attackType === "weapon")) && (
+                  <Pressable
+                    style={styles.proficientToggle}
+                    onPress={() => setProficient((v) => !v)}
+                    disabled={isRolling}
                   >
-                    {"💀"}
-                  </Animated.Text>
-                );
-              })}
-            </View>
-          )}
-
-          {!isRolling && !lastRoll && (
-            <Text style={styles.hint}>Nothing rolled yet.</Text>
-          )}
-          {!isRolling && lastRoll && (
-            <>
-              <View style={styles.resultBreakdownCard}>
-                {splitBreakdownTerms(lastRoll.breakdown).map((term, index) => (
-                  <Text
-                    key={index}
-                    style={[
-                      styles.resultBreakdownLine,
-                      index === 0 && styles.resultBreakdownLinePrimary,
-                    ]}
+                    <View style={[styles.checkbox, proficient && styles.checkboxChecked]} />
+                    <Text style={styles.proficientLabel}>Proficient</Text>
+                  </Pressable>
+                )}
+                <TextInput
+                  style={styles.extraInput}
+                  value={extraModifierText}
+                  onChangeText={setExtraModifierText}
+                  placeholder="+0"
+                  placeholderTextColor={theme.colors.textMuted}
+                  keyboardType="numbers-and-punctuation"
+                />
+              </View>
+              <View style={styles.advantageRow}>
+                {(["disadvantage", "normal", "advantage"] as AdvantageMode[]).map((option) => (
+                  <Pressable
+                    key={option}
+                    disabled={isRolling}
+                    style={[styles.advantageButton, advantageMode === option && styles.advantageButtonActive]}
+                    onPress={() => setAdvantageMode(option)}
                   >
-                    {term}
-                  </Text>
+                    <Text style={[styles.advantageText, advantageMode === option && styles.advantageTextActive]}>
+                      {option}
+                    </Text>
+                  </Pressable>
                 ))}
-                {naturalFlag && (
-                  <Text
-                    style={naturalFlag === "nat20" ? styles.naturalBadgeHit : styles.naturalBadgeMiss}
-                  >
-                    {naturalFlag === "nat20" ? "Natural 20!" : "Natural 1"}
+              </View>
+            </View>
+          )}
+
+          {rollPreview && !("error" in rollPreview) && (
+            <Text style={styles.previewText}>
+              {rollPreview.label}: {rollPreview.modifierBreakdown || "+0"} = {rollPreview.modifier >= 0 ? "+" : ""}
+              {rollPreview.modifier}
+            </Text>
+          )}
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <View style={styles.rollStageWrap}>
+            <Animated.View style={[styles.rollStage, { transform: [{ rotate: spinDeg }, { scale: punch }] }]}>
+              {displayFace ? (
+                <DieFaceImage
+                  face={displayFace}
+                  imageStyle={[styles.rollStageImage, isIdleDisplay && styles.rollStageIdleImage]}
+                />
+              ) : (
+                <Text style={isIdleDisplay ? styles.rollStageIdleText : styles.rollStageText}>
+                  {displayNumber ?? "?"}
+                </Text>
+              )}
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.critFlashOverlay,
+                  {
+                    backgroundColor: flashColor ?? "transparent",
+                    opacity: flash,
+                  },
+                ]}
+              />
+            </Animated.View>
+
+            {showHolyBurst && (
+              <View pointerEvents="none" style={styles.burstField}>
+                <Animated.View
+                  style={[
+                    styles.burstGlow,
+                    {
+                      opacity: holyBurst.interpolate({
+                        inputRange: [0, 0.2, 1],
+                        outputRange: [0, 0.6, 0],
+                      }),
+                      transform: [
+                        {
+                          scale: holyBurst.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.4, 2.6],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                />
+                {BURST_ANGLES.map((angle, i) => {
+                  const distance = 85 + (i % 3) * 28;
+                  return (
+                    <Animated.Text
+                      key={i}
+                      style={[
+                        styles.burstSparkle,
+                        {
+                          opacity: holyBurst.interpolate({
+                            inputRange: [0, 0.15, 0.7, 1],
+                            outputRange: [0, 1, 1, 0],
+                          }),
+                          transform: [
+                            {
+                              translateX: holyBurst.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, Math.cos(angle) * distance],
+                              }),
+                            },
+                            {
+                              translateY: holyBurst.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, Math.sin(angle) * distance],
+                              }),
+                            },
+                            {
+                              scale: holyBurst.interpolate({
+                                inputRange: [0, 0.2, 1],
+                                outputRange: [0.3, 1.3, 0.5],
+                              }),
+                            },
+                            {
+                              rotate: holyBurst.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: i % 2 ? ["0deg", "180deg"] : ["0deg", "-180deg"],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      {i % 3 === 0 ? "✦" : "✨"}
+                    </Animated.Text>
+                  );
+                })}
+              </View>
+            )}
+
+            {showDoomBurst && (
+              <View pointerEvents="none" style={styles.burstField}>
+                <Animated.View
+                  style={[
+                    styles.doomGlow,
+                    {
+                      opacity: doomBurst.interpolate({
+                        inputRange: [0, 0.2, 1],
+                        outputRange: [0, 0.6, 0],
+                      }),
+                      transform: [
+                        {
+                          scale: doomBurst.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.4, 2.6],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                />
+                {BURST_ANGLES.map((angle, i) => {
+                  const distance = 85 + (i % 3) * 28;
+                  return (
+                    <Animated.Text
+                      key={i}
+                      style={[
+                        styles.doomSkull,
+                        {
+                          opacity: doomBurst.interpolate({
+                            inputRange: [0, 0.15, 0.7, 1],
+                            outputRange: [0, 1, 1, 0],
+                          }),
+                          transform: [
+                            {
+                              translateX: doomBurst.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, Math.cos(angle) * distance],
+                              }),
+                            },
+                            {
+                              translateY: doomBurst.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, Math.sin(angle) * distance],
+                              }),
+                            },
+                            {
+                              scale: doomBurst.interpolate({
+                                inputRange: [0, 0.2, 1],
+                                outputRange: [0.3, 1.3, 0.5],
+                              }),
+                            },
+                            {
+                              rotate: doomBurst.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: i % 2 ? ["0deg", "180deg"] : ["0deg", "-180deg"],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      {"💀"}
+                    </Animated.Text>
+                  );
+                })}
+              </View>
+            )}
+
+            {!isRolling && !lastRoll && <Text style={styles.hint}>Nothing rolled yet.</Text>}
+            {!isRolling && lastRoll && (
+              <>
+                <View style={styles.resultBreakdownCard}>
+                  {splitBreakdownTerms(lastRoll.breakdown).map((term, index) => (
+                    <Text
+                      key={index}
+                      style={[styles.resultBreakdownLine, index === 0 && styles.resultBreakdownLinePrimary]}
+                    >
+                      {term}
+                    </Text>
+                  ))}
+                  {naturalFlag && (
+                    <Text style={naturalFlag === "nat20" ? styles.naturalBadgeHit : styles.naturalBadgeMiss}>
+                      {naturalFlag === "nat20" ? "Natural 20!" : "Natural 1"}
+                    </Text>
+                  )}
+                </View>
+                {lastRollFace && (
+                  <View style={styles.resultTotalRow}>
+                    <Text style={styles.resultTotalLabel}>Total</Text>
+                    <Text style={styles.resultTotal}>{lastRoll.total}</Text>
+                  </View>
+                )}
+                {attackCritFlag && (
+                  <Text style={attackCritFlag === "nat20" ? styles.critHitText : styles.critMissText}>
+                    {attackCritFlag === "nat20"
+                      ? "Critical Hit! Roll damage dice twice."
+                      : "Critical Miss — automatic miss, no damage."}
                   </Text>
                 )}
-              </View>
-              {lastRollFace && (
-                <View style={styles.resultTotalRow}>
-                  <Text style={styles.resultTotalLabel}>Total</Text>
-                  <Text style={styles.resultTotal}>{lastRoll.total}</Text>
-                </View>
-              )}
-              {attackCritFlag && (
-                <Text
-                  style={
-                    attackCritFlag === "nat20" ? styles.critHitText : styles.critMissText
-                  }
-                >
-                  {attackCritFlag === "nat20"
-                    ? "Critical Hit! Roll damage dice twice."
-                    : "Critical Miss — automatic miss, no damage."}
-                </Text>
-              )}
-            </>
-          )}
+              </>
+            )}
 
-          <Button
-            variant="primary"
-            title={isRolling ? "Rolling…" : "Roll"}
-            textStyle={styles.rollButtonText}
-            contentStyle={styles.rollButtonContent}
-            disabled={isRolling}
-            style={styles.rollButtonWrap}
-            onPress={() => (mode === "freeform" ? rollFreeform(expression) : rollStructured())}
-          />
-
-          {!isRolling && mode === "attack" && attackType !== "initiative" && lastRoll && (
             <Button
-              variant="secondary"
-              title="Roll Damage"
-              textStyle={styles.damageRollButtonText}
-              contentStyle={styles.damageRollButtonContent}
-              style={styles.damageRollButtonWrap}
-              onPress={handleRollDamage}
+              variant="primary"
+              title={isRolling ? "Rolling…" : "Roll"}
+              textStyle={styles.rollButtonText}
+              contentStyle={styles.rollButtonContent}
+              disabled={isRolling}
+              style={styles.rollButtonWrap}
+              onPress={() => (mode === "freeform" ? rollFreeform(expression) : rollStructured())}
             />
-          )}
-        </View>
 
-        {historyEnabled ? (
-          <>
+            {!isRolling && mode === "attack" && attackType !== "initiative" && lastRoll && (
+              <Button
+                variant="secondary"
+                title="Roll Damage"
+                textStyle={styles.damageRollButtonText}
+                contentStyle={styles.damageRollButtonContent}
+                style={styles.damageRollButtonWrap}
+                onPress={handleRollDamage}
+              />
+            )}
+          </View>
+
+          {historyEnabled ? (
+            <>
+              <View style={styles.historyHeaderRow}>
+                <SectionHeading title="History" textStyle={styles.sectionTitle} centered />
+                {history.length > 0 && (
+                  <Pressable onPress={handleClearHistory}>
+                    <Text style={styles.clearHistoryText}>Clear</Text>
+                  </Pressable>
+                )}
+              </View>
+              {history.map((roll) => (
+                <View key={roll.id} style={styles.historyRow}>
+                  <PixelFrameOverlay scale={0.75} />
+                  <View style={styles.historyWho}>
+                    {roll.characterName ? (
+                      <Text style={styles.historyCharacter} numberOfLines={1}>
+                        {roll.characterName}
+                      </Text>
+                    ) : null}
+                    <Text style={styles.historyExpression} numberOfLines={1}>
+                      {roll.expression}
+                    </Text>
+                  </View>
+                  <Text style={styles.historyBreakdown} numberOfLines={1}>
+                    {roll.breakdown}
+                  </Text>
+                  <Text style={styles.historyTotal}>{roll.result}</Text>
+                </View>
+              ))}
+            </>
+          ) : (
             <View style={styles.historyHeaderRow}>
               <SectionHeading title="History" textStyle={styles.sectionTitle} centered />
-              {history.length > 0 && (
-                <Pressable onPress={handleClearHistory}>
-                  <Text style={styles.clearHistoryText}>Clear</Text>
-                </Pressable>
-              )}
+              <Text style={[styles.hint, styles.centerText]}>Off — turn on in Settings.</Text>
             </View>
-            {history.map((roll) => (
-              <View key={roll.id} style={styles.historyRow}>
-                <PixelFrameOverlay scale={0.75} />
-                <Text style={styles.historyExpression} numberOfLines={1}>
-                  {roll.expression}
-                </Text>
-                <Text style={styles.historyBreakdown} numberOfLines={1}>
-                  {roll.breakdown}
-                </Text>
-                <Text style={styles.historyTotal}>{roll.result}</Text>
-              </View>
-            ))}
-          </>
-        ) : (
-          <View style={styles.historyHeaderRow}>
-            <SectionHeading title="History" textStyle={styles.sectionTitle} centered />
-            <Text style={[styles.hint, styles.centerText]}>Off — turn on in Settings.</Text>
-          </View>
-        )}
+          )}
 
-        <Text style={styles.realDiceNote}>Rolling real dice at the table is always better.</Text>
+          <Text style={styles.realDiceNote}>Rolling real dice at the table is always better.</Text>
+        </View>
       </KeyboardAwareScrollView>
 
       <Animated.View
@@ -1114,7 +1088,10 @@ export default function DiceRollerScreen() {
           styles.screenFlashOverlay,
           {
             backgroundColor: screenFlashColor,
-            opacity: screenFlash.interpolate({ inputRange: [0, 1], outputRange: [0, 0.4] }),
+            opacity: screenFlash.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 0.4],
+            }),
           },
         ]}
       />
@@ -1125,7 +1102,7 @@ export default function DiceRollerScreen() {
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.screenBackground },
-    scrollContent: { padding: 16, paddingBottom: 40 },
+    scrollContent: { padding: 16, paddingBottom: 40, flexGrow: 1 },
     titleRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -1181,8 +1158,11 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 14,
       paddingVertical: 8,
     },
-    chipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
-    chipText: { color: theme.colors.text, fontWeight: "600" },
+    chipActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    chipText: { color: theme.colors.text, fontWeight: "600", fontSize: 17 },
     chipTextActive: { color: theme.colors.primaryText },
     inputRow: { flexDirection: "row", gap: 8 },
     input: {
@@ -1196,9 +1176,10 @@ function createStyles(theme: Theme) {
       paddingVertical: 10,
     },
     quickRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    quickRowCentered: { justifyContent: "center" },
     dieFace: {
-      width: 56,
-      height: 56,
+      width: 76,
+      height: 76,
       backgroundColor: theme.colors.surface,
       borderWidth: 2,
       borderColor: theme.colors.border,
@@ -1206,19 +1187,22 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "center",
     },
-    dieFaceActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    dieFaceActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
     dieFaceText: {
       color: theme.colors.text,
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
-      fontSize: 18,
+      fontSize: 24,
     },
     dieFaceTextActive: { color: theme.colors.primaryText },
-    quickDie: { alignItems: "center", width: 60 },
-    quickDieImage: { width: 40, height: 40 },
+    quickDie: { alignItems: "center", width: 88 },
+    quickDieImage: { width: 64, height: 64 },
     quickDieLabel: {
       color: theme.colors.textMuted,
-      fontSize: 14,
+      fontSize: 20,
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
       marginTop: 2,
@@ -1231,12 +1215,15 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 12,
       paddingVertical: 10,
     },
-    skillChipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    skillChipActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
     skillChipText: {
       color: theme.colors.text,
       fontWeight: "600",
       fontFamily: theme.displayFontFamily,
-      fontSize: 15,
+      fontSize: 18,
     },
     skillChipTextActive: { color: theme.colors.primaryText },
     optionsRow: { flexDirection: "row", alignItems: "center", gap: 16 },
@@ -1248,8 +1235,15 @@ function createStyles(theme: Theme) {
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surface,
     },
-    checkboxChecked: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
-    proficientLabel: { color: theme.colors.text, fontWeight: "600", fontSize: 15 },
+    checkboxChecked: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    proficientLabel: {
+      color: theme.colors.text,
+      fontWeight: "600",
+      fontSize: 15,
+    },
     extraInput: {
       width: 70,
       backgroundColor: theme.colors.surface,
@@ -1271,7 +1265,10 @@ function createStyles(theme: Theme) {
       paddingVertical: 8,
       alignItems: "center",
     },
-    advantageButtonActive: { backgroundColor: theme.colors.accent, borderColor: theme.colors.accent },
+    advantageButtonActive: {
+      backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accent,
+    },
     advantageText: {
       color: theme.colors.textMuted,
       fontWeight: "600",
@@ -1308,7 +1305,11 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "center",
     },
-    initiativeRemoveButtonText: { color: "#fff", fontWeight: "700", fontSize: 13 },
+    initiativeRemoveButtonText: {
+      color: "#fff",
+      fontWeight: "700",
+      fontSize: 13,
+    },
     error: { color: theme.colors.danger, marginTop: 12 },
     previewText: {
       color: theme.colors.accent,
@@ -1328,7 +1329,13 @@ function createStyles(theme: Theme) {
       justifyContent: "center",
       overflow: "hidden",
     },
-    critFlashOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+    critFlashOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
     burstField: {
       position: "absolute",
       top: -80,
@@ -1375,8 +1382,16 @@ function createStyles(theme: Theme) {
       right: 0,
       bottom: 0,
     },
-    rollStageText: { color: theme.colors.text, fontSize: 44, fontWeight: "800" },
-    rollStageIdleText: { color: theme.colors.textMuted, fontSize: 44, fontWeight: "800" },
+    rollStageText: {
+      color: theme.colors.text,
+      fontSize: 44,
+      fontWeight: "800",
+    },
+    rollStageIdleText: {
+      color: theme.colors.textMuted,
+      fontSize: 44,
+      fontWeight: "800",
+    },
     rollStageImage: { width: 90, height: 90 },
     rollStageIdleImage: { opacity: 0.35 },
     resultBreakdownCard: {
@@ -1480,9 +1495,28 @@ function createStyles(theme: Theme) {
       marginBottom: 6,
       gap: 8,
     },
-    historyExpression: { color: theme.colors.text, width: 90, fontWeight: "600", textAlign: "center" },
-    historyBreakdown: { color: theme.colors.textMuted, flex: 1, fontSize: 12, textAlign: "center" },
-    historyTotal: { color: theme.colors.text, fontWeight: "700", textAlign: "center" },
+    historyWho: { width: 100, alignItems: "center" },
+    historyCharacter: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      textAlign: "center",
+    },
+    historyExpression: {
+      color: theme.colors.text,
+      fontWeight: "600",
+      textAlign: "center",
+    },
+    historyBreakdown: {
+      color: theme.colors.textMuted,
+      flex: 1,
+      fontSize: 12,
+      textAlign: "center",
+    },
+    historyTotal: {
+      color: theme.colors.text,
+      fontWeight: "700",
+      textAlign: "center",
+    },
     realDiceNote: {
       color: theme.colors.textMuted,
       fontSize: 11,

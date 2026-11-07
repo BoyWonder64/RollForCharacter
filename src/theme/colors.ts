@@ -1,15 +1,19 @@
 import type { ImageSourcePropType } from "react-native";
+import { GEAR_SPRITES, type GearSprite } from "./gearAssets";
 import {
   CRIMSON_PIXEL_KIT,
+  DARKMAGIC_PIXEL_KIT,
   FOREST_PIXEL_KIT,
   GALAXY_PIXEL_KIT,
   JOURNAL_PIXEL_KIT,
-  MANUSCRIPT_PIXEL_KIT,
   SCIFI_PIXEL_KIT,
   SHADOW_PIXEL_KIT,
   STEAMPUNK_PIXEL_KIT,
   TORCHLIGHT_PIXEL_KIT,
+  WATER_PIXEL_KIT,
   WESTERN_PIXEL_KIT,
+  buildCustomKit,
+  type CustomThemeConfig,
   type PixelKit,
 } from "./pixelKits";
 
@@ -30,15 +34,20 @@ export type ThemeMode = "light" | "dark";
 
 export type ThemeFamilyId =
   | "classic"
-  | "parchment"
   | "grimdark"
   | "journal"
   | "steampunk"
   | "scifi"
   | "crimson"
   | "shadow"
+  | "darkmagic"
   | "western"
-  | "galaxy";
+  | "galaxy"
+  | "water"
+  | "custom";
+
+/** Families a Custom theme can borrow its colours/font from. */
+export type BaseThemeFamilyId = Exclude<ThemeFamilyId, "custom">;
 
 export type Theme = {
   family: ThemeFamilyId;
@@ -53,10 +62,28 @@ export type Theme = {
   screenBackground: string;
   /** Pixel-art frames/banners; absent for themes that use flat boxes. */
   pixel?: PixelKit;
+  /** Scenery drawn behind a screen's content (see ThemeBackdropArt). */
+  backgroundArt?: BackgroundArt;
 };
+
+/**
+ * Art that sits behind the stat page's information.
+ * - "bottom": one image pinned to the bottom edge, scaled to the screen width.
+ * - "gears": several chains of meshed, turning gears dropped down the page (see
+ *   ThemeBackdropArt); the layout is re-rolled each time the page opens.
+ */
+export type BackgroundArt =
+  | { kind: "bottom"; source: ImageSourcePropType; aspectRatio: number }
+  | { kind: "gears"; sprites: GearSprite[]; chains: number; minPerChain: number; maxPerChain: number }
+  | {
+      kind: "castle";
+      wall: ImageSourcePropType;
+      wallSize: { width: number; height: number };
+    };
 
 type ThemeFamilyDefinition = {
   label: string;
+  backgroundArt?: BackgroundArt;
   pixel?: PixelKit;
   light: ThemeColors;
   dark: ThemeColors;
@@ -100,40 +127,15 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
     },
   },
 
-  // Illuminated manuscript: warm parchment page, ink-brown text, deep green accent.
-  parchment: {
-    label: "Manuscript",
-    pixel: MANUSCRIPT_PIXEL_KIT,
-    displayFontFamily: "CormorantGaramond_700Bold",
-    light: {
-      background: "#F3EEE2",
-      surface: "#EAE2D0",
-      surfaceAlt: "#DFD4BB",
-      border: "#C9BB97",
-      text: "#2A2420",
-      textMuted: "#6B5D45",
-      primary: "#3F6B3C",
-      primaryText: "#F3EEE2",
-      accent: "#3F6B3C",
-      danger: "#7A2E2E",
-    },
-    dark: {
-      background: "#241F18",
-      surface: "#2E2719",
-      surfaceAlt: "#3A3122",
-      border: "#4A4030",
-      text: "#EDE3C8",
-      textMuted: "#B8AA87",
-      primary: "#5C8A55",
-      primaryText: "#1A1510",
-      accent: "#5C8A55",
-      danger: "#B85C5C",
-    },
-  },
-
   // Dungeon & torchlight: stone and ember, heavy carved-serif headers.
   grimdark: {
     label: "Torchlight",
+    // Fort of Illusion (CraftPix "Background Castle"): tiled wall.
+    backgroundArt: {
+      kind: "castle",
+      wall: require("../../assets/ui/backgrounds/castle-wall.png"),
+      wallSize: { width: 32, height: 60 },
+    },
     pixel: TORCHLIGHT_PIXEL_KIT,
     displayFontFamily: "Cinzel_700Bold",
     light: {
@@ -196,6 +198,8 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Steampunk: brass, copper, oiled leather, Victorian typewriter headers.
   steampunk: {
     label: "Steampunk",
+    // Two or three bronze/silver gears at random spots behind the stat page.
+    backgroundArt: { kind: "gears", sprites: GEAR_SPRITES, chains: 6, minPerChain: 2, maxPerChain: 3 },
     pixel: STEAMPUNK_PIXEL_KIT,
     displayFontFamily: "SpecialElite_400Regular",
     light: {
@@ -258,6 +262,12 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   // Crimson: classic red-box D&D — deep crimson, black, and gold trim.
   crimson: {
     label: "Crimson",
+    // Fort of Illusion (CraftPix "Background Castle"): tiled wall.
+    backgroundArt: {
+      kind: "castle",
+      wall: require("../../assets/ui/backgrounds/castle-wall.png"),
+      wallSize: { width: 32, height: 60 },
+    },
     pixel: CRIMSON_PIXEL_KIT,
     light: {
       background: "#E8D9BE",
@@ -285,7 +295,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
     },
   },
 
-  // Shadow: thief's guild — charcoal and steel, with a poison-violet accent.
+  // Shadow: thief's guild — charcoal and steel grey.
   shadow: {
     label: "Shadow",
     pixel: SHADOW_PIXEL_KIT,
@@ -298,7 +308,7 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
       textMuted: "#5C5650",
       primary: "#4A4E58",
       primaryText: "#F0EEE8",
-      accent: "#6B4C7A",
+      accent: "#5A6070",
       danger: "#8B2E2E",
     },
     dark: {
@@ -310,8 +320,38 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
       textMuted: "#8A8792",
       primary: "#5C6270",
       primaryText: "#0D0D10",
-      accent: "#9B6BC0",
+      accent: "#A0A6B8",
       danger: "#C0392B",
+    },
+  },
+
+  // Dark Magic: deep violet and amethyst.
+  darkmagic: {
+    label: "Dark Magic",
+    pixel: DARKMAGIC_PIXEL_KIT,
+    light: {
+      background: "#E4DCEC",
+      surface: "#D6CAE2",
+      surfaceAlt: "#C4B4D6",
+      border: "#8E78AC",
+      text: "#1E1230",
+      textMuted: "#5E4B7A",
+      primary: "#6B3FA0",
+      primaryText: "#F4EEFC",
+      accent: "#8E4FD0",
+      danger: "#8B2E4E",
+    },
+    dark: {
+      background: "#0E0A16",
+      surface: "#181224",
+      surfaceAlt: "#231A34",
+      border: "#3D2D5C",
+      text: "#E6DCF4",
+      textMuted: "#9C8AB8",
+      primary: "#8F5BD6",
+      primaryText: "#0E0A16",
+      accent: "#B07CF0",
+      danger: "#D0506F",
     },
   },
 
@@ -345,39 +385,118 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
     },
   },
 
-  // Galaxy: space-opera bridge console — chrome, holo-blue, and gold insignia.
+  // Galaxy: Star Wars gold — black space with crawl-yellow, parchment gold in light mode.
   galaxy: {
     label: "Galaxy",
     pixel: GALAXY_PIXEL_KIT,
     light: {
-      background: "#E8ECEF",
-      surface: "#D7DEE3",
-      surfaceAlt: "#C4CDD4",
-      border: "#9FAAB2",
-      text: "#10151A",
-      textMuted: "#55626B",
-      primary: "#1B6FD1",
-      primaryText: "#F2F6FA",
-      accent: "#C9A227",
-      danger: "#C0392B",
+      background: "#F4EDC8",
+      surface: "#E8DFA8",
+      surfaceAlt: "#D9CE88",
+      border: "#A38B1A",
+      text: "#1A1500",
+      textMuted: "#6B5C10",
+      primary: "#B58F00",
+      primaryText: "#1A1500",
+      accent: "#8A6D00",
+      danger: "#9A2A1A",
     },
     dark: {
-      background: "#07090D",
-      surface: "#0F141A",
-      surfaceAlt: "#182029",
-      border: "#2A3640",
-      text: "#E4EEF5",
-      textMuted: "#7E90A0",
-      primary: "#3FA9F5",
-      primaryText: "#05080C",
-      accent: "#E8C547",
-      danger: "#FF4136",
+      background: "#050400",
+      surface: "#100E02",
+      surfaceAlt: "#1B1803",
+      border: "#5C4F0A",
+      text: "#F7E463",
+      textMuted: "#A89A3E",
+      primary: "#FFE81F",
+      primaryText: "#0A0800",
+      accent: "#FFD400",
+      danger: "#FF5A3C",
+    },
+  },
+
+  // Water: everything blue — sea-glass light mode, deep-ocean dark mode.
+  water: {
+    label: "Water",
+    pixel: WATER_PIXEL_KIT,
+    light: {
+      background: "#EAF4FB",
+      surface: "#D8EAF7",
+      surfaceAlt: "#C2DDF0",
+      border: "#8DB9DA",
+      text: "#0B2236",
+      textMuted: "#4A6F8C",
+      primary: "#1F6FB2",
+      primaryText: "#FFFFFF",
+      accent: "#0E8FBF",
+      danger: "#2B4F8C",
+    },
+    dark: {
+      background: "#06121F",
+      surface: "#0C1D30",
+      surfaceAlt: "#12304A",
+      border: "#1E4A6E",
+      text: "#DCEEFA",
+      textMuted: "#86A9C4",
+      primary: "#3A8FD6",
+      primaryText: "#04101C",
+      accent: "#4FC3E8",
+      danger: "#6FA8E8",
+    },
+  },
+
+  // Custom: borrows another theme's colours, plus any border and banner colour
+  // the user picks (see CustomThemeConfig). The entry here is only its placeholder
+  // swatch/label; buildTheme swaps in the chosen base and kit.
+  custom: {
+    label: "Custom",
+    light: {
+      background: "#FAF6ED",
+      surface: "#F1EAD9",
+      surfaceAlt: "#E8DEC7",
+      border: "#D8CBA8",
+      text: "#2E2A20",
+      textMuted: "#75694F",
+      primary: "#35506B",
+      primaryText: "#FAF6ED",
+      accent: "#35506B",
+      danger: "#8C3B2E",
+    },
+    dark: {
+      background: "#201B14",
+      surface: "#2A2318",
+      surfaceAlt: "#352C1D",
+      border: "#473B27",
+      text: "#EFE6D2",
+      textMuted: "#AFA383",
+      primary: "#5C85A8",
+      primaryText: "#15110B",
+      accent: "#5C85A8",
+      danger: "#C97A63",
     },
   },
 };
 
-export function buildTheme(family: ThemeFamilyId, mode: ThemeMode): Theme {
-  const definition = THEME_FAMILIES[family] ?? THEME_FAMILIES.classic;
+export const DEFAULT_CUSTOM_THEME: CustomThemeConfig = { base: "journal", frame: 14, banner: 8 };
+
+/** Theme ids saved by older versions that no longer exist -> what they become. */
+const LEGACY_FAMILY_ALIASES: Record<string, ThemeFamilyId> = { parchment: "classic" };
+
+export function normalizeFamilyId(id: string | null | undefined): ThemeFamilyId | null {
+  if (!id) return null;
+  if (id in THEME_FAMILIES) return id as ThemeFamilyId;
+  return LEGACY_FAMILY_ALIASES[id] ?? null;
+}
+
+export function buildTheme(
+  family: ThemeFamilyId,
+  mode: ThemeMode,
+  custom: CustomThemeConfig = DEFAULT_CUSTOM_THEME
+): Theme {
+  const isCustom = family === "custom";
+  const baseId = isCustom ? normalizeFamilyId(custom.base) ?? "journal" : family;
+  const definition =
+    THEME_FAMILIES[baseId === "custom" ? "journal" : baseId] ?? THEME_FAMILIES.classic;
   const colors = mode === "dark" ? definition.dark : definition.light;
   const backdrop = definition.backdrop?.[mode];
   return {
@@ -387,7 +506,9 @@ export function buildTheme(family: ThemeFamilyId, mode: ThemeMode): Theme {
     radius: RADIUS,
     displayFontFamily: definition.displayFontFamily,
     backdrop,
-    pixel: definition.pixel,
+    pixel: isCustom ? buildCustomKit(custom.frame, custom.banner) : definition.pixel,
+    // Custom borrows its base theme's background too.
+    backgroundArt: definition.backgroundArt,
     screenBackground: backdrop ? "transparent" : colors.background,
   };
 }

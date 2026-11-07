@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { ThemeBackdropArt } from "../../../../components/ThemeBackdropArt";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "../../../../components/AppText";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -38,7 +39,7 @@ import {
 } from "../../../../features/dice/structuredRolls";
 import { saveRoll } from "../../../../features/dice/diceRepo";
 import { useSoundEffects } from "../../../../features/sound/useSoundEffects";
-import { useTheme } from "../../../../theme/ThemeContext";
+import { useTheme, useThemeContext } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
 import type { Theme } from "../../../../theme/colors";
 
@@ -58,10 +59,15 @@ export default function CharacterSheetScreen() {
     getCharacter(characterId).then((result) => setCharacter(result ?? null));
   }, [characterId]);
 
+  const { setActiveCharacter } = useThemeContext();
+
+  // Opening a character makes it the active one: the whole app (tabs, settings,
+  // dice roller) then wears this character's theme until another is chosen.
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh])
+      setActiveCharacter(characterId);
+    }, [refresh, setActiveCharacter, characterId])
   );
 
   if (!character) {
@@ -391,15 +397,18 @@ function CharacterSheetBody({
 
       <KeyboardAwareScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
         style={styles.tabContent}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ padding: 16, flexGrow: 1 }}
         bottomOffset={24}
       >
+        <View style={{ flexGrow: 1 }}>
+          <ThemeBackdropArt />
         {activeTab === "stats" && <StatsTab character={character} onChanged={refresh} />}
         {activeTab === "spells" && (
           <SpellsTab character={character} onCharacterChanged={refresh} />
         )}
         {activeTab === "equipment" && <EquipmentTab character={character} onChanged={refresh} />}
         {activeTab === "notes" && <NotesTab character={character} />}
+        </View>
       </KeyboardAwareScrollView>
     </View>
   );

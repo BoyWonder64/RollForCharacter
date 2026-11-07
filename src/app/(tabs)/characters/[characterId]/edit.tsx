@@ -57,14 +57,16 @@ import { DoneAccessory } from "../../../../components/DoneAccessory";
 const FAMILY_ORDER: ThemeFamilyId[] = [
   "crimson",
   "classic",
-  "parchment",
   "grimdark",
   "journal",
   "steampunk",
   "scifi",
   "shadow",
+  "darkmagic",
   "western",
   "galaxy",
+  "water",
+  "custom",
 ];
 
 const ABILITY_FIELDS: { key: AbilityScoreKey; label: string }[] = [

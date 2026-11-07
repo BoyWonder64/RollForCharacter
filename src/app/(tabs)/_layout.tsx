@@ -35,6 +35,11 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         sceneStyle: { backgroundColor: "transparent" },
+        // Mount every tab up front so the first visit never stalls on a cold
+        // render, and switch with no animation. (No freezeOnBlur: thawing a
+        // big screen re-renders all of it inside the tap.)
+        lazy: false,
+        animation: "none",
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {

@@ -644,6 +644,7 @@ export function StatsTab({
           <Text style={styles.notes}>{character.notes}</Text>
         </>
       ) : null}
+
     </View>
   );
 }
@@ -744,7 +745,17 @@ function createStyles(theme: Theme) {
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     // One frame around the whole armor + weapons list on pixel themes.
-    gearBox: theme.pixel ? { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10 } : {},
+    gearBox: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius,
+      ...(theme.pixel
+        ? { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10 }
+        : {
+            padding: 12,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }),
+    },
     sectionBanner: { marginTop: 14, marginBottom: 8 },
     currencyBanner: { marginBottom: 8 },
     sectionTitleInline: { marginTop: 0, marginBottom: 0 },

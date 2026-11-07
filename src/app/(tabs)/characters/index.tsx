@@ -40,7 +40,9 @@ export default function CharacterListScreen() {
   // screen boundary -- the ad banner below lives only here.
   useFocusEffect(
     useCallback(() => {
-      refresh();
+      // Defer past the tab-switch paint so the tap feels instant.
+      const t = setTimeout(refresh, 0);
+      return () => clearTimeout(t);
     }, [refresh])
   );
 

@@ -137,7 +137,10 @@ export function NotesTab({ character }: { character: Character }) {
       </View>
 
       {notes.length === 0 ? (
-        <Text style={styles.empty}>No campaign notes yet.</Text>
+        <View style={styles.emptyBox}>
+          <PixelFrameOverlay />
+          <Text style={styles.empty}>No campaign notes yet.</Text>
+        </View>
       ) : (
         notes.map((note) => (
           <View key={note.id} style={styles.noteCard}>
@@ -188,7 +191,10 @@ export function NotesTab({ character }: { character: Character }) {
       </View>
 
       {items.length === 0 ? (
-        <Text style={styles.empty}>No special items yet.</Text>
+        <View style={styles.emptyBox}>
+          <PixelFrameOverlay />
+          <Text style={styles.empty}>No special items yet.</Text>
+        </View>
       ) : (
         items.map((item) => {
           const icon = iconsEnabled
@@ -251,6 +257,14 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily },
+    emptyBox: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: 12,
+      marginBottom: 8,
+    },
     noteCard: {
       backgroundColor: theme.colors.surface,
       borderWidth: theme.pixel ? 0 : 1,
