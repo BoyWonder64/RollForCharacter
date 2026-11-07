@@ -48,7 +48,6 @@ import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
-import { useSoundEffects } from "../../features/sound/useSoundEffects";
 
 function inferDieType(expr: string): DieType | null {
   try {
@@ -129,7 +128,6 @@ export default function DiceRollerScreen() {
   const { iconsEnabled, iconStyle } = useIconSettings();
   const { dmMode } = useDmMode();
   const { historyEnabled } = useRollHistorySetting();
-  const playSound = useSoundEffects();
   const styles = useMemo(() => createStyles(theme), [theme]);
   // Arriving from a character's own screen (a "Roll" link there) locks this
   // screen to that character for the visit, regardless of DM mode -- you
@@ -289,7 +287,6 @@ export default function DiceRollerScreen() {
     setIsRolling(true);
     // dice-throw.mp3 runs ~680ms, matching ROLL_ANIMATION_MS (650ms) almost
     // exactly, so the rattle plays out for the same stretch as the spin.
-    playSound("diceThrow");
     spin.setValue(0);
     const cycle = setInterval(() => {
       if (dieType) {
@@ -314,7 +311,6 @@ export default function DiceRollerScreen() {
   function landPunch() {
     // Fires the instant the spin animation resolves, so the "clack" lands
     // exactly on the first frame of the punch/bounce below.
-    playSound("diceLand");
     punch.setValue(1);
     Animated.sequence([
       Animated.timing(punch, {
@@ -352,7 +348,6 @@ export default function DiceRollerScreen() {
   }
 
   function triggerHolyBurst() {
-    playSound("critNat20");
     setScreenFlashColor("#FFF4D6");
     setShowHolyBurst(true);
     holyBurst.setValue(0);
@@ -380,7 +375,6 @@ export default function DiceRollerScreen() {
   }
 
   function triggerDoomBurst() {
-    playSound("critNat1");
     setScreenFlashColor("#4A0000");
     setShowDoomBurst(true);
     doomBurst.setValue(0);
@@ -578,7 +572,6 @@ export default function DiceRollerScreen() {
           <ThemeBackdropArt />
           {(mode !== "freeform" || (showCharacterSwitcher && characters.length > 0)) && (
             <View style={styles.section}>
-              <SectionHeading title="Character" textStyle={styles.sectionTitle} centered />
               {characters.length === 0 ? (
                 <Text style={[styles.hint, styles.centerText]}>Create a character first to use {mode} rolls.</Text>
               ) : showCharacterSwitcher ? (
@@ -602,12 +595,7 @@ export default function DiceRollerScreen() {
                     ))}
                   </View>
                 </ScrollView>
-              ) : (
-                <Text style={[styles.hint, styles.centerText]}>
-                  Rolling as {selectedCharacter?.name ?? "your character"}. Turn on DM mode in Settings to roll for
-                  other characters.
-                </Text>
-              )}
+              ) : null}
             </View>
           )}
 
@@ -985,6 +973,17 @@ export default function DiceRollerScreen() {
               </View>
             )}
 
+            <Button
+              variant="primary"
+              title={isRolling ? "Rolling…" : "Roll"}
+              textStyle={styles.rollButtonText}
+              contentStyle={styles.rollButtonContent}
+              disabled={isRolling}
+              style={styles.rollButtonWrap}
+              onPress={() => (mode === "freeform" ? rollFreeform(expression) : rollStructured())}
+            />
+
+            <View style={styles.resultArea}>
             {!isRolling && !lastRoll && <Text style={styles.hint}>Nothing rolled yet.</Text>}
             {!isRolling && lastRoll && (
               <>
@@ -1019,16 +1018,6 @@ export default function DiceRollerScreen() {
               </>
             )}
 
-            <Button
-              variant="primary"
-              title={isRolling ? "Rolling…" : "Roll"}
-              textStyle={styles.rollButtonText}
-              contentStyle={styles.rollButtonContent}
-              disabled={isRolling}
-              style={styles.rollButtonWrap}
-              onPress={() => (mode === "freeform" ? rollFreeform(expression) : rollStructured())}
-            />
-
             {!isRolling && mode === "attack" && attackType !== "initiative" && lastRoll && (
               <Button
                 variant="secondary"
@@ -1039,6 +1028,7 @@ export default function DiceRollerScreen() {
                 onPress={handleRollDamage}
               />
             )}
+            </View>
           </View>
 
           {historyEnabled ? (
@@ -1178,8 +1168,8 @@ function createStyles(theme: Theme) {
     quickRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
     quickRowCentered: { justifyContent: "center" },
     dieFace: {
-      width: 76,
-      height: 76,
+      width: 64,
+      height: 64,
       backgroundColor: theme.colors.surface,
       borderWidth: 2,
       borderColor: theme.colors.border,
@@ -1198,8 +1188,8 @@ function createStyles(theme: Theme) {
       fontSize: 24,
     },
     dieFaceTextActive: { color: theme.colors.primaryText },
-    quickDie: { alignItems: "center", width: 88 },
-    quickDieImage: { width: 64, height: 64 },
+    quickDie: { alignItems: "center", width: 68 },
+    quickDieImage: { width: 48, height: 48 },
     quickDieLabel: {
       color: theme.colors.textMuted,
       fontSize: 20,
@@ -1318,10 +1308,13 @@ function createStyles(theme: Theme) {
       marginTop: 12,
       textAlign: "center",
     },
-    rollStageWrap: { alignItems: "center", marginTop: 24, marginBottom: 8 },
+    rollStageWrap: { alignItems: "center", marginTop: 16, marginBottom: 8 },
+    // Fixed-height slot so the result (which varies in size, or is absent)
+    // never shifts the history below it.
+    resultArea: { alignSelf: "stretch", alignItems: "center", minHeight: 230 },
     rollStage: {
-      width: 120,
-      height: 120,
+      width: 96,
+      height: 96,
       borderWidth: 3,
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.surface,
@@ -1392,7 +1385,7 @@ function createStyles(theme: Theme) {
       fontSize: 44,
       fontWeight: "800",
     },
-    rollStageImage: { width: 90, height: 90 },
+    rollStageImage: { width: 70, height: 70 },
     rollStageIdleImage: { opacity: 0.35 },
     resultBreakdownCard: {
       backgroundColor: theme.colors.surfaceAlt,
@@ -1475,7 +1468,7 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "center",
       gap: 4,
-      marginTop: 24,
+      marginTop: 40,
       marginBottom: 8,
     },
     clearHistoryText: {

@@ -19,7 +19,6 @@ import {
 } from "../features/characters/resourceRepo";
 import { spendHitDie, type SpendHitDieOutcome } from "../features/characters/characterRepo";
 import { getClassDefinitionForCharacter } from "../features/characters/characterCalculations";
-import { useSoundEffects } from "../features/sound/useSoundEffects";
 import { CustomResourceModal } from "./CustomResourceModal";
 import { ResourceOverrideModal, type ResourceOverrideChange } from "./ResourceOverrideModal";
 import { useIconSettings } from "../features/icons/IconSettingsContext";
@@ -54,7 +53,6 @@ export function ClassResourceTracker({
 }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const playSound = useSoundEffects();
   const [resources, setResources] = useState<CharacterResource[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<{ id: number; input: CustomResourceInput } | null>(null);
@@ -163,7 +161,6 @@ export function ClassResourceTracker({
       setLastHitDieRoll(outcome);
       // Only for an app-rolled die -- manual entry just records a roll made
       // at the table, so there's nothing here for the app to "land".
-      if (manualRoll === undefined) playSound("diceLand");
     }
     onChanged?.();
   }

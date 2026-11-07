@@ -35,10 +35,48 @@ export function useSoundEffects() {
 
   // Per-sound state: whether the player is already parked at 0 (so play()
   // can fire instantly, in sync with the visual) and the pending rewind timer.
-  const state = useRef<Record<string, { ready: boolean; timer?: ReturnType<typeof setTimeout> }>>({});
+  const state = useRef<Record<string, { ready: boolean; played?: boolean; timer?: ReturnType<typeof setTimeout> }>>({});
   useEffect(() => {
     const timers = state.current;
     return () => Object.values(timers).forEach((t) => t.timer && clearTimeout(t.timer));
+  }, []);
+
+  // Warm-up: a player's very first play() often produces nothing (the native
+  // pipeline is only fully primed by the first play). Do that first play
+  // silently at mount so the user's first real roll is already a "second" play.
+  useEffect(() => {
+    const all = [diceThrow, diceLand, critNat20, critNat1];
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    all.forEach((p) => {
+      let attempts = 0;
+      const tryWarm = () => {
+        if (cancelled) return;
+        if (!p.isLoaded) {
+          if (attempts++ < 80) timers.push(setTimeout(tryWarm, 50));
+          return;
+        }
+        try {
+          if (__DEV__) console.log(`[sfx] warm-up play loaded=${p.isLoaded} dur=${p.duration}`);
+          p.volume = 0;
+          p.play();
+          timers.push(
+            setTimeout(() => {
+              try {
+                p.pause();
+                p.seekTo(0).catch(() => {});
+              } catch {}
+            }, 60)
+          );
+        } catch {}
+      };
+      tryWarm();
+    });
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return useCallback(
@@ -72,20 +110,36 @@ export function useSoundEffects() {
       player.volume = SOUND_VOLUMES[name];
       if (st.timer) clearTimeout(st.timer);
 
-      const start = () => {
+      const start = (attempt = 0) => {
+        // The very first play can land before the native player has finished
+        // loading its file, in which case play() is silently dropped. Wait
+        // (briefly) for it to load instead.
+        if (!player.isLoaded && attempt < 40) {
+          st.timer = setTimeout(() => start(attempt + 1), 25);
+          return;
+        }
+        if (__DEV__) {
+          console.log(
+            `[sfx] play ${name} attempt=${attempt} loaded=${player.isLoaded} playing=${player.playing} vol=${player.volume} muted=${player.muted} dur=${player.duration} t=${player.currentTime}`
+          );
+        }
         player.play();
+        st.played = true;
         // Rewind shortly after the clip ends so the NEXT play is instant.
         const ms = (player.duration > 0 ? player.duration * 1000 : 1000) + 80;
         st.ready = false;
         st.timer = setTimeout(() => rewind(name), ms);
       };
 
-      if (st.ready && !player.playing) {
+      // The very first play of a clip goes through the pause + seekTo(0) path
+      // too: that's the path every later play effectively takes (via rewind),
+      // and it's the one known to produce sound.
+      if (st.ready && st.played && !player.playing) {
         start();
       } else {
         // Still mid-clip (rapid re-roll): restart from 0 once the seek lands.
         player.pause();
-        player.seekTo(0).then(start, start);
+        player.seekTo(0).then(() => start(), () => start());
       }
     },
     [soundEnabled, diceThrow, diceLand, critNat20, critNat1]

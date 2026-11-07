@@ -246,6 +246,8 @@ function createStyles(theme: Theme) {
     },
     actionLink: {
       backgroundColor: theme.mode === "light" ? theme.colors.surfaceAlt : theme.colors.primary,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingHorizontal: 12,
       paddingVertical: 6,

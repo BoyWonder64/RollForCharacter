@@ -27,7 +27,6 @@ import { DM_EDITION_OPTIONS, useDmMode } from "../../features/settings/DmModeCon
 import { useDeveloperMode } from "../../features/settings/DeveloperModeContext";
 import { usePartyMode } from "../../features/settings/PartyModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
-import { useSoundSettings } from "../../features/settings/SoundSettingsContext";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import {
   AUTO_ICON_STYLE_OPTION,
@@ -95,7 +94,6 @@ export default function SettingsScreen() {
   const { developerMode, setDeveloperMode } = useDeveloperMode();
   const { partyMode, setPartyMode } = usePartyMode();
   const { historyEnabled, setHistoryEnabled } = useRollHistorySetting();
-  const { soundEnabled, setSoundEnabled } = useSoundSettings();
   const { iconsEnabled, setIconsEnabled, iconStylePreference, setIconStyle } = useIconSettings();
   const { user } = useAuth();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -306,20 +304,6 @@ export default function SettingsScreen() {
             })}
           </View>
         )}
-
-        <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
-          <PixelFrameOverlay scale={0.75} />
-          <Text style={styles.toggleLabel}>Sound effects</Text>
-          <Switch
-            value={soundEnabled}
-            onValueChange={setSoundEnabled}
-            trackColor={{
-              false: theme.colors.surfaceAlt,
-              true: theme.colors.primary,
-            }}
-            thumbColor={theme.colors.primaryText}
-          />
-        </View>
 
         <SectionHeading title="Device" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
         <View style={styles.toggleRow}>

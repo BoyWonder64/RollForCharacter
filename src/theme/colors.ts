@@ -75,6 +75,7 @@ export type Theme = {
 export type BackgroundArt =
   | { kind: "bottom"; source: ImageSourcePropType; aspectRatio: number }
   | { kind: "gears"; sprites: GearSprite[]; chains: number; minPerChain: number; maxPerChain: number }
+  | { kind: "specks"; count: number }
   | {
       kind: "castle";
       wall: ImageSourcePropType;
@@ -168,16 +169,18 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   journal: {
     label: "Journal",
     pixel: JOURNAL_PIXEL_KIT,
+    // Brown pixel-art ink blots scattered behind the page.
+    backgroundArt: { kind: "specks", count: 12 },
     displayFontFamily: "Caveat_700Bold",
     light: {
-      background: "#FAF6ED",
-      surface: "#F1EAD9",
-      surfaceAlt: "#E8DEC7",
-      border: "#D8CBA8",
+      background: "#EFE4CB",
+      surface: "#E6D9BA",
+      surfaceAlt: "#DACBA5",
+      border: "#C4B28A",
       text: "#2E2A20",
-      textMuted: "#75694F",
+      textMuted: "#6B5F45",
       primary: "#35506B",
-      primaryText: "#FAF6ED",
+      primaryText: "#F6EEDC",
       accent: "#35506B",
       danger: "#8C3B2E",
     },

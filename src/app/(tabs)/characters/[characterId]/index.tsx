@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ThemeBackdropArt } from "../../../../components/ThemeBackdropArt";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "../../../../components/AppText";
@@ -38,7 +38,6 @@ import {
   structuredRollToResult,
 } from "../../../../features/dice/structuredRolls";
 import { saveRoll } from "../../../../features/dice/diceRepo";
-import { useSoundEffects } from "../../../../features/sound/useSoundEffects";
 import { useTheme, useThemeContext } from "../../../../theme/ThemeContext";
 import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext";
 import type { Theme } from "../../../../theme/colors";
@@ -115,8 +114,19 @@ function CharacterSheetBody({
 }) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const playSound = useSoundEffects();
   const [activeTab, setActiveTab] = useState<TabKey>("stats");
+  // Tabs stay mounted once built (hidden with display:none) so switching is a
+  // style flip, not a full unmount/remount + data reload. The others are built
+  // in the background right after the first paint, one per tick.
+  const [mountedTabs, setMountedTabs] = useState<TabKey[]>(["stats"]);
+  useEffect(() => {
+    const timers = (["spells", "equipment", "notes"] as TabKey[]).map((key, i) =>
+      setTimeout(() => setMountedTabs((prev) => (prev.includes(key) ? prev : [...prev, key])), 250 * (i + 1)),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+  const isMounted = (key: TabKey) => activeTab === key || mountedTabs.includes(key);
+  const tabPane = (key: TabKey) => ({ display: activeTab === key ? ("flex" as const) : ("none" as const) });
   const [hpModalMode, setHpModalMode] = useState<"damage" | "heal" | null>(null);
   const [restModalOpen, setRestModalOpen] = useState(false);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
@@ -227,10 +237,6 @@ function CharacterSheetBody({
               raw,
               "normal"
             );
-            playSound("diceLand");
-            const flag = naturalD20Flag(raw.used);
-            if (flag === "nat20") playSound("critNat20");
-            if (flag === "nat1") playSound("critNat1");
             await saveRoll(result, characterId);
             if (raw.total < dc) {
               await endConcentration(characterId);
@@ -401,13 +407,27 @@ function CharacterSheetBody({
         bottomOffset={24}
       >
         <View style={{ flexGrow: 1 }}>
-          <ThemeBackdropArt />
-        {activeTab === "stats" && <StatsTab character={character} onChanged={refresh} />}
-        {activeTab === "spells" && (
-          <SpellsTab character={character} onCharacterChanged={refresh} />
+          <ThemeBackdropArt bottomGears={activeTab !== "spells" && activeTab !== "notes"} />
+        {isMounted("stats") && (
+          <View style={tabPane("stats")}>
+            <StatsTab character={character} onChanged={refresh} />
+          </View>
         )}
-        {activeTab === "equipment" && <EquipmentTab character={character} onChanged={refresh} />}
-        {activeTab === "notes" && <NotesTab character={character} />}
+        {isMounted("spells") && (
+          <View style={tabPane("spells")}>
+            <SpellsTab character={character} onCharacterChanged={refresh} />
+          </View>
+        )}
+        {isMounted("equipment") && (
+          <View style={tabPane("equipment")}>
+            <EquipmentTab character={character} onChanged={refresh} />
+          </View>
+        )}
+        {isMounted("notes") && (
+          <View style={tabPane("notes")}>
+            <NotesTab character={character} />
+          </View>
+        )}
         </View>
       </KeyboardAwareScrollView>
     </View>
