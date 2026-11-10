@@ -22,6 +22,7 @@ import type { AbilityScoreKey, Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "./dmStyles";
 import { DoneAccessory } from "./DoneAccessory";
+import { withAlpha, BOX_ALPHA } from "../theme/alpha";
 
 const SELECTION_KEY = "rollforcharacter.dm.partySelection";
 
@@ -345,7 +346,7 @@ export function DmPartyRoller({
                       styles.row,
                       resultRow,
                       {
-                        backgroundColor: theme.colors.surfaceAlt,
+                        backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
                         borderColor: theme.colors.border,
                       },
                     ]}

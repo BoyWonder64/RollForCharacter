@@ -12,6 +12,7 @@ import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../features/icons/iconAssets";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
+import { withAlpha, BOX_ALPHA } from "../theme/alpha";
 
 export function DeathSaveTracker({
   characterId,
@@ -154,7 +155,7 @@ export function DeathSaveTracker({
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.danger,
       borderRadius: theme.radius,
@@ -195,7 +196,7 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     secondaryButton: {
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

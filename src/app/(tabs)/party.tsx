@@ -42,6 +42,7 @@ import {
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import type { Character } from "../../types/models";
+import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
 
 function SignedOutNotice({ styles }: { styles: ReturnType<typeof createDmStyles> }) {
   const theme = useTheme();
@@ -136,7 +137,7 @@ function createLocalStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

@@ -7,7 +7,7 @@ function pointsEqualToLevel(fromLevel: number, toLevel: number, multiplier = 1):
   return byLevel;
 }
 
-// Per-level class & subclass progression for 5e (2014 SRD 5.1, OGL 1.0a).
+// Per-level class & subclass progression for 5e (2014 SRD 5.1, CC BY 4.0).
 // Sourced verbatim from the open5e API (document__slug=wotc-srd), not
 // transcribed from memory -- see TODO.md for the sourcing method. Each
 // class's `subclasses` array holds exactly the one subclass the SRD itself

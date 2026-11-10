@@ -366,8 +366,8 @@ export const campaignItems = sqliteTable("campaign_items", {
     .default(sql`(current_timestamp)`),
 });
 
-// Reference catalog of feats (5e SRD 5.2 + Level Up A5E's Adventurer's
-// Guide, both CC BY 4.0 -- see docs/DND_CONTENT_SOURCES.md). Browsable only;
+// Reference catalog of feats (5e SRD 5.2, CC BY 4.0 -- see
+// docs/DND_CONTENT_SOURCES.md). Browsable only;
 // picking one still writes into `characters.feats` free text, same as a
 // hand-typed feat, so nothing about the existing ASI/feat-choice flow had to
 // change.

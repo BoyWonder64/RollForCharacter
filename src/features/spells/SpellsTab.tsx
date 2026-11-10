@@ -33,6 +33,7 @@ import type { Theme } from "../../theme/colors";
 import type { Character } from "../../types/models";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../../features/icons/iconAssets";
+import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
 
 type SpellRow = Awaited<ReturnType<typeof listSpellsForCharacter>>[number];
 type SlotRow = Awaited<ReturnType<typeof listSpellSlots>>[number];
@@ -393,7 +394,7 @@ function createStyles(theme: Theme) {
     },
     banner: { marginTop: 4, marginBottom: 8 },
     dcBanner: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -420,7 +421,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -463,7 +464,7 @@ function createStyles(theme: Theme) {
     },
     slotGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
     slotCard: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -498,7 +499,7 @@ function createStyles(theme: Theme) {
     },
     empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily, textAlign: "center" },
     emptyCard: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -507,7 +508,7 @@ function createStyles(theme: Theme) {
       alignItems: "center",
     },
     spellRow: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

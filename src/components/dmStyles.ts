@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import type { Theme } from "../theme/colors";
+import { withAlpha, BOX_ALPHA } from "../theme/alpha";
 
 /** Styles shared by the DM-mode encounter components, so they look like one set. */
 export function createDmStyles(theme: Theme) {
@@ -29,7 +30,7 @@ export function createDmStyles(theme: Theme) {
     },
     hint: { color: theme.colors.textMuted, fontSize: 13 },
     card: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -53,7 +54,7 @@ export function createDmStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     secondaryButton: {
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -79,7 +80,7 @@ export function createDmStyles(theme: Theme) {
     dangerButtonText: { color: "#fff", fontWeight: "700", fontSize: 13 },
     disabled: { opacity: 0.45 },
     chip: {
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -90,7 +91,7 @@ export function createDmStyles(theme: Theme) {
     chipText: { color: theme.colors.text, fontSize: 12, fontWeight: "600" },
     chipTextActive: { color: theme.colors.primaryText },
     input: {
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -101,7 +102,7 @@ export function createDmStyles(theme: Theme) {
     },
     smallInput: {
       width: 64,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -114,7 +115,7 @@ export function createDmStyles(theme: Theme) {
       width: 30,
       height: 30,
       borderRadius: theme.radius,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: "center",
@@ -132,7 +133,7 @@ export function createDmStyles(theme: Theme) {
       width: "100%",
       maxWidth: 460,
       maxHeight: "88%",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

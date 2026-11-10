@@ -6,6 +6,7 @@ import { Stack } from "expo-router";
 import { Button } from "../components/Button";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
+import { withAlpha, BOX_ALPHA } from "../theme/alpha";
 
 const CREDITS: { title: string; text: string }[] = [
   {
@@ -21,8 +22,8 @@ const CREDITS: { title: string; text: string }[] = [
     text: "Custom Border and Panels and Retro Pixel Ribbons, Banners and Frames by bdragon1727.",
   },
   {
-    title: "Nature Landscape Backgrounds",
-    text: "Pixel-art nature background layers from CraftPix.net, used under the CraftPix file license.",
+    title: "Castle Background",
+    text: "Fort of Illusion pixel-art background by Luis Zuno (Ansimuz), CC0 1.0.",
   },
   {
     title: "Pixel Dice Sprites",
@@ -158,8 +159,10 @@ export default function LegalScreen() {
         <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>D&amp;D Content Sources</Text>
         <Text style={styles.hint}>
           Races, classes, spells, feats, magic items, monsters, and conditions this app ships
-          as catalog entries are drawn from these openly-licensed rules documents, used under
-          their Creative Commons attribution terms. This does not cover anything you create
+          as catalog entries are drawn from these openly-licensed rules documents: the 5th
+          Edition ones under the Creative Commons Attribution 4.0 license, the 3.5 one under the
+          Open Game License. Text has been reformatted and, in places, adapted (for example
+          items expanded into per-weapon variants). This does not cover anything you create
           yourself in Homebrew Library -- homebrew races, classes, subclasses, spells, feats,
           magic items, monsters, and abilities are your own content, not SRD/CC-BY/OGL material,
           and aren&apos;t covered by the licenses or attributions on this screen.
@@ -226,7 +229,7 @@ function createStyles(theme: Theme) {
     sectionTitleSpaced: { marginTop: 24 },
     hint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 10 },
     creditRow: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

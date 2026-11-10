@@ -14,6 +14,7 @@ import { duplicateCharacter } from "../../../features/dev/devTools";
 import { useDeveloperMode } from "../../../features/settings/DeveloperModeContext";
 import { useTheme } from "../../../theme/ThemeContext";
 import type { Theme } from "../../../theme/colors";
+import { withAlpha, BOX_ALPHA } from "../../../theme/alpha";
 
 export default function CharacterListScreen() {
   const theme = useTheme();
@@ -180,7 +181,7 @@ function createStyles(theme: Theme) {
     row: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

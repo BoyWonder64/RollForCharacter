@@ -47,6 +47,7 @@ import type { AbilityScoreKey, Character, CharacterClass } from "../../types/mod
 import { PixelBanner, PixelFrameOverlay } from "../../components/PixelFrame";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
+import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
 
 const CURRENCY_FIELDS: {
   key: CurrencyDenomination;
@@ -712,7 +713,7 @@ function createStyles(theme: Theme) {
     },
     levelBadge: {
       alignItems: "center",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 2,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -728,7 +729,7 @@ function createStyles(theme: Theme) {
       marginTop: 2,
     },
     xpInfoBox: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -739,7 +740,7 @@ function createStyles(theme: Theme) {
     boxDivider: { height: 1, backgroundColor: theme.colors.border, marginVertical: 14 },
     inspirationChip: {
       alignSelf: "flex-start",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -759,7 +760,7 @@ function createStyles(theme: Theme) {
     summaryCard: {
       flexBasis: "47%",
       flexGrow: 1,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -852,7 +853,7 @@ function createStyles(theme: Theme) {
     },
     abilityCard: {
       width: "31%",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -871,7 +872,7 @@ function createStyles(theme: Theme) {
     proficiencyRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

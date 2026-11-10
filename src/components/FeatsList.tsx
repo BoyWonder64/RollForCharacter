@@ -15,6 +15,7 @@ import type { Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { FeatPickerModal } from "./FeatPickerModal";
+import { withAlpha, BOX_ALPHA } from "../theme/alpha";
 
 /**
  * Every feat a character has taken -- catalog or homebrew -- shown as a
@@ -131,7 +132,7 @@ export function FeatsList({ character }: { character: Character }) {
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -166,7 +167,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "flex-start",
       gap: 10,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

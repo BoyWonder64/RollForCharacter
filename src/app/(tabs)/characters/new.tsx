@@ -74,6 +74,7 @@ import type { Theme } from "../../../theme/colors";
 import { useIconSettings } from "../../../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../../../features/icons/iconAssets";
 import { DoneAccessory } from "../../../components/DoneAccessory";
+import { withAlpha, BOX_ALPHA } from "../../../theme/alpha";
 
 const ALL_STEPS = [
   "ruleset",
@@ -2533,7 +2534,7 @@ function createStyles(theme: Theme) {
     livePreviewBanner: {
       marginHorizontal: 16,
       marginTop: 10,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 2,
       borderColor: theme.colors.primary,
       borderRadius: theme.radius,
@@ -2562,7 +2563,7 @@ function createStyles(theme: Theme) {
     },
     hint: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 12 },
     input: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -2662,7 +2663,7 @@ function createStyles(theme: Theme) {
       width: 44,
       height: 44,
       borderRadius: theme.radius,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: "center",
@@ -2678,7 +2679,7 @@ function createStyles(theme: Theme) {
     advantageRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
     advantageButton: {
       flex: 1,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2699,7 +2700,7 @@ function createStyles(theme: Theme) {
     rollAbilityRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2734,7 +2735,7 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 14,
       paddingVertical: 8,
       borderRadius: theme.radius,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
     },
@@ -2751,7 +2752,7 @@ function createStyles(theme: Theme) {
     detailPanel: {
       marginTop: 4,
       marginBottom: 8,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2772,7 +2773,7 @@ function createStyles(theme: Theme) {
     skillGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
     skillCard: {
       width: "31%",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2812,7 +2813,7 @@ function createStyles(theme: Theme) {
     summaryCard: {
       flex: 1,
       minWidth: "22%",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2829,7 +2830,7 @@ function createStyles(theme: Theme) {
     abilityGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
     abilityCard: {
       width: "31%",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2870,7 +2871,7 @@ function createStyles(theme: Theme) {
     },
     navButtonSecondary: {
       flex: 1,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -2907,7 +2908,7 @@ function createStyles(theme: Theme) {
       width: 28,
       height: 28,
       borderRadius: 14,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: "center",
@@ -2944,7 +2945,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "flex-start",
       justifyContent: "space-between",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

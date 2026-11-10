@@ -46,6 +46,7 @@ import {
   setMagicItemEquipped,
   type CustomMagicItemInput,
 } from "./magicItemRepo";
+import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
 
 type WeaponRow = Awaited<ReturnType<typeof listCharacterWeapons>>[number];
 type ArmorRow = Awaited<ReturnType<typeof listCharacterArmor>>[number];
@@ -504,7 +505,7 @@ function createStyles(theme: Theme) {
     itemRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -547,7 +548,7 @@ function createStyles(theme: Theme) {
     addGearDescription: { minHeight: 60, textAlignVertical: "top" },
     addGearInput: {
       flex: 1,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,

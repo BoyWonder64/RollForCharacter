@@ -381,7 +381,8 @@ const DesertLayer = memo(function DesertLayer({ art }: { art: DesertArt }) {
           key: r * cols + c,
           source: art.props[pick % art.props.length],
           left: DESERT_MARGIN + c * cellW + jx * Math.max(0, cellW - DESERT_PROP),
-          top: DESERT_MARGIN + r * cell + jy * Math.max(0, cell - DESERT_PROP),
+          // First row hugs the top edge so its cactus isn't pushed down behind the header.
+          top: DESERT_MARGIN + r * cell + (r === 0 ? 0 : jy) * Math.max(0, cell - DESERT_PROP),
           flip,
         });
       }
@@ -407,6 +408,10 @@ const DesertLayer = memo(function DesertLayer({ art }: { art: DesertArt }) {
           />
         ))}
       </View>
+      {/* Rust-brown wash knocks the yellow out of the sand for a dustier, more rustic feel. */}
+      <View
+        style={[StyleSheet.absoluteFill, { backgroundColor: light ? "#8B4A2B" : "#6B3A22", opacity: light ? 0.28 : 0.35 }]}
+      />
       <View style={[StyleSheet.absoluteFill, { opacity: light ? 0.8 : 0.75 }]}>
         {props.map((p) => {
           return (

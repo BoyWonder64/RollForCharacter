@@ -53,6 +53,7 @@ import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext"
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../../../theme/colors";
 import { FONT_CHOICE_ORDER, FONT_CHOICES, type FontChoiceId } from "../../../../theme/fonts";
 import { DoneAccessory } from "../../../../components/DoneAccessory";
+import { withAlpha, BOX_ALPHA } from "../../../../theme/alpha";
 
 const FAMILY_ORDER: ThemeFamilyId[] = [
   "crimson",
@@ -1050,7 +1051,7 @@ function createStyles(theme: Theme) {
       width: 72,
       height: 72,
       borderRadius: theme.radius,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: "center",
@@ -1086,7 +1087,7 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     input: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -1125,7 +1126,7 @@ function createStyles(theme: Theme) {
     familyRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1141,7 +1142,7 @@ function createStyles(theme: Theme) {
     abilityField: { flexBasis: "31%", flexGrow: 0 },
     skillGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
     skillChip: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1163,7 +1164,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "flex-start",
       justifyContent: "space-between",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

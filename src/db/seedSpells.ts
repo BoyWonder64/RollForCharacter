@@ -19,12 +19,35 @@ const INSERT_SQL = `
  * ruleset='5e' too after a migration runs, which would falsely satisfy a
  * ruleset-based guard and skip seeding the real catalog.
  */
+// 2014 spells whose descriptions were replaced with the exact SRD 5.1 wording
+// (copyright audit 2026-11-09); re-syncs databases seeded before that.
+const CORRECTED_SPELL_IDS = new Set([
+  "mirror-image",
+  "see-invisibility",
+  "water-breathing",
+  "fire-shield",
+  "hold-monster",
+]);
+
+function resyncCorrectedSpells(sqliteDb: SQLiteDatabase): void {
+  for (const spell of SPELLS_5E) {
+    if (!CORRECTED_SPELL_IDS.has(spell.id)) continue;
+    sqliteDb.runSync("UPDATE spells SET description = ? WHERE slug = ? AND ruleset = '5e'", [
+      spell.description,
+      spell.id,
+    ]);
+  }
+}
+
 export function seedSpellsIfNeeded(sqliteDb: SQLiteDatabase): void {
   const existing = sqliteDb.getFirstSync<{ count: number }>(
     "SELECT COUNT(*) as count FROM spells WHERE slug IS NOT NULL",
     []
   );
-  if (existing && existing.count > 0) return;
+  if (existing && existing.count > 0) {
+    resyncCorrectedSpells(sqliteDb);
+    return;
+  }
 
   sqliteDb.withTransactionSync(() => {
     for (const spell of SPELLS_5E) {

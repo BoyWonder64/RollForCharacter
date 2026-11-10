@@ -13,6 +13,7 @@ import type { Theme } from "../../theme/colors";
 import { useAuth, type OAuthProvider } from "./AuthContext";
 import { isSupabaseConfigured } from "../supabase/supabaseClient";
 import { syncAll } from "../sync/syncEngine";
+import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
 
 export function AccountSection() {
   const theme = useTheme();
@@ -179,7 +180,7 @@ export function AccountSection() {
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     card: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

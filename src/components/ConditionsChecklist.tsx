@@ -12,6 +12,7 @@ import { getConditionIcon } from "../features/icons/iconAssets";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import type { Character } from "../types/models";
+import { withAlpha, BOX_ALPHA } from "../theme/alpha";
 
 /**
  * A simple sheet checklist of active 5e conditions, plus exhaustion's
@@ -179,7 +180,7 @@ function createStyles(theme: Theme) {
       marginLeft: 2,
     },
     addChip: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -212,7 +213,7 @@ function createStyles(theme: Theme) {
       width: 24,
       height: 24,
       borderRadius: theme.radius,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: "center",
@@ -240,7 +241,7 @@ function createStyles(theme: Theme) {
       width: "100%",
       maxWidth: 420,
       maxHeight: "80%",
-      backgroundColor: theme.colors.surface,
+      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

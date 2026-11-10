@@ -14,16 +14,16 @@ import { armor, gold, item, itemChoice, weapon } from "../equipmentHelpers";
 //
 // License (verified, not assumed): SRD 5.2 is released under the
 // Creative Commons Attribution 4.0 International license (CC BY 4.0) --
-// NOT the Open Game License (OGL 1.0a) that covered the 2014 SRD 5.1.
+// NOT the Open Game License (OGL 1.0a) that originally covered the 2014 SRD 5.1
+// (this app uses SRD 5.1 under its CC BY 4.0 release, same as 5.2).
 // WotC's own SRD page (dndbeyond.com/srd) states SRD 5.2 content is
 // "published under the Creative Commons Attribution 4.0 International
 // License (CC-BY-4.0)" and is "permanently available under those terms."
-// This is a materially different license from the 2014 ruleset in this
-// same app (`src/data/rulesets/5e/`), which is OGL 1.0a-licensed -- do
-// not assume the two rulesets share one license file/attribution; CC BY
-// 4.0 requires attribution to Wizards of the Coast (and, per WotC's SRD
-// page, a link to the license) wherever this content/derived content
-// ships, which the 2014 OGL text does not require in the same way.
+// Both 5e rulesets in this app (`src/data/rulesets/5e/` and this one) are
+// used under CC BY 4.0, each with its own attribution statement; only the
+// 3.5e ruleset is OGL 1.0a. CC BY 4.0 requires attribution to Wizards of
+// the Coast (and, per WotC's SRD page, a link to the license) wherever this
+// content/derived content ships.
 //
 // Sourcing method (same discipline as `src/data/rulesets/5e/`, carried
 // over deliberately): this data was NOT written from memory or guessed.

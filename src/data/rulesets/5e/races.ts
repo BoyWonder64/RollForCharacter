@@ -6,7 +6,7 @@ import type { RaceDefinition } from "../types";
 // through `aliases`.
 // `traits` and `languages` are sourced verbatim from the real document via
 // the open5e v2 API (`document__key=srd-2014`, publisher Wizards of the
-// Coast, CC BY 4.0 / OGL 1.0a) -- curled directly, not paraphrased from
+// Coast, CC BY 4.0) -- curled directly, not paraphrased from
 // memory, per this project's sourcing rule.
 export const RACES_5E: RaceDefinition[] = [
   {

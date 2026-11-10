@@ -1,15 +1,16 @@
 // Cumulative XP required to REACH each level (index 0 = level 1 = 0 XP).
-// Sourced from each ruleset's official Character Advancement table, not
+// Sourced from each ruleset's Character Advancement progression, not
 // retyped from a secondary chart site -- verified 2026-10-26.
 
-// 5e (2014 PHB "Character Advancement" table). The 2024 PHB kept the exact
+// 5e (SRD 5.1 "Character Advancement" table). The 2024 PHB kept the exact
 // same table, so "5e" and "5e-2024" share this one.
 const XP_THRESHOLDS_5E = [
   0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000,
   120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000,
 ];
 
-// 3.5e SRD "Character Advancement" table -- follows the closed-form
+// 3.5e "Character Advancement" progression (not part of the 3.5 SRD; a plain
+// formula, no table text copied) -- follows the closed-form
 // 500 * level * (level - 1), verified against the table's published values.
 const XP_THRESHOLDS_35E = Array.from({ length: 20 }, (_, i) => {
   const level = i + 1;
