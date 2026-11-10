@@ -80,7 +80,8 @@ export function FeatsList({ character }: { character: Character }) {
   }
 
   return (
-    <View>
+    <View style={styles.container}>
+      <PixelFrameOverlay />
       <View style={styles.headerRow}>
         <SectionHeading title="Feats" textStyle={styles.sectionTitle} />
         <Pressable style={styles.addButton} onPress={() => setPickerVisible(true)}>
@@ -94,7 +95,6 @@ export function FeatsList({ character }: { character: Character }) {
         const expanded = expandedId === feat.id;
         return (
           <View key={feat.id} style={[styles.row, !feat.enabled && styles.rowDisabled]}>
-            <PixelFrameOverlay scale={0.75} />
             <Pressable
               style={[styles.toggle, feat.enabled && styles.toggleOn]}
               onPress={() => handleToggle(feat)}
@@ -130,6 +130,13 @@ export function FeatsList({ character }: { character: Character }) {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
+    container: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      padding: theme.pixel ? 18 : 14,
+    },
     headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
     sectionTitle: {
       color: theme.colors.text,
@@ -154,18 +161,17 @@ function createStyles(theme: Theme) {
     empty: {
       color: theme.colors.textMuted,
       fontSize: 13,
-      marginBottom: 6,
     },
     row: {
       flexDirection: "row",
       alignItems: "flex-start",
       gap: 10,
-      backgroundColor: theme.colors.surface,
-      borderWidth: theme.pixel ? 0 : 1,
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
       padding: 10,
-      marginBottom: 8,
+      marginBottom: 6,
     },
     rowDisabled: { opacity: 0.55 },
     toggle: {

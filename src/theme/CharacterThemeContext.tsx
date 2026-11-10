@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { ThemeContext, resolveTheme, useThemeContext } from "./ThemeContext";
 import { normalizeFamilyId } from "./colors";
@@ -25,14 +26,15 @@ export function CharacterThemeProvider({
   const global = useThemeContext();
   const family = normalizeFamilyId(character.themeFamily) ?? global.defaultFamily;
   const fontChoice = (character.fontChoice as FontChoiceId | null) ?? global.defaultFontChoice;
-  const theme = resolveTheme(family, global.theme.mode, fontChoice, global.customTheme);
-
-  const value = {
-    ...global,
-    theme,
-    family,
-    fontChoice,
-  };
+  const mode = global.theme.mode;
+  const customTheme = global.customTheme;
+  // Memoised: a fresh theme object on every render would make every component below
+  // rebuild its styles each time the sheet refreshes.
+  const theme = useMemo(
+    () => resolveTheme(family, mode, fontChoice, customTheme),
+    [family, mode, fontChoice, customTheme]
+  );
+  const value = useMemo(() => ({ ...global, theme, family, fontChoice }), [global, theme, family, fontChoice]);
 
   // The root layout paints the global theme's backdrop; a character with its
   // own theme paints its own so transparent screens don't show the wrong one.

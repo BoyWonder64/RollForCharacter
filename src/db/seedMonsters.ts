@@ -9,6 +9,29 @@ const INSERT_SQL = `
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
+// SRD 5.1 monsters whose open5e feed carried Monster Manual "Variant"/coven
+// sidebar traits that are not in the SRD (copyright audit 2026-11-09). Those
+// traits were removed from MONSTERS_5E; this re-syncs the trait list for
+// databases seeded before that, so the old rows lose them too.
+const MONSTERS_WITH_REMOVED_TRAITS = new Set([
+  "srd_balor", "srd_djinni", "srd_dust-mephit", "srd_efreeti", "srd_erinyes", "srd_ettercap",
+  "srd_giant-lizard", "srd_glabrezu", "srd_green-hag", "srd_hezrou", "srd_ice-mephit", "srd_imp",
+  "srd_magma-mephit", "srd_marilith", "srd_nalfeshnee", "srd_night-hag", "srd_pseudodragon",
+  "srd_quasit", "srd_satyr", "srd_sea-hag", "srd_steam-mephit", "srd_troll", "srd_vrock",
+]);
+
+function stripNonSrdTraits(sqliteDb: SQLiteDatabase): void {
+  sqliteDb.withTransactionSync(() => {
+    for (const m of MONSTERS_5E) {
+      if (!MONSTERS_WITH_REMOVED_TRAITS.has(m.slug)) continue;
+      sqliteDb.runSync("UPDATE monsters SET traits = ? WHERE slug = ?", [
+        JSON.stringify(m.traits),
+        m.slug,
+      ]);
+    }
+  });
+}
+
 /**
  * One-time seed of the SRD 5.1 + 5.2 monster/creature catalog into the local
  * `monsters` table. Mirrors `seedSpellsIfNeeded`'s pattern exactly, including
@@ -21,7 +44,10 @@ export function seedMonstersIfNeeded(sqliteDb: SQLiteDatabase): void {
     "SELECT COUNT(*) as count FROM monsters WHERE slug IS NOT NULL",
     []
   );
-  if (existing && existing.count > 0) return;
+  if (existing && existing.count > 0) {
+    stripNonSrdTraits(sqliteDb);
+    return;
+  }
 
   sqliteDb.withTransactionSync(() => {
     for (const m of MONSTERS_5E) {

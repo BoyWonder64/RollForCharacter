@@ -185,7 +185,7 @@ export function MulticlassModalForm({
                 style={styles.input}
                 value={customClassName}
                 onChangeText={setCustomClassName}
-                placeholder="e.g. Artificer"
+                placeholder="e.g. Runeblade"
                 placeholderTextColor={theme.colors.textMuted}
               />
               <Text style={[styles.hint, { marginTop: 12, marginBottom: 8 }]}>Hit die</Text>

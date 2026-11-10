@@ -264,10 +264,40 @@ export function StatsTab({
   return (
     <View>
       <View style={styles.levelRow}>
-        <Text style={styles.levelText}>
-          Level {character.level}
-          {isMulticlassed(classRows) ? ` (${formatMulticlassLabel(classRows, character.className)})` : ""}
-        </Text>
+        <View style={styles.levelBadge}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.levelText}>
+            Level {character.level}
+            {isMulticlassed(classRows) ? ` (${formatMulticlassLabel(classRows, character.className)})` : ""}
+          </Text>
+          {character.usesXp && (
+            <Text style={styles.levelBadgeHint}>Tap to add XP</Text>
+          )}
+          {character.usesXp && (
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setXpModalOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Add experience points"
+            />
+          )}
+        </View>
+        {character.usesXp && (
+          <View style={styles.xpColumn}>
+            <View style={styles.xpInfoBox}>
+              <PixelFrameOverlay scale={0.5} />
+              <Text style={styles.xpText}>
+                {character.experiencePoints} XP
+                {xpNeeded !== undefined
+                  ? ` (${xpNeeded} to level ${character.level + 1})`
+                  : " (max level)"}
+              </Text>
+              {xpReadyToLevelUp && (
+                <Text style={styles.xpReadyText}>Ready to level up — tap Level Up.</Text>
+              )}
+            </View>
+          </View>
+        )}
       </View>
 
       <ClassResourceTracker
@@ -298,30 +328,11 @@ export function StatsTab({
       />
 
       {character.usesXp && (
-        <>
-          <View style={styles.currencyHeaderRow}>
-            <Text style={styles.sectionTitle}>Experience</Text>
-            <Pressable onPress={() => setXpModalOpen(true)}>
-              <Text style={styles.currencyEditLink}>Add XP</Text>
-            </Pressable>
-          </View>
-          <Text style={styles.xpText}>
-            {character.experiencePoints} XP
-            {xpNeeded !== undefined
-              ? ` (${xpNeeded} to level ${character.level + 1})`
-              : " (max level)"}
-          </Text>
-          {xpReadyToLevelUp && (
-            <Text style={styles.xpReadyText}>
-              You have enough XP to level up — tap Level Up above.
-            </Text>
-          )}
-          <XpModal
-            visible={xpModalOpen}
-            onClose={() => setXpModalOpen(false)}
-            onConfirm={handleXpConfirm}
-          />
-        </>
+        <XpModal
+          visible={xpModalOpen}
+          onClose={() => setXpModalOpen(false)}
+          onConfirm={handleXpConfirm}
+        />
       )}
 
       <View style={styles.summaryRow}>
@@ -345,7 +356,7 @@ export function StatsTab({
         ) : (
           <Text style={[styles.sectionTitle, styles.sectionTitleInline]}>Currency</Text>
         )}
-        <Pressable onPress={() => setCurrencyModalOpen(true)}>
+        <Pressable style={styles.currencyEditButton} onPress={() => setCurrencyModalOpen(true)}>
           <Text style={styles.currencyEditLink}>Add / Spend</Text>
         </Pressable>
       </View>
@@ -697,6 +708,33 @@ function createStyles(theme: Theme) {
       fontWeight: "700",
       fontFamily: theme.displayFontFamily,
       flexShrink: 1,
+      textAlign: "center",
+    },
+    levelBadge: {
+      alignItems: "center",
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 2,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      flexShrink: 1,
+    },
+    xpColumn: { flex: 1, minWidth: 120 },
+    levelBadgeHint: {
+      textAlign: "center",
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      marginTop: 2,
+    },
+    xpInfoBox: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      marginBottom: 4,
     },
     boxDivider: { height: 1, backgroundColor: theme.colors.border, marginVertical: 14 },
     inspirationChip: {
@@ -765,19 +803,28 @@ function createStyles(theme: Theme) {
       justifyContent: "space-between",
       marginTop: 20,
     },
+    currencyEditButton: {
+      backgroundColor: theme.mode === "light" ? theme.colors.surfaceAlt : theme.colors.primary,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
     currencyEditLink: {
-      color: theme.colors.accent,
+      color: theme.mode === "light" ? "#0A0A0A" : theme.colors.primaryText,
+      fontSize: 12,
       fontWeight: "700",
-      fontSize: 13,
       fontFamily: theme.displayFontFamily,
     },
     currencyRow: { flexDirection: "row", gap: 6 },
-    xpText: { color: theme.colors.text, fontSize: 13, marginBottom: 4 },
+    xpText: { color: theme.colors.text, fontSize: 13, textAlign: "center" },
     xpReadyText: {
       color: theme.colors.accent,
+      textAlign: "center",
       fontSize: 12,
       fontWeight: "700",
-      marginBottom: 10,
+      marginTop: 2,
     },
     currencyCard: {
       flex: 1,

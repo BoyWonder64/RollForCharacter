@@ -128,12 +128,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           AsyncStorage.removeItem(ACTIVE_CHARACTER_STORAGE_KEY).catch(() => {});
           return;
         }
-        setActive({
+        const next: ActiveCharacterLook = {
           id: character.id,
           name: character.name,
           themeFamily: normalizeFamilyId(character.themeFamily),
           fontChoice: (character.fontChoice as FontChoiceId | null) ?? null,
-        });
+        };
+        // This runs every time a sheet regains focus. Keep the old object when nothing
+        // changed, or the context value changes and every themed component in every
+        // mounted tab re-renders on each tab switch.
+        setActive((prev) =>
+          prev &&
+          prev.id === next.id &&
+          prev.name === next.name &&
+          prev.themeFamily === next.themeFamily &&
+          prev.fontChoice === next.fontChoice
+            ? prev
+            : next
+        );
       })
       .catch(() => {});
   }
@@ -149,6 +161,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   function updateFamily(next: ThemeFamilyId) {
+    // Crimson is designed dark-first, so picking it switches to dark mode
+    // (the user can still switch back under Appearance afterwards).
+    if (next === "crimson") updatePreference("dark");
+    // Journal is a paper notebook, so it opens in light mode.
+    if (next === "journal") updatePreference("light");
     if (active) {
       setActive({ ...active, themeFamily: next });
       updateCharacter(active.id, { themeFamily: next }).catch(() => {});

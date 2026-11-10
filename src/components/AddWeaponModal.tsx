@@ -205,7 +205,7 @@ function AddWeaponModalForm({
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Moonblade"
+            placeholder="e.g. Emberfang"
             placeholderTextColor={theme.colors.textMuted}
             autoFocus
           />

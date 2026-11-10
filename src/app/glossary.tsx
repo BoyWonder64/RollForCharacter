@@ -47,7 +47,7 @@ const SECTIONS: GlossarySection[] = [
   {
     title: "Roles & People",
     entries: [
-      { term: "DM", meaning: "Dungeon Master", description: "The person running the game world, monsters, and story." },
+      { term: "DM", meaning: "Game Master", description: "The person running the game world, monsters, and story." },
       { term: "PC", meaning: "Player Character", description: "A character controlled by a player, as opposed to an NPC." },
       { term: "NPC", meaning: "Non-Player Character", description: "A character controlled by the DM rather than a player." },
     ],
@@ -56,9 +56,9 @@ const SECTIONS: GlossarySection[] = [
     title: "Rules Content",
     entries: [
       { term: "SRD", meaning: "System Reference Document", description: "The official, openly-licensed rules text this app's content is sourced from. See Settings → Legal & Licenses." },
-      { term: "5e", meaning: "5th Edition", description: "The 2014 ruleset of Dungeons & Dragons." },
+      { term: "5e", meaning: "5th Edition", description: "The 2014 version of the 5th Edition ruleset." },
       { term: "2024 rules", meaning: "Revised 5th Edition", description: "The 2024 update to the 5e ruleset, also called \"5.5e\" by some fans." },
-      { term: "3.5e", meaning: "3.5 Edition", description: "An earlier D&D ruleset, included here under the Open Game License." },
+      { term: "3.5e", meaning: "3.5 Edition", description: "An earlier edition of the ruleset, included here under the Open Game License." },
       { term: "OGL", meaning: "Open Game License", description: "The license that permits reuse of the 3.5e ruleset's content." },
     ],
   },

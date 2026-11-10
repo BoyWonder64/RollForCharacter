@@ -82,7 +82,27 @@ function supabaseHost(): string {
   }
 }
 
-const FEEDBACK_EMAIL = "maitland.andrus@gmail.com";
+/** Text that would otherwise float directly on the themed backdrop: gets the same framed surface as the rows. */
+function Note({
+  styles,
+  text,
+  label,
+  spaced = false,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  text?: string;
+  label?: string;
+  spaced?: boolean;
+}) {
+  return (
+    <View style={[styles.noteCard, spaced && styles.noteCardSpaced]}>
+      {label ? <Text style={styles.toggleLabel}>{label}</Text> : null}
+      {text ? <Text style={styles.noteText}>{text}</Text> : null}
+    </View>
+  );
+}
+
+const FEEDBACK_EMAIL ="maitland.andrus@gmail.com";
 const DONATE_URL = "";
 
 export default function SettingsScreen() {
@@ -196,11 +216,14 @@ export default function SettingsScreen() {
         </View>
 
         <SectionHeading title="Theme" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-        <Text style={styles.hint}>
-          {activeCharacterName
-            ? `Theme for ${activeCharacterName}. Each character keeps their own; switch characters on the Characters tab.`
-            : "Default theme. Open a character to give them their own."}
-        </Text>
+        <Note
+          styles={styles}
+          text={
+            activeCharacterName
+              ? `Theme for ${activeCharacterName}. Each character keeps their own; switch characters on the Characters tab.`
+              : "Default theme. Open a character to give them their own."
+          }
+        />
         {FAMILY_ORDER.map((familyId) => {
           const definition = THEME_FAMILIES[familyId];
           const active = family === familyId;
@@ -245,8 +268,10 @@ export default function SettingsScreen() {
         })}
 
         <SectionHeading title="Accessibility" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
-        <Text style={styles.toggleLabel}>Text size: {Math.round(fontScale * 100)}%</Text>
-        <Text style={styles.hint}>Scales text throughout the app.</Text>
+        <View style={styles.noteCard}>
+          <Text style={styles.toggleLabel}>Text size: {Math.round(fontScale * 100)}%</Text>
+          <Text style={styles.noteText}>Scales text throughout the app.</Text>
+        </View>
         <View style={styles.optionRow}>
           <Button
             title="A−"
@@ -284,7 +309,7 @@ export default function SettingsScreen() {
         </View>
         {iconsEnabled && (
           <View style={styles.iconStyleList}>
-            <Text style={styles.toggleLabel}>Icon style</Text>
+            <Note styles={styles} label="Icon style" spaced />
             {(["auto", ...ICON_STYLE_ORDER] as IconStylePreference[]).map((styleId) => {
               const option = styleId === "auto" ? AUTO_ICON_STYLE_OPTION : ICON_STYLES[styleId];
               const active = iconStylePreference === styleId;
@@ -333,7 +358,7 @@ export default function SettingsScreen() {
             thumbColor={theme.colors.primaryText}
           />
         </View>
-        <Text style={styles.toggleHint}>Log of recent rolls on the Dice Roller.</Text>
+        <Note styles={styles} text="Log of recent rolls on the Dice Roller." spaced />
 
         <SectionHeading title="Game Modes" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
         <View style={styles.toggleRow}>
@@ -349,7 +374,7 @@ export default function SettingsScreen() {
             thumbColor={theme.colors.primaryText}
           />
         </View>
-        <Text style={styles.toggleHint}>Adds an Encounter tab with party rolls and the SRD bestiary.</Text>
+        <Note styles={styles} text="Adds an Encounter tab with party rolls and the SRD bestiary." spaced />
 
         {dmMode && (
           <View
@@ -361,7 +386,7 @@ export default function SettingsScreen() {
               borderLeftColor: theme.colors.primary,
             }}
           >
-            <Text style={styles.toggleLabel}>DM edition</Text>
+            <Note styles={styles} label="DM edition" />
             {DM_EDITION_OPTIONS.map((option) => {
               const active = dmEdition === option.key;
               return (
@@ -391,7 +416,7 @@ export default function SettingsScreen() {
             thumbColor={theme.colors.primaryText}
           />
         </View>
-        <Text style={styles.toggleHint}>Adds a Party tab to share characters with your group online.</Text>
+        <Note styles={styles} text="Adds a Party tab to share characters with your group online." spaced />
 
         <SectionHeading title="Help" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
         <Button title="Glossary" fullWidth onPress={() => router.push("/glossary")} />
@@ -439,7 +464,7 @@ export default function SettingsScreen() {
             thumbColor={theme.colors.primaryText}
           />
         </View>
-        <Text style={styles.toggleHint}>Shows diagnostics and attaches them to bug reports.</Text>
+        <Note styles={styles} text="Shows diagnostics and attaches them to bug reports." spaced />
 
         {developerMode && (
           <>
@@ -557,6 +582,7 @@ function createStyles(theme: Theme) {
     },
     seedInput: {
       flex: 1,
+      backgroundColor: theme.colors.surface,
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -600,6 +626,16 @@ function createStyles(theme: Theme) {
       padding: 12,
     },
     toggleRowSpaced: { marginTop: 12 },
+    noteCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      marginBottom: 8,
+      gap: 2,
+    },
+    noteCardSpaced: { marginTop: 8 },
+    noteText: { color: theme.colors.textMuted, fontSize: 12 },
     toggleLabel: { color: theme.colors.text, fontWeight: "600" },
     toggleHint: {
       color: theme.colors.textMuted,

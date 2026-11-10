@@ -76,9 +76,14 @@ export type BackgroundArt =
   | { kind: "bottom"; source: ImageSourcePropType; aspectRatio: number }
   | { kind: "gears"; sprites: GearSprite[]; chains: number; minPerChain: number; maxPerChain: number }
   | { kind: "specks"; count: number }
+  | { kind: "stars"; count: number }
+  | { kind: "desert"; sand: ImageSourcePropType; props: ImageSourcePropType[]; propCount: number }
   | {
       kind: "castle";
       wall: ImageSourcePropType;
+      /** Wall recolored to sit on this theme's light-mode background. */
+      wallLight?: ImageSourcePropType;
+      /** Source pixels of the wall image (a pre-baked 8x8 sheet of 32px tiles). */
       wallSize: { width: number; height: number };
     };
 
@@ -134,8 +139,9 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
     // Fort of Illusion (CraftPix "Background Castle"): tiled wall.
     backgroundArt: {
       kind: "castle",
-      wall: require("../../assets/ui/backgrounds/castle-wall.png"),
-      wallSize: { width: 32, height: 60 },
+      wall: require("../../assets/ui/backgrounds/castle-wall-sheet.png"),
+      wallLight: require("../../assets/ui/backgrounds/castle-wall-torchlight-light-sheet.png"),
+      wallSize: { width: 256, height: 256 },
     },
     pixel: TORCHLIGHT_PIXEL_KIT,
     displayFontFamily: "Cinzel_700Bold",
@@ -268,8 +274,9 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
     // Fort of Illusion (CraftPix "Background Castle"): tiled wall.
     backgroundArt: {
       kind: "castle",
-      wall: require("../../assets/ui/backgrounds/castle-wall.png"),
-      wallSize: { width: 32, height: 60 },
+      wall: require("../../assets/ui/backgrounds/castle-wall-sheet.png"),
+      wallLight: require("../../assets/ui/backgrounds/castle-wall-crimson-light-sheet.png"),
+      wallSize: { width: 256, height: 256 },
     },
     pixel: CRIMSON_PIXEL_KIT,
     light: {
@@ -362,6 +369,20 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   western: {
     label: "Western",
     pixel: WESTERN_PIXEL_KIT,
+    // Free Sand tileset: sand floor tiles with cacti, a sign and bones scattered on top.
+    backgroundArt: {
+      kind: "desert",
+      // 8x8 sand tiles pre-baked into one sheet (scripts/build_background_sheets.py),
+      // so a page needs a handful of images instead of one per 80dp tile.
+      sand: require("../../assets/ui/backgrounds/desert/sand-sheet.png"),
+      props: [
+        require("../../assets/ui/backgrounds/desert/cactus.png"),
+        require("../../assets/ui/backgrounds/desert/barrel-cactus.png"),
+        require("../../assets/ui/backgrounds/desert/sign.png"),
+        require("../../assets/ui/backgrounds/desert/bones.png"),
+      ],
+      propCount: 12,
+    },
     light: {
       background: "#E4D3AE",
       surface: "#D7C294",
@@ -392,6 +413,8 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   galaxy: {
     label: "Galaxy",
     pixel: GALAXY_PIXEL_KIT,
+    // Tiny pixel stars: mostly white, some blue, a few slightly red.
+    backgroundArt: { kind: "stars", count: 170 },
     light: {
       background: "#F4EDC8",
       surface: "#E8DFA8",

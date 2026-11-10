@@ -612,6 +612,7 @@ export default function DiceRollerScreen() {
                       rollFreeform(`1${die}`);
                     }}
                   >
+                    <PixelFrameOverlay scale={0.75} />
                     <DieFaceImage face={representativeDieFace(die)} imageStyle={styles.quickDieImage} />
                     <Text style={styles.quickDieLabel}>{die}</Text>
                   </Pressable>
@@ -984,7 +985,12 @@ export default function DiceRollerScreen() {
             />
 
             <View style={styles.resultArea}>
-            {!isRolling && !lastRoll && <Text style={styles.hint}>Nothing rolled yet.</Text>}
+            {!isRolling && !lastRoll && (
+              <View style={styles.emptyResultCard}>
+                <PixelFrameOverlay scale={0.75} />
+                <Text style={styles.hint}>Nothing rolled yet.</Text>
+              </View>
+            )}
             {!isRolling && lastRoll && (
               <>
                 <View style={styles.resultBreakdownCard}>
@@ -1188,7 +1194,15 @@ function createStyles(theme: Theme) {
       fontSize: 24,
     },
     dieFaceTextActive: { color: theme.colors.primaryText },
-    quickDie: { alignItems: "center", width: 68 },
+    quickDie: {
+      alignItems: "center",
+      width: 72,
+      paddingVertical: 8,
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 2,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+    },
     quickDieImage: { width: 48, height: 48 },
     quickDieLabel: {
       color: theme.colors.textMuted,
@@ -1313,8 +1327,8 @@ function createStyles(theme: Theme) {
     // never shifts the history below it.
     resultArea: { alignSelf: "stretch", alignItems: "center", minHeight: 230 },
     rollStage: {
-      width: 96,
-      height: 96,
+      width: 150,
+      height: 150,
       borderWidth: 3,
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.surface,
@@ -1377,15 +1391,15 @@ function createStyles(theme: Theme) {
     },
     rollStageText: {
       color: theme.colors.text,
-      fontSize: 44,
+      fontSize: 70,
       fontWeight: "800",
     },
     rollStageIdleText: {
       color: theme.colors.textMuted,
-      fontSize: 44,
+      fontSize: 70,
       fontWeight: "800",
     },
-    rollStageImage: { width: 70, height: 70 },
+    rollStageImage: { width: 110, height: 110 },
     rollStageIdleImage: { opacity: 0.35 },
     resultBreakdownCard: {
       backgroundColor: theme.colors.surfaceAlt,
@@ -1395,6 +1409,16 @@ function createStyles(theme: Theme) {
       marginTop: 10,
       alignSelf: "stretch",
       gap: 4,
+    },
+    emptyResultCard: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      marginTop: 10,
+      alignItems: "center",
     },
     resultBreakdownLine: {
       color: theme.colors.textMuted,

@@ -264,7 +264,10 @@ export function SpellsTab({
         <Text style={styles.sectionTitle}>Spells</Text>
       )}
       {spellRows.length === 0 ? (
-        <Text style={styles.empty}>No spells added yet.</Text>
+        <View style={styles.emptyCard}>
+          <PixelFrameOverlay />
+          <Text style={styles.empty}>No spells added yet.</Text>
+        </View>
       ) : (
         spellRows.map((spell) => {
           const icon = iconsEnabled ? getSpellSchoolIcon(iconStyle, spell.school) : undefined;
@@ -493,7 +496,16 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
       textAlign: "center",
     },
-    empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily },
+    empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily, textAlign: "center" },
+    emptyCard: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: theme.pixel ? 0 : 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      alignItems: "center",
+    },
     spellRow: {
       backgroundColor: theme.colors.surface,
       borderWidth: theme.pixel ? 0 : 1,

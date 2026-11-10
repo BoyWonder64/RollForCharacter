@@ -28,7 +28,7 @@ import { withPactMagic } from "./warlockPactMagic";
 export const RULESETS: Record<string, RulesetCatalog> = {
   "5e-2024": {
     id: "5e-2024",
-    label: "D&D 5th Edition (2024)",
+    label: "5th Edition (2024)",
     races: RACES_5E_2024,
     classes: CLASSES_5E_2024,
     classProgressions: withPactMagic(CLASS_PROGRESSIONS_5E_2024),
@@ -50,7 +50,7 @@ export const RULESETS: Record<string, RulesetCatalog> = {
   },
   "5e": {
     id: "5e",
-    label: "D&D 5th Edition (2014)",
+    label: "5th Edition (2014)",
     races: RACES_5E,
     classes: CLASSES_5E,
     classProgressions: withPactMagic(CLASS_PROGRESSIONS_5E),
@@ -62,7 +62,7 @@ export const RULESETS: Record<string, RulesetCatalog> = {
   },
   "3.5e": {
     id: "3.5e",
-    label: "D&D 3.5 Edition",
+    label: "3.5 Edition",
     races: RACES_35E,
     classes: CLASSES_35E,
     classProgressions: CLASS_PROGRESSIONS_35E,

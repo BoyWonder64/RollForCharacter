@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ThemeBackdropArt } from "../../../../components/ThemeBackdropArt";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { ThemeBackdropArt, ThemeBackdropFooter } from "../../../../components/ThemeBackdropArt";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "../../../../components/AppText";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -33,7 +33,6 @@ import { levelForXp } from "../../../../features/characters/xpTable";
 import { RestModal } from "../../../../components/RestModal";
 import {
   buildStructuredRollPlan,
-  naturalD20Flag,
   rollD20,
   structuredRollToResult,
 } from "../../../../features/dice/structuredRolls";
@@ -43,6 +42,13 @@ import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext"
 import type { Theme } from "../../../../theme/colors";
 
 type TabKey = "stats" | "spells" | "equipment" | "notes";
+
+// Memoised so switching sheet tabs (a state change in the sheet body) only flips
+// display styles instead of re-rendering all four tabs.
+const StatsPane = memo(StatsTab);
+const SpellsPane = memo(SpellsTab);
+const EquipmentPane = memo(EquipmentTab);
+const NotesPane = memo(NotesTab);
 
 const FIXED_DAMAGE_COLOR = "#B3261E";
 const FIXED_HEAL_COLOR = "#2E7D32";
@@ -55,7 +61,12 @@ export default function CharacterSheetScreen() {
   const [character, setCharacter] = useState<Character | null>(null);
 
   const refresh = useCallback(() => {
-    getCharacter(characterId).then((result) => setCharacter(result ?? null));
+    getCharacter(characterId).then((result) => {
+      const next = result ?? null;
+      // Runs on every focus: keep the same object when nothing changed so the
+      // memoised tabs below don't all re-render just because the tab was revisited.
+      setCharacter((prev) => (prev && next && JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+    });
   }, [characterId]);
 
   const { setActiveCharacter } = useThemeContext();
@@ -410,24 +421,25 @@ function CharacterSheetBody({
           <ThemeBackdropArt bottomGears={activeTab !== "spells" && activeTab !== "notes"} />
         {isMounted("stats") && (
           <View style={tabPane("stats")}>
-            <StatsTab character={character} onChanged={refresh} />
+            <StatsPane character={character} onChanged={refresh} />
           </View>
         )}
         {isMounted("spells") && (
           <View style={tabPane("spells")}>
-            <SpellsTab character={character} onCharacterChanged={refresh} />
+            <SpellsPane character={character} onCharacterChanged={refresh} />
           </View>
         )}
         {isMounted("equipment") && (
           <View style={tabPane("equipment")}>
-            <EquipmentTab character={character} onChanged={refresh} />
+            <EquipmentPane character={character} onChanged={refresh} />
           </View>
         )}
         {isMounted("notes") && (
           <View style={tabPane("notes")}>
-            <NotesTab character={character} />
+            <NotesPane character={character} />
           </View>
         )}
+          <ThemeBackdropFooter />
         </View>
       </KeyboardAwareScrollView>
     </View>

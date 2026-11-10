@@ -201,7 +201,7 @@ export function DmSessionNotes() {
   if (!onboarded) {
     return (
       <View style={styles.card}>
-        <SectionHeading title="Welcome, Dungeon Master" textStyle={styles.sectionTitle} />
+        <SectionHeading title="Welcome, Game Master" textStyle={styles.sectionTitle} />
         <Text style={[styles.hint, { marginVertical: 8 }]}>
           Notes and your timeline are kept per campaign, so you can run more than one. Name your
           first campaign to get started.
@@ -210,7 +210,7 @@ export function DmSessionNotes() {
           style={styles.input}
           value={nameDraft}
           onChangeText={setNameDraft}
-          placeholder="e.g. Curse of the Crimson Throne"
+          placeholder="e.g. The Sunken Crown"
           placeholderTextColor={theme.colors.textMuted}
         />
         <Pressable style={[styles.primaryButton, { marginTop: 12 }]} onPress={handleFinishOnboarding}>

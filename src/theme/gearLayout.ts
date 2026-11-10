@@ -46,7 +46,13 @@ const clear = (a: Circle, b: Circle) => Math.hypot(a.x - b.x, a.y - b.y) >= a.r 
  * purpose; every other pair of gears (other chains, or non-adjacent in a chain) is kept
  * apart, and a chain that can't be placed clear of the rest is skipped.
  */
-export function rollGears(art: GearsArt, width: number, height: number): PlacedGear[] {
+export function rollGears(
+  art: GearsArt,
+  width: number,
+  height: number,
+  // Where a chain may start, as fractions of the width.
+  xRange: { min: number; span: number } = { min: -0.05, span: 0.65 }
+): PlacedGear[] {
   rand = seeded(Math.round(width) * 7919 + Math.round(height) * 31 + art.chains);
   // Only gears with the same size AND tooth count can mesh.
   const groups = new Map<string, GearSprite[]>();
@@ -74,7 +80,7 @@ export function rollGears(art: GearsArt, width: number, height: number): PlacedG
       const radius = first.tip * scale;
 
       // Chain start, inside this chain's vertical band; may poke off either side.
-      let x = -0.05 * width + rand() * 0.65 * width;
+      let x = xRange.min * width + rand() * xRange.span * width;
       let y = ((c + 0.2 + rand() * 0.6) / art.chains) * height;
       // Direction from gear 0 toward gear 1: mostly horizontal so chains read as trains.
       let phi = (rand() < 0.5 ? 0 : 180) + (rand() * 100 - 50);

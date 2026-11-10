@@ -47,8 +47,6 @@ export function NotesTab({ character }: { character: Character }) {
   const [items, setItems] = useState<ItemRow[]>([]);
   const [addItemOpen, setAddItemOpen] = useState(false);
 
-  const scrollIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "scroll") : undefined;
-  const chestIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "chest") : undefined;
 
   const refreshNotes = useCallback(() => {
     listCampaignNotes(characterId).then(setNotes);
@@ -124,7 +122,6 @@ export function NotesTab({ character }: { character: Character }) {
     <View>
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
-          {scrollIcon && <Image source={scrollIcon} style={styles.sectionIcon} resizeMode="contain" />}
           {theme.pixel ? (
             <PixelBanner title="Campaign Notes" />
           ) : (
@@ -178,7 +175,6 @@ export function NotesTab({ character }: { character: Character }) {
 
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
-          {chestIcon && <Image source={chestIcon} style={styles.sectionIcon} resizeMode="contain" />}
           {theme.pixel ? (
             <PixelBanner title="Special Items" />
           ) : (
@@ -237,7 +233,6 @@ function createStyles(theme: Theme) {
       marginBottom: 10,
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-    sectionIcon: { width: 18, height: 18 },
     sectionTitle: {
       color: theme.colors.text,
       fontSize: 16,

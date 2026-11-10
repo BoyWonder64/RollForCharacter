@@ -83,7 +83,7 @@ export const SRD_LANGUAGES: LanguageDefinition[] = [
     id: "deep-speech",
     name: "Deep Speech",
     rare: true,
-    typicalSpeakers: "An alien tongue spoken by aberrations such as mind flayers.",
+    typicalSpeakers: "An alien tongue spoken by aberrations such as aboleths and cloakers.",
   },
   {
     id: "druidic",
@@ -117,6 +117,6 @@ export const SRD_LANGUAGES: LanguageDefinition[] = [
     id: "undercommon",
     name: "Undercommon",
     rare: true,
-    typicalSpeakers: "The trade language of the Underdark.",
+    typicalSpeakers: "The trade language of underworld traders.",
   },
 ];

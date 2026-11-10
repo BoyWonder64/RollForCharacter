@@ -422,7 +422,7 @@ function FeatPickerModalForm({
             style={styles.input}
             value={customName}
             onChangeText={setCustomName}
-            placeholder="e.g. Great Weapon Master"
+            placeholder="e.g. Battle Reflexes"
             placeholderTextColor={theme.colors.textMuted}
             autoFocus
           />

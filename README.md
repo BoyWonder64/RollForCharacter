@@ -4,7 +4,7 @@ RollForCharacter is a cross-platform character sheet and tabletop companion app.
 
 ## Features
 
-- Create and manage characters across three rulesets (D&D 5e 2014, 5e 2024, and 3.5e), including classes, multiclassing, level up, spells, equipment, feats, and portraits.
+- Create and manage characters across three rulesets (5th Edition 2014, 5th Edition 2024, and 3.5 Edition), including classes, multiclassing, level up, spells, equipment, feats, and portraits.
 - Track limited-use class abilities such as Action Surge and Second Wind, with short and long rest recharge.
 - Add homebrew content: a custom race and class per character, plus custom weapons, armor, magic items, and feats. A shared homebrew library is planned (see [TODO.md](TODO.md)).
 - Roll dice and use character-aware rolls, with dice sound effects; roll history can be managed in the app.

@@ -2216,10 +2216,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
         "description": "The balor magically teleports, along with any equipment it is wearing or carrying, up to 120 feet to an unoccupied space it can see."
       },
       {
-        "name": "Variant: Summon Demon",
-        "description": "The demon chooses what to summon and attempts a magical summoning.\nA balor has a 50 percent chance of summoning 1d8 vrocks, 1d6 hezrous, 1d4 glabrezus, 1d3 nalfeshnees, 1d2 mariliths, or one goristro.\nA summoned demon appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other demons. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
-      },
-      {
         "name": "Whip",
         "description": "Melee Weapon Attack: +14 to hit, reach 30 ft., one target. Hit: 15 (2d6 + 8) slashing damage plus 10 (3d6) fire damage, and the target must succeed on a DC 20 Strength saving throw or be pulled up to 25 feet toward the balor."
       }
@@ -4210,10 +4206,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Innate Spellcasting",
         "description": "The djinni's innate spellcasting ability is Charisma (spell save DC 17, +9 to hit with spell attacks). It can innately cast the following spells, requiring no material components:\n\nAt will: detect evil and good, detect magic, thunderwave\n3/day each: create food and water (can create wine instead of water), tongues, wind walk\n1/day each: conjure elemental (air elemental only), creation, gaseous form, invisibility, major image, plane shift"
-      },
-      {
-        "name": "Variant: Genie Powers",
-        "description": "Genies have a variety of magical capabilities, including spells. A few have even greater powers that allow them to alter their appearance or the nature of reality.\n\n**Disguises.** Some genies can veil themselves in illusion to pass as other similarly shaped creatures. Such genies can innately cast the disguise self spell at will, often with a longer duration than is normal for that spell. Mightier genies can cast the true polymorph spell one to three times per day, possibly with a longer duration than normal. Such genies can change only their own shape, but a rare few can use the spell on other creatures and objects as well.\n**Wishes.** The genie power to grant wishes is legendary among mortals. Only the most potent genies, such as those among the nobility, can do so. A particular genie that has this power can grant one to three wishes to a creature that isn't a genie. Once a genie has granted its limit of wishes, it can't grant wishes again for some amount of time (usually 1 year). and cosmic law dictates that the same genie can expend its limit of wishes on a specific creature only once in that creature's existence.\nTo be granted a wish, a creature within 60 feet of the genie states a desired effect to it. The genie can then cast the wish spell on the creature's behalf to bring about the effect. Depending on the genie's nature, the genie might try to pervert the intent of the wish by exploiting the wish's poor wording. The perversion of the wording is usually crafted to be to the genie's benefit."
       }
     ],
     "actions": [
@@ -4739,10 +4731,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Claws",
         "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one creature. Hit: 4 (1d4 + 2) slashing damage."
-      },
-      {
-        "name": "Variant: Summon Mephits",
-        "description": "The mephit has a 25 percent chance of summoning 1d4 mephits of its kind. A summoned mephit appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other mephits. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -4860,10 +4848,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Innate Spellcasting",
         "description": "The efreeti's innate spell casting ability is Charisma (spell save DC 15, +7 to hit with spell attacks). It can innately cast the following spells, requiring no material components:\n\nAt will: detect magic\n3/day each: enlarge/reduce, tongues\n1/day each: conjure elemental (fire elemental only), gaseous form, invisibility, major image, plane shift, wall of fire"
-      },
-      {
-        "name": "Variant: Genie Powers",
-        "description": "Genies have a variety of magical capabilities, including spells. A few have even greater powers that allow them to alter their appearance or the nature of reality.\n\n**Disguises.** Some genies can veil themselves in illusion to pass as other similarly shaped creatures. Such genies can innately cast the disguise self spell at will, often with a longer duration than is normal for that spell. Mightier genies can cast the true polymorph spell one to three times per day, possibly with a longer duration than normal. Such genies can change only their own shape, but a rare few can use the spell on other creatures and objects as well.\n**Wishes.** The genie power to grant wishes is legendary among mortals. Only the most potent genies, such as those among the nobility, can do so. A particular genie that has this power can grant one to three wishes to a creature that isn't a genie. Once a genie has granted its limit of wishes, it can't grant wishes again for some amount of time (usually 1 year). and cosmic law dictates that the same genie can expend its limit of wishes on a specific creature only once in that creature's existence.\nTo be granted a wish, a creature within 60 feet of the genie states a desired effect to it. The genie can then cast the wish spell on the creature's behalf to bring about the effect. Depending on the genie's nature, the genie might try to pervert the intent of the wish by exploiting the wish's poor wording. The perversion of the wording is usually crafted to be to the genie's benefit."
       }
     ],
     "actions": [
@@ -5049,10 +5033,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Parry (Reaction)",
         "description": "The erinyes adds 4 to its AC against one melee attack that would hit it. To do so, the erinyes must see the attacker and be wielding a melee weapon."
-      },
-      {
-        "name": "Variant: Rope of Entanglement",
-        "description": "Some erinyes carry a rope of entanglement (detailed in the Dungeon Master's Guide). When such an erinyes uses its Multiattack, the erinyes can use the rope in place of two of the attacks."
       }
     ],
     "legendaryActions": [],
@@ -5106,10 +5086,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Multiattack",
         "description": "The ettercap makes two attacks: one with its bite and one with its claws."
-      },
-      {
-        "name": "Variant: Web Garrote",
-        "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one Medium or Small creature against which the ettercap has advantage on the attack roll. Hit: 4 (1d4 + 2) bludgeoning damage, and the target is grappled (escape DC 12). Until this grapple ends, the target can't breathe, and the ettercap has advantage on attack rolls against it."
       },
       {
         "name": "Web",
@@ -6282,14 +6258,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "senses": "darkvision 30 ft., passive Perception 10",
     "languages": "",
     "traits": [
-      {
-        "name": "Variant: Hold Breath",
-        "description": "The lizard can hold its breath for 15 minutes. (A lizard that has this trait also has a swimming speed of 30 feet.)"
-      },
-      {
-        "name": "Variant: Spider Climb",
-        "description": "The lizard can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check."
-      }
     ],
     "actions": [
       {
@@ -6967,10 +6935,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Pincer",
         "description": "Melee Weapon Attack: +9 to hit, reach 10 ft., one target. Hit: 16 (2d10 + 5) bludgeoning damage. If the target is a Medium or smaller creature, it is grappled (escape DC 15). The glabrezu has two pincers, each of which can grapple only one target."
-      },
-      {
-        "name": "Variant: Summon Demon",
-        "description": "The demon chooses what to summon and attempts a magical summoning.\nA glabrezu has a 30 percent chance of summoning 1d3 vrocks, 1d2 hezrous, or one glabrezu.\nA summoned demon appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other demons. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -7392,24 +7356,12 @@ export const MONSTERS_5E: MonsterRecord[] = [
         "description": "The hag can breathe air and water."
       },
       {
-        "name": "Hag Coven",
-        "description": "When hags must work together, they form covens, in spite of their selfish natures. A coven is made up of hags of any type, all of whom are equals within the group. However, each of the hags continues to desire more personal power.\nA coven consists of three hags so that any arguments between two hags can be settled by the third. If more than three hags ever come together, as might happen if two covens come into conflict, the result is usually chaos."
-      },
-      {
-        "name": "Hag Eye (Coven Only)",
-        "description": "A hag coven can craft a magic item called a hag eye, which is made from a real eye coated in varnish and often fitted to a pendant or other wearable item. The hag eye is usually entrusted to a minion for safekeeping and transport. A hag in the coven can take an action to see what the hag eye sees if the hag eye is on the same plane of existence. A hag eye has AC 10, 1 hit point, and darkvision with a radius of 60 feet. If it is destroyed, each coven member takes 3d10 psychic damage and is blinded for 24 hours.\nA hag coven can have only one hag eye at a time, and creating a new one requires all three members of the coven to perform a ritual. The ritual takes 1 hour, and the hags can't perform it while blinded. During the ritual, if the hags take any action other than performing the ritual, they must start over."
-      },
-      {
         "name": "Innate Spellcasting",
         "description": "The hag's innate spellcasting ability is Charisma (spell save DC 12). She can innately cast the following spells, requiring no material components:\n\nAt will: dancing lights, minor illusion, vicious mockery"
       },
       {
         "name": "Mimicry",
         "description": "The hag can mimic animal sounds and humanoid voices. A creature that hears the sounds can tell they are imitations with a successful DC 14 Wisdom (Insight) check."
-      },
-      {
-        "name": "Shared Spellcasting (Coven Only)",
-        "description": "While all three members of a hag coven are within 30 feet of one another, they can each cast the following spells from the wizard's spell list but must share the spell slots among themselves:\n\n* 1st level (4 slots): identify, ray of sickness\n* 2nd level (3 slots): hold person, locate object\n* 3rd level (3 slots): bestow curse, counterspell, lightning bolt\n* 4th level (3 slots): phantasmal killer, polymorph\n* 5th level (2 slots): contact other plane, scrying\n* 6th level (1 slot): eye bite\n\nFor casting these spells, each hag is a 12th-level spellcaster that uses Intelligence as her spellcasting ability. The spell save DC is 12+the hag's Intelligence modifier, and the spell attack bonus is 4+the hag's Intelligence modifier."
       }
     ],
     "actions": [
@@ -7921,10 +7873,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Multiattack",
         "description": "The hezrou makes three attacks: one with its bite and two with its claws."
-      },
-      {
-        "name": "Variant: Summon Demon",
-        "description": "The demon chooses what to summon and attempts a magical summoning.\nA hezrou has a 30 percent chance of summoning 2d6 dretches or one hezrou.\nA summoned demon appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other demons. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -8378,10 +8326,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Frost Breath",
         "description": "The mephit exhales a 15-foot cone of cold air. Each creature in that area must succeed on a DC 10 Dexterity saving throw, taking 5 (2d4) cold damage on a failed save, or half as much damage on a successful one."
-      },
-      {
-        "name": "Variant: Summon Mephits",
-        "description": "The mephit has a 25 percent chance of summoning 1d4 mephits of its kind. A summoned mephit appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other mephits. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -8421,10 +8365,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Shapechanger",
         "description": "The imp can use its action to polymorph into a beast form that resembles a rat (speed 20 ft.), a raven (20 ft., fly 60 ft.), or a spider (20 ft., climb 20 ft.), or back into its true form. Its statistics are the same in each form, except for the speed changes noted. Any equipment it is wearing or carrying isn't transformed. It reverts to its true form if it dies."
-      },
-      {
-        "name": "Variant: Familiar",
-        "description": "The imp can serve another creature as a familiar, forming a telepathic bond with its willing master. While the two are bonded, the master can sense what the imp senses as long as they are within 1 mile of each other. While the imp is within 10 feet of its master, the master shares the imp's Magic Resistance trait. At any time and for any reason, the imp can end its service as a familiar, ending the telepathic bond."
       }
     ],
     "actions": [
@@ -9179,10 +9119,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Fire Breath",
         "description": "The mephit exhales a 15-foot cone of fire. Each creature in that area must make a DC 11 Dexterity saving throw, taking 7 (2d6) fire damage on a failed save, or half as much damage on a successful one."
-      },
-      {
-        "name": "Variant: Summon Mephits",
-        "description": "The mephit has a 25 percent chance of summoning 1d4 mephits of its kind. A summoned mephit appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other mephits. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -9375,10 +9311,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Teleport",
         "description": "The marilith magically teleports, along with any equipment it is wearing or carrying, up to 120 feet to an unoccupied space it can see."
-      },
-      {
-        "name": "Variant: Summon Demon",
-        "description": "The demon chooses what to summon and attempts a magical summoning.\nA marilith has a 50 percent chance of summoning 1d6 vrocks, 1d4 hezrous, 1d3 glabrezus, 1d2 nalfeshnees, or one marilith.\nA summoned demon appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other demons. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -9902,10 +9834,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Teleport",
         "description": "The nalfeshnee magically teleports, along with any equipment it is wearing or carrying, up to 120 feet to an unoccupied space it can see."
-      },
-      {
-        "name": "Variant: Summon Demon",
-        "description": "The demon chooses what to summon and attempts a magical summoning.\nA nalfeshnee has a 50 percent chance of summoning 1d4 vrocks, 1d3 hezrous, 1d2 glabrezus, or one nalfeshnee.\nA summoned demon appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other demons. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -9935,28 +9863,12 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "languages": "Abyssal, Common, Infernal, Primordial",
     "traits": [
       {
-        "name": "Hag Coven",
-        "description": "When hags must work together, they form covens, in spite of their selfish natures. A coven is made up of hags of any type, all of whom are equals within the group. However, each of the hags continues to desire more personal power.\nA coven consists of three hags so that any arguments between two hags can be settled by the third. If more than three hags ever come together, as might happen if two covens come into conflict, the result is usually chaos."
-      },
-      {
-        "name": "Hag Eye (Coven Only)",
-        "description": "A hag coven can craft a magic item called a hag eye, which is made from a real eye coated in varnish and often fitted to a pendant or other wearable item. The hag eye is usually entrusted to a minion for safekeeping and transport. A hag in the coven can take an action to see what the hag eye sees if the hag eye is on the same plane of existence. A hag eye has AC 10, 1 hit point, and darkvision with a radius of 60 feet. If it is destroyed, each coven member takes 3d10 psychic damage and is blinded for 24 hours.\nA hag coven can have only one hag eye at a time, and creating a new one requires all three members of the coven to perform a ritual. The ritual takes 1 hour, and the hags can't perform it while blinded. During the ritual, if the hags take any action other than performing the ritual, they must start over."
-      },
-      {
         "name": "Innate Spellcasting",
         "description": "The hag's innate spellcasting ability is Charisma (spell save DC 14, +6 to hit with spell attacks). She can innately cast the following spells, requiring no material components:\n\nAt will: detect magic, magic missile\n2/day each: plane shift (self only), ray of enfeeblement, sleep"
       },
       {
         "name": "Magic Resistance",
         "description": "The hag has advantage on saving throws against spells and other magical effects."
-      },
-      {
-        "name": "Night Hag Items",
-        "description": "A night hag carries two very rare magic items that she must craft for herself If either object is lost, the night hag will go to great lengths to retrieve it, as creating a new tool takes time and effort.\nHeartstone: This lustrous black gem allows a night hag to become ethereal while it is in her possession. The touch of a heartstone also cures any disease. Crafting a heartstone takes 30 days.\nSoul Bag: When an evil humanoid dies as a result of a night hag's Nightmare Haunting, the hag catches the soul in this black sack made of stitched flesh. A soul bag can hold only one evil soul at a time, and only the night hag who crafted the bag can catch a soul with it. Crafting a soul bag takes 7 days and a humanoid sacrifice (whose flesh is used to make the bag)."
-      },
-      {
-        "name": "Shared Spellcasting (Coven Only)",
-        "description": "While all three members of a hag coven are within 30 feet of one another, they can each cast the following spells from the wizard's spell list but must share the spell slots among themselves:\n\n* 1st level (4 slots): identify, ray of sickness\n* 2nd level (3 slots): hold person, locate object\n* 3rd level (3 slots): bestow curse, counterspell, lightning bolt\n* 4th level (3 slots): phantasmal killer, polymorph\n* 5th level (2 slots): contact other plane, scrying\n* 6th level (1 slot): eye bite\n\nFor casting these spells, each hag is a 12th-level spellcaster that uses Intelligence as her spellcasting ability. The spell save DC is 12+the hag's Intelligence modifier, and the spell attack bonus is 4+the hag's Intelligence modifier."
       }
     ],
     "actions": [
@@ -10926,10 +10838,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Magic Resistance",
         "description": "The pseudodragon has advantage on saving throws against spells and other magical effects."
-      },
-      {
-        "name": "Variant: Familiar",
-        "description": "The pseudodragon can serve another creature as a familiar, forming a magic, telepathic bond with that willing companion. While the two are bonded, the companion can sense what the pseudodragon senses as long as they are within 1 mile of each other. While the pseudodragon is within 10 feet of its companion, the companion shares the pseudodragon's Magic Resistance trait. At any time and for any reason, the pseudodragon can end its service as a familiar, ending the telepathic bond."
       }
     ],
     "actions": [
@@ -11020,10 +10928,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Shapechanger",
         "description": "The quasit can use its action to polymorph into a beast form that resembles a bat (speed 10 ft. fly 40 ft.), a centipede (40 ft., climb 40 ft.), or a toad (40 ft., swim 40 ft.), or back into its true form. Its statistics are the same in each form, except for the speed changes noted. Any equipment it is wearing or carrying isn't transformed. It reverts to its true form if it dies."
-      },
-      {
-        "name": "Variant: Familiar",
-        "description": "The quasit can serve another creature as a familiar, forming a telepathic bond with its willing master. While the two are bonded, the master can sense what the quasit senses as long as they are within 1 mile of each other. While the quasit is within 10 feet of its master, the master shares the quasit's Magic Resistance trait. At any time and for any reason, the quasit can end its service as a familiar, ending the telepathic bond."
       }
     ],
     "actions": [
@@ -11773,10 +11677,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Shortsword",
         "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) piercing damage."
-      },
-      {
-        "name": "Variant: Panpipes",
-        "description": "Gentle Lullaby. The creature falls asleep and is unconscious for 1 minute. The effect ends if the creature takes damage or if someone takes an action to shake the creature awake."
       }
     ],
     "legendaryActions": [],
@@ -11887,20 +11787,8 @@ export const MONSTERS_5E: MonsterRecord[] = [
         "description": "The hag can breathe air and water."
       },
       {
-        "name": "Hag Coven",
-        "description": "When hags must work together, they form covens, in spite of their selfish natures. A coven is made up of hags of any type, all of whom are equals within the group. However, each of the hags continues to desire more personal power.\nA coven consists of three hags so that any arguments between two hags can be settled by the third. If more than three hags ever come together, as might happen if two covens come into conflict, the result is usually chaos."
-      },
-      {
-        "name": "Hag Eye (Coven Only)",
-        "description": "A hag coven can craft a magic item called a hag eye, which is made from a real eye coated in varnish and often fitted to a pendant or other wearable item. The hag eye is usually entrusted to a minion for safekeeping and transport. A hag in the coven can take an action to see what the hag eye sees if the hag eye is on the same plane of existence. A hag eye has AC 10, 1 hit point, and darkvision with a radius of 60 feet. If it is destroyed, each coven member takes 3d10 psychic damage and is blinded for 24 hours.\nA hag coven can have only one hag eye at a time, and creating a new one requires all three members of the coven to perform a ritual. The ritual takes 1 hour, and the hags can't perform it while blinded. During the ritual, if the hags take any action other than performing the ritual, they must start over."
-      },
-      {
         "name": "Horrific Appearance",
         "description": "Any humanoid that starts its turn within 30 feet of the hag and can see the hag's true form must make a DC 11 Wisdom saving throw. On a failed save, the creature is frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the hag is within line of sight, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the hag's Horrific Appearance for the next 24 hours.\nUnless the target is surprised or the revelation of the hag's true form is sudden, the target can avert its eyes and avoid making the initial saving throw. Until the start of its next turn, a creature that averts its eyes has disadvantage on attack rolls against the hag."
-      },
-      {
-        "name": "Shared Spellcasting (Coven Only)",
-        "description": "While all three members of a hag coven are within 30 feet of one another, they can each cast the following spells from the wizard's spell list but must share the spell slots among themselves:\n\n* 1st level (4 slots): identify, ray of sickness\n* 2nd level (3 slots): hold person, locate object\n* 3rd level (3 slots): bestow curse, counterspell, lightning bolt\n* 4th level (3 slots): phantasmal killer, polymorph\n* 5th level (2 slots): contact other plane, scrying\n* 6th level (1 slot): eye bite\n\nFor casting these spells, each hag is a 12th-level spellcaster that uses Intelligence as her spellcasting ability. The spell save DC is 12+the hag's Intelligence modifier, and the spell attack bonus is 4+the hag's Intelligence modifier."
       }
     ],
     "actions": [
@@ -12542,10 +12430,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Steam Breath",
         "description": "The mephit exhales a 15-foot cone of scalding steam. Each creature in that area must succeed on a DC 10 Dexterity saving throw, taking 4 (1d8) fire damage on a failed save, or half as much damage on a successful one."
-      },
-      {
-        "name": "Variant: Summon Mephits",
-        "description": "The mephit has a 25 percent chance of summoning 1d4 mephits of its kind. A summoned mephit appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other mephits. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],
@@ -13530,10 +13414,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Regeneration",
         "description": "The troll regains 10 hit points at the start of its turn. If the troll takes acid or fire damage, this trait doesn't function at the start of the troll's next turn. The troll dies only if it starts its turn with 0 hit points and doesn't regenerate."
-      },
-      {
-        "name": "Variant: Loathsome Limbs",
-        "description": "Whenever the troll takes at least 15 slashing damage at one time, roll a d20 to determine what else happens to it:\n\n**1-10:** Nothing else happens.\n**11-14:** One leg is severed from the troll if it has any legs left.\n**15- 18:** One arm is severed from the troll if it has any arms left.\n**19-20:** The troll is decapitated, but the troll dies only if it can't regenerate. If it dies, so does the severed head.\n\nIf the troll finishes a short or long rest without reattaching a severed limb or head, the part regrows. At that point, the severed part dies. Until then, a severed part acts on the troll's initiative and has its own action and movement. A severed part has AC 13, 10 hit points, and the troll's Regeneration trait.\nA **severed leg** is unable to attack and has a speed of 5 feet.\nA **severed arm** has a speed of 5 feet and can make one claw attack on its turn, with disadvantage on the attack roll unless the troll can see the arm and its target. Each time the troll loses an arm, it loses a claw attack.\nIf its head is severed, the troll loses its bite attack and its body is blinded unless the head can see it. The **severed head** has a speed of 0 feet and the troll's Keen Smell trait. It can make a bite attack but only against a target in its space.\nThe troll's speed is halved if it's missing a leg. If it loses both legs, it falls prone. If it has both arms, it can crawl. With only one arm, it can still crawl, but its speed is halved. With no arms or legs, its speed is 0, and it can't benefit from bonuses to speed."
       }
     ],
     "actions": [
@@ -13943,10 +13823,6 @@ export const MONSTERS_5E: MonsterRecord[] = [
       {
         "name": "Talons",
         "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 14 (2d10 + 3) slashing damage."
-      },
-      {
-        "name": "Variant: Summon Demon",
-        "description": "The demon chooses what to summon and attempts a magical summoning.\nA vrock has a 30 percent chance of summoning 2d4 dretches or one vrock.\nA summoned demon appears in an unoccupied space within 60 feet of its summoner, acts as an ally of its summoner, and can't summon other demons. It remains for 1 minute, until it or its summoner dies, or until its summoner dismisses it as an action."
       }
     ],
     "legendaryActions": [],

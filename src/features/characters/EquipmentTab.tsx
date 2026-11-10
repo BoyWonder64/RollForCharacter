@@ -1,12 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
-import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { Text, TextInput } from "../../components/AppText";
 import { useFocusEffect } from "expo-router";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
-import { useIconSettings } from "../../features/icons/IconSettingsContext";
-import { getCampaignItemIcon } from "../../features/icons/iconAssets";
 import type { Character } from "../../types/models";
 import {
   addArmorFromCatalog,
@@ -58,7 +56,6 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
   const characterId = character.id;
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const { iconsEnabled, iconStyle } = useIconSettings();
 
   const weaponCatalog = useMemo(() => listWeaponCatalog(character.ruleset), [character.ruleset]);
   const armorCatalog = useMemo(() => listArmorCatalog(character.ruleset), [character.ruleset]);
@@ -229,14 +226,11 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
     refreshMagicItems();
   }
 
-  const swordIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "sword") : undefined;
-  const shieldIcon = iconsEnabled ? getCampaignItemIcon(iconStyle, "shield") : undefined;
 
   return (
     <View>
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
-          {swordIcon && <Image source={swordIcon} style={styles.sectionIcon} resizeMode="contain" />}
           <SectionHeading title="Weapons" textStyle={styles.sectionTitle} />
         </View>
         <Pressable style={styles.actionLink} onPress={() => setAddWeaponOpen(true)}>
@@ -312,7 +306,6 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
 
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleRow}>
-          {shieldIcon && <Image source={shieldIcon} style={styles.sectionIcon} resizeMode="contain" />}
           <SectionHeading title="Armor" textStyle={styles.sectionTitle} />
         </View>
         <Pressable style={styles.actionLink} onPress={() => setAddArmorOpen(true)}>
@@ -487,7 +480,6 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-    sectionIcon: { width: 20, height: 20 },
     sectionHeaderRow: {
       flexDirection: "row",
       alignItems: "center",
