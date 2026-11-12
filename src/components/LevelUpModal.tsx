@@ -1,3 +1,4 @@
+import { abilityScoreCap } from "../features/characters/homebrewRules";
 import { useMemo, useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 import { Text, TextInput } from "./AppText";
@@ -515,7 +516,7 @@ function LevelUpModalForm({
         <View style={styles.buttonColumn}>
           <Pressable style={styles.optionButton} onPress={() => setStep("asi-ability-mode")}>
             <Text style={styles.optionButtonTitle}>Increase Ability Scores</Text>
-            <Text style={styles.optionButtonSub}>+2 to one score, or +1 to two scores (max 20)</Text>
+            <Text style={styles.optionButtonSub}>+2 to one score, or +1 to two scores (max {abilityScoreCap(character)})</Text>
           </Pressable>
           <Pressable style={styles.optionButton} onPress={() => setStep("asi-feat")}>
             <Text style={styles.optionButtonTitle}>Take a Feat</Text>

@@ -103,6 +103,10 @@ type FormState = {
   extraConcentrationSlots: number;
   deathSaveSuccessesNeeded: number;
   deathSaveFailuresNeeded: number;
+  critRangeMin: number;
+  attunementLimit: number;
+  abilityScoreMax: number;
+  inspirationMax: number;
   themeFamily: ThemeFamilyId | null;
   fontChoice: FontChoiceId | null;
   portraitUri: string | null;
@@ -140,6 +144,10 @@ function toFormState(character: Character): FormState {
     extraConcentrationSlots: character.extraConcentrationSlots,
     deathSaveSuccessesNeeded: character.deathSaveSuccessesNeeded,
     deathSaveFailuresNeeded: character.deathSaveFailuresNeeded,
+    critRangeMin: character.critRangeMin,
+    attunementLimit: character.attunementLimit,
+    abilityScoreMax: character.abilityScoreMax,
+    inspirationMax: character.inspirationMax,
     themeFamily: character.themeFamily as ThemeFamilyId | null,
     fontChoice: character.fontChoice as FontChoiceId | null,
     portraitUri: character.portraitUri,
@@ -424,6 +432,10 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
       extraConcentrationSlots: Math.max(0, form.extraConcentrationSlots),
       deathSaveSuccessesNeeded: Math.max(1, form.deathSaveSuccessesNeeded),
       deathSaveFailuresNeeded: Math.max(1, form.deathSaveFailuresNeeded),
+      critRangeMin: Math.min(20, Math.max(2, form.critRangeMin)),
+      attunementLimit: Math.max(1, form.attunementLimit),
+      abilityScoreMax: Math.max(20, form.abilityScoreMax),
+      inspirationMax: Math.max(1, form.inspirationMax),
       themeFamily: form.themeFamily,
       fontChoice: form.fontChoice,
       customRaceTraits: serializeCustomRaceTraits(form.customRaceTraits),
@@ -1021,6 +1033,55 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
             min={1}
             max={10}
             onChange={(v) => updateField("deathSaveFailuresNeeded", v)}
+          />
+
+          <Text style={styles.subLabel}>Critical hit range</Text>
+          <Text style={styles.hint}>
+            Lowest natural d20 that counts as a critical hit. 20 is the rules; 19 gives a 19–20 crit
+            range.
+          </Text>
+          <Stepper
+            styles={styles}
+            value={form.critRangeMin}
+            min={2}
+            max={20}
+            onChange={(v) => updateField("critRangeMin", v)}
+          />
+
+          <Text style={styles.subLabel}>Attunement limit</Text>
+          <Text style={styles.hint}>
+            Most magic items a character can be attuned to at once (rules: 3). With homebrew off the
+            app doesn&apos;t cap attunement.
+          </Text>
+          <Stepper
+            styles={styles}
+            value={form.attunementLimit}
+            min={1}
+            max={20}
+            onChange={(v) => updateField("attunementLimit", v)}
+          />
+
+          <Text style={styles.subLabel}>Maximum ability score</Text>
+          <Text style={styles.hint}>Level-up and feat increases stop here (rules: 20, up to 30).</Text>
+          <Stepper
+            styles={styles}
+            value={form.abilityScoreMax}
+            min={20}
+            max={30}
+            onChange={(v) => updateField("abilityScoreMax", v)}
+          />
+
+          <Text style={styles.subLabel}>Inspiration points</Text>
+          <Text style={styles.hint}>
+            How many inspiration points can be held at once (rules: 1). Above 1 the sheet shows a
+            counter with − and +.
+          </Text>
+          <Stepper
+            styles={styles}
+            value={form.inspirationMax}
+            min={1}
+            max={10}
+            onChange={(v) => updateField("inspirationMax", v)}
           />
         </>
       )}

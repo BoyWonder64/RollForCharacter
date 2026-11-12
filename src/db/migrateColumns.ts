@@ -104,6 +104,11 @@ const COLUMN_MIGRATIONS: ColumnMigration[] = [
     column: "death_save_failures_needed",
     definition: "INTEGER NOT NULL DEFAULT 3",
   },
+  { table: "characters", column: "crit_range_min", definition: "INTEGER NOT NULL DEFAULT 20" },
+  { table: "characters", column: "attunement_limit", definition: "INTEGER NOT NULL DEFAULT 3" },
+  { table: "characters", column: "ability_score_max", definition: "INTEGER NOT NULL DEFAULT 20" },
+  { table: "characters", column: "inspiration_max", definition: "INTEGER NOT NULL DEFAULT 1" },
+  { table: "characters", column: "inspiration_points", definition: "INTEGER NOT NULL DEFAULT 0" },
   {
     table: "characters",
     column: "hit_dice_remaining",

@@ -1,4 +1,4 @@
-import { deathSaveLimits } from "./homebrewRules";
+import { abilityScoreCap, deathSaveLimits, inspirationCap, inspirationCount } from "./homebrewRules";
 import { addConcentration, getConcentrations, removeConcentration, toConcentrationPatch } from "./concentration";
 import { eq } from "drizzle-orm";
 import * as Crypto from "expo-crypto";
@@ -283,7 +283,16 @@ export async function setExhaustionLevel(id: number, level: number): Promise<voi
 export async function toggleInspiration(id: number): Promise<void> {
   const character = await getCharacter(id);
   if (!character) return;
-  await updateCharacter(id, { inspiration: !character.inspiration });
+  const next = inspirationCount(character) > 0 ? 0 : 1;
+  await updateCharacter(id, { inspiration: next > 0, inspirationPoints: next });
+}
+
+/** Homebrew: holds `delta` more (or fewer) inspiration points, within 0..the character's cap. */
+export async function adjustInspiration(id: number, delta: number): Promise<void> {
+  const character = await getCharacter(id);
+  if (!character) return;
+  const next = Math.max(0, Math.min(inspirationCap(character), inspirationCount(character) + delta));
+  await updateCharacter(id, { inspiration: next > 0, inspirationPoints: next });
 }
 
 /** Adds (or subtracts, for corrections) XP, clamped at 0. No auto-leveling -- Level Up stays a separate, deliberate action. */
@@ -380,7 +389,7 @@ export async function levelUp(
       AbilityScoreKey,
       number,
     ][]) {
-      updates[key] = Math.min(20, character[key] + amount);
+      updates[key] = Math.min(abilityScoreCap(character), character[key] + amount);
     }
   }
 

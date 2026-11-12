@@ -1,6 +1,6 @@
 # TODO
 
-Last reviewed: 2026-11-03. Items marked "(from code)" are limitations the source comments call out. When a feature is checked on a device and works, move it to **Features** in [README.md](README.md).
+Last reviewed: 2026-11-11. Items marked "(from code)" are limitations the source comments call out. When a feature is checked on a device and works, move it to **Features** in [README.md](README.md).
 
 ## Needs a device check
 Built and covered by Jest, but nobody has run these on a device or the web build yet (there is no render-test library installed). Once each one is confirmed, move it to README Features.
@@ -8,6 +8,7 @@ Built and covered by Jest, but nobody has run these on a device or the web build
 - [ ] **Starting equipment screen**: 2024 kit packages (A / B / C / gold), swapping weapons and armor by proficiency, Gear & Supplies, auto-equip and the Armor Class preview; also the newer "your choice" item picker (musical instrument/artisan's tools), 2014's "take gold instead" roll, the 3.5e weapon/armor catalog and swap picker, and 2024 weapon Mastery showing on the Equipment tab. Logic: `startingEquipment.test.ts`, `gearRepo.test.ts`, `weaponMastery.test.ts`.
 - [ ] **Armor Class now recomputes live** from equipped armor/shields, feat bonuses, and Dex ASIs (previously fixed at creation) -- check equipping/unequipping armor and a shield updates the sheet immediately without leaving the Equipment tab, and that a Dex ASI at level-up updates it too. Logic: `armorClass.test.ts`, `gearRepo.test.ts`.
 - [ ] **DM Encounter tab**: party roller, bestiary browser (filters, quantity, roll HP, custom creatures), creature stat-block rolls, initiative tracker and saved encounters. Logic: `monsterRolls.test.ts`, `dmCreatureRepo.test.ts`. The roll buttons come from parsing stat-block text, so look at a few odd monsters as well as common ones.
+- [ ] **Per-character homebrew rules** (Edit → Homebrew, uncommitted work in progress): death-save counts, crit range, attunement limit, ability score cap, inspiration points. Logic: `homebrewRules.ts`, `homebrewRules.test.ts`. Check each override applies only while the toggle is on, and that the sheet (Stats tab inspiration, Equipment attunement, dice roller crit flag, Level Up cap) reflects it.
 - [ ] **Homebrew Library screen** (Settings → Homebrew Library, [homebrew.tsx](src/app/homebrew.tsx)): browse, create, edit and delete library races, classes, subclasses, weapons, armor, magic items, feats, monsters, abilities and spells, plus "Add to Character" to clone a library entry onto a chosen character. Logic: `homebrewRepo.ts`, `gearRepo.ts`, `magicItemRepo.ts`, `featRepo.ts`, `dmCreatureRepo.ts`, `resourceRepo.ts`, `spellRepo.ts`.
 
 ## Top priority: make everything homebrewable
@@ -25,7 +26,7 @@ Goal: anything the app ships as a catalog entry, a player can also create, edit 
 - [ ] Clone a catalog entry as a starting point for homebrew.
 - [ ] Export and import homebrew as JSON to share between players.
 - [ ] Custom abilities: an attached roll's `level` is total character level, not class level. Built-in abilities can be resized or hidden, but their recharge rule can't be changed and they can't get a roll.
-- [ ] Custom race size picker ([new.tsx:894](src/app/(tabs)/characters/new.tsx#L894)) only offers Small/Medium. Add Large, and widen the `"Small" | "Medium"` union in [types.ts:38,50](src/data/rulesets/types.ts#L38) plus the `customRaceSize` column default/type.
+- [ ] Custom race size picker ([new.tsx](src/app/(tabs)/characters/new.tsx), also `HomebrewRaceModal.tsx`) only offers Small/Medium. Add Large, and widen the `"Small" | "Medium"` union in [types.ts](src/data/rulesets/types.ts) (`size`, `sizeOptions`), `characterRepo.ts`, `homebrewRepo.ts`, plus the `customRaceSize` column type.
 
 ### Content and legal wording
 - [x] The `feats` table comment in [schema.ts](src/db/schema.ts) said the app "only ships official D&D content" -- reworded to note homebrew feats share the same table (`sourceKey: "homebrew"`) and aren't SRD/CC-BY/OGL content.
@@ -47,7 +48,7 @@ All seven items below are implemented and covered by Jest (`startingEquipment.te
 - [ ] Conditions on creatures don't change their rolls automatically.
 - [ ] The round counter and current-turn marker reset when the app restarts (initiative values persist).
 - [ ] Spellcasting entries are shown as text only.
-- [ ] The Encounter tab borrows the dice-roller tab icon; it needs its own.
+- [x] The Encounter tab now has its own icon (Raven and Shikashi packs).
 
 ## Party mode: WiFi/LAN option (pinned, not started)
 Idea: let a DM and players join a party over the same WiFi network instead of through Supabase, so a table with no internet access can still use party sync. Current `partyRepo.ts` is tightly coupled to Supabase (RPCs, `auth.getUser()`, Postgres tables, realtime channels), so this would need a backend-agnostic layer underneath [party.tsx](src/app/(tabs)/party.tsx), [CreatePartyModal.tsx](src/components/CreatePartyModal.tsx) and [JoinPartyModal.tsx](src/components/JoinPartyModal.tsx).
@@ -89,14 +90,11 @@ Found in the 2026-11-02 class and race review against open5e v2 (srd-2014) and d
 - [x] `LEGAL.md` (3.5e OGL notes, at `src/data/rulesets/3.5e/LEGAL.md`), `docs/DND_CONTENT_SOURCES.md`, `FEATURES.md`, `ART_ONBOARDING.md` and `EQUIPMENT_ICON_CATALOG.md` all exist now -- the old "points to files that don't exist" note was stale.
 - [ ] Keep README.md and [docs/DATA_LAYER.md](docs/DATA_LAYER.md) in step with any schema change (see Checks in README).
 
-
-
-## Programmer additions 
+## Programmer additions
 - [x] Long-press delete only works with Developer mode on (done 2026-11-05). Long-press now offers Duplicate or Delete.
 - [x] Developer mode review done (2026-11-05). Built, needs a device check: dice override (Settings → Developer mode; random / nat 20 / nat 1 / max / min / seeded), sample character generator (5e, 2024, 3.5e at levels 1/5/10/20), duplicate character, data health check, red DEV badge in the tab header, diagnostics now share the Supabase host and "signed in: yes/no" instead of the full URL and email. Logic: `diceOverride.test.ts`, `devTools.test.ts`.
 - [ ] Developer mode ideas not built yet: sync inspector with force push/pull, character JSON export/import, feature-flag toggles, in-app error log (many `.catch(() => {})` swallow failures), theme/font preview sheet, reset tools, hiding the toggle behind a hidden gesture, and gating other destructive actions (homebrew delete, character reset) the same way as character delete.
 
 - [x] Profile picture not saving (fixed 2026-11-05, needs a device check): sprite/upload portraits now persist via `persistPortrait` for non-`file://` URIs, the Edit screen saves a changed/removed portrait immediately, and the wizard alerts if the portrait save fails. Check: new character with a sprite and with an upload, then change it from Edit; it should show on the list, sheet header and after restart.
-
-
-Look into the game center for multiplayer
+## Ideas
+- [ ] Look into Game Center (and Google Play Games) for multiplayer.

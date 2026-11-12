@@ -1,3 +1,4 @@
+import { critRangeMin } from "../../features/characters/homebrewRules";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ThemeBackdropArt } from "../../components/ThemeBackdropArt";
 import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
@@ -423,7 +424,7 @@ export default function DiceRollerScreen() {
     setLastRoll(result);
     setLastRollFace(dieType && result.rolls.length === 1 ? { die: dieType, value: result.rolls[0].value } : undefined);
     setAttackCritFlag(null);
-    const flag = detectSingleD20Flag(result.rolls);
+    const flag = detectSingleD20Flag(result.rolls, critRangeMin(selectedCharacter));
     setNaturalFlag(flag);
     landPunch();
     triggerCritFlash(flag);
@@ -463,7 +464,7 @@ export default function DiceRollerScreen() {
     const result = structuredRollToResult(plan, raw, advantageMode);
     setLastRoll(result);
     setLastRollFace({ die: "d20", value: raw.used });
-    const critFlag = naturalD20Flag(raw.used);
+    const critFlag = naturalD20Flag(raw.used, critRangeMin(selectedCharacter));
     setAttackCritFlag(mode === "attack" && attackType !== "initiative" ? critFlag : null);
     setNaturalFlag(critFlag);
     landPunch();

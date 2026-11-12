@@ -1,3 +1,4 @@
+import { attunementCap } from "./homebrewRules";
 import { useCallback, useMemo, useState } from "react";
 import { PixelFrameOverlay, SectionHeading } from "../../components/PixelFrame";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
@@ -218,6 +219,14 @@ export function EquipmentTab({ character, onChanged }: { character: Character; o
   }
 
   async function handleToggleMagicItemAttuned(item: MagicItemRow) {
+    const cap = attunementCap(character);
+    if (!item.attuned && cap !== null && magicItems.filter((m) => m.attuned).length >= cap) {
+      Alert.alert(
+        "Attunement limit reached",
+        `${character.name} can only be attuned to ${cap} item${cap === 1 ? "" : "s"} at once. Unattune another item first.`
+      );
+      return;
+    }
     await setMagicItemAttuned(item.id, !item.attuned);
     refreshMagicItems();
   }

@@ -1,3 +1,4 @@
+import { inspirationCap, inspirationCount } from "./homebrewRules";
 import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "../../components/AppText";
@@ -8,6 +9,7 @@ import {
   addXp,
   adjustCurrency,
   toggleInspiration,
+  adjustInspiration,
 } from "./characterRepo";
 import {
   aggregateFeatEffects,
@@ -250,6 +252,14 @@ export function StatsTab({
     onChanged();
   }
 
+  async function handleAdjustInspiration(delta: number) {
+    await adjustInspiration(character.id, delta);
+    onChanged();
+  }
+
+  const inspirationHeld = inspirationCount(character);
+  const inspirationMaxPoints = inspirationCap(character);
+
   async function handleXpConfirm(delta: number) {
     await addXp(character.id, delta);
     setXpModalOpen(false);
@@ -308,22 +318,57 @@ export function StatsTab({
           <>
             <ConditionsChecklist character={character} onChanged={onChanged} />
             <View style={styles.boxDivider} />
-            <Pressable
-              style={[
-              styles.inspirationChip,
-              character.inspiration && styles.inspirationChipActive,
-            ]}
-              onPress={handleToggleInspiration}
-            >
-              <Text
+            {inspirationMaxPoints > 1 ? (
+              <View style={styles.inspirationMultiRow}>
+                <Pressable
+                  style={styles.inspirationStepButton}
+                  onPress={() => handleAdjustInspiration(-1)}
+                  disabled={inspirationHeld <= 0}
+                >
+                  <Text style={styles.inspirationStepText}>−</Text>
+                </Pressable>
+                <View
+                  style={[
+                    styles.inspirationChip,
+                    styles.inspirationMultiChip,
+                    inspirationHeld > 0 && styles.inspirationChipActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.inspirationChipText,
+                      inspirationHeld > 0 && styles.inspirationChipTextActive,
+                    ]}
+                  >
+                    ✦ Inspiration {inspirationHeld}/{inspirationMaxPoints}
+                  </Text>
+                </View>
+                <Pressable
+                  style={styles.inspirationStepButton}
+                  onPress={() => handleAdjustInspiration(1)}
+                  disabled={inspirationHeld >= inspirationMaxPoints}
+                >
+                  <Text style={styles.inspirationStepText}>+</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
                 style={[
-                  styles.inspirationChipText,
-                  character.inspiration && styles.inspirationChipTextActive,
+                  styles.inspirationChip,
+                  inspirationHeld > 0 && styles.inspirationChipActive,
                 ]}
+                onPress={handleToggleInspiration}
               >
-                ✦ Inspiration{character.inspiration ? " (ready)" : ""}
-              </Text>
-            </Pressable>
+                <Text
+                  style={[
+                    styles.inspirationChipText,
+                    inspirationHeld > 0 && styles.inspirationChipTextActive,
+                  ]}
+                >
+                  ✦ Inspiration{inspirationHeld > 0 ? " (ready)" : ""}
+                </Text>
+              </Pressable>
+            )}
           </>
         }
       />
@@ -748,6 +793,18 @@ function createStyles(theme: Theme) {
       paddingVertical: 6,
       marginBottom: 0,
     },
+    inspirationMultiRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+    inspirationMultiChip: { flex: 1, alignItems: "center" },
+    inspirationStepButton: {
+      width: 40,
+      height: 40,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+    },
+    inspirationStepText: { color: theme.colors.text, fontSize: 20, fontWeight: "700" },
     inspirationChipActive: { backgroundColor: theme.colors.accent, borderColor: theme.colors.accent },
     inspirationChipText: {
       color: theme.colors.textMuted,

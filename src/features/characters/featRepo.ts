@@ -1,3 +1,4 @@
+import { abilityScoreCap } from "./homebrewRules";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { characterFeats, characters, feats } from "../../db/schema";
@@ -53,7 +54,7 @@ async function applyAbilityScoreIncreases(character: Character, effects: FeatEff
   for (const effect of effects) {
     if (effect.kind !== "abilityScoreIncrease") continue;
     const base = updates[effect.ability] ?? current[effect.ability];
-    updates[effect.ability] = Math.min(effect.max, base + effect.amount);
+    updates[effect.ability] = Math.min(Math.max(effect.max, abilityScoreCap(character)), base + effect.amount);
   }
   if (Object.keys(updates).length > 0) {
     await db

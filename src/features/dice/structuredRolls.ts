@@ -172,10 +172,13 @@ export function structuredRollToResult(
 
 export type NaturalD20Flag = "nat1" | "nat20" | null;
 
-/** A natural 1 or 20 on the die that actually determines the roll (the "used" die under advantage/disadvantage). */
-export function naturalD20Flag(usedValue: number): NaturalD20Flag {
+/**
+ * A natural 1 on the die that actually determines the roll (the "used" die under advantage/disadvantage),
+ * or a critical: a natural 20, or anything from `critMin` up when the character has a homebrew crit range.
+ */
+export function naturalD20Flag(usedValue: number, critMin = 20): NaturalD20Flag {
   if (usedValue === 1) return "nat1";
-  if (usedValue === 20) return "nat20";
+  if (usedValue >= critMin) return "nat20";
   return null;
 }
 
@@ -184,8 +187,11 @@ export function naturalD20Flag(usedValue: number): NaturalD20Flag {
  * when exactly one d20 was rolled (e.g. "1d20+5"). Ambiguous for something
  * like "2d20", so that's deliberately left unflagged rather than guessed.
  */
-export function detectSingleD20Flag(rolls: { sides: number; value: number }[]): NaturalD20Flag {
+export function detectSingleD20Flag(
+  rolls: { sides: number; value: number }[],
+  critMin = 20
+): NaturalD20Flag {
   const d20s = rolls.filter((r) => r.sides === 20);
   if (d20s.length !== 1) return null;
-  return naturalD20Flag(d20s[0].value);
+  return naturalD20Flag(d20s[0].value, critMin);
 }

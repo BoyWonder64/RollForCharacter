@@ -88,6 +88,14 @@ export const characters = sqliteTable("characters", {
   // Homebrew option: how many death save successes / failures end the dying state (stock 3 / 3).
   deathSaveSuccessesNeeded: integer("death_save_successes_needed").notNull().default(3),
   deathSaveFailuresNeeded: integer("death_save_failures_needed").notNull().default(3),
+  // Homebrew options (see features/characters/homebrewRules.ts): lowest natural d20 that crits,
+  // max attuned items, highest reachable ability score, and how many inspiration points can be held
+  // (`inspirationPoints` is the held count; `inspiration` mirrors "has at least one").
+  critRangeMin: integer("crit_range_min").notNull().default(20),
+  attunementLimit: integer("attunement_limit").notNull().default(3),
+  abilityScoreMax: integer("ability_score_max").notNull().default(20),
+  inspirationMax: integer("inspiration_max").notNull().default(1),
+  inspirationPoints: integer("inspiration_points").notNull().default(0),
   // Comma-separated SkillDefinition ids (e.g. "perception,animal-handling").
   skillProficiencies: text("skill_proficiencies").notNull().default(""),
   // Comma-separated AbilityScoreKey ids (e.g. "wisdom") -- EXTRA saving-throw
