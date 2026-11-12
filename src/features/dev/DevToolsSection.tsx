@@ -6,7 +6,7 @@ import { RULESETS } from "../../data/rulesets";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
 import { SAMPLE_LEVELS, createSampleCharacter, runDataHealthCheck, type HealthReport } from "./devTools";
-import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
+import { withAlpha } from "../../theme/alpha";
 
 /** Developer-mode tools in Settings: sample characters and the data health check. */
 export function DevToolsSection() {
@@ -101,7 +101,7 @@ export function DevToolsSection() {
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     box: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

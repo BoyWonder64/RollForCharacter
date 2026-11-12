@@ -12,17 +12,21 @@ import { useIconSettings } from "../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../features/icons/iconAssets";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
-import { withAlpha, BOX_ALPHA } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
 
 export function DeathSaveTracker({
   characterId,
   successes,
   failures,
+  successesNeeded = 3,
+  failuresNeeded = 3,
   onChanged,
 }: {
   characterId: number;
   successes: number;
   failures: number;
+  successesNeeded?: number;
+  failuresNeeded?: number;
   onChanged: () => void;
 }) {
   const theme = useTheme();
@@ -34,8 +38,8 @@ export function DeathSaveTracker({
   // dedicated skull asset yet.
   const skullIcon = iconsEnabled ? getSpellSchoolIcon(iconStyle, "necromancy") : undefined;
 
-  const resolved = successes >= 3 || failures >= 3;
-  const dead = failures >= 3;
+  const resolved = successes >= successesNeeded || failures >= failuresNeeded;
+  const dead = failures >= failuresNeeded;
 
   async function handleRoll() {
     const outcome = await rollDeathSave(characterId);
@@ -94,7 +98,7 @@ export function DeathSaveTracker({
       <View style={styles.pipRow}>
         <Text style={styles.pipLabel}>Successes</Text>
         <View style={styles.pips}>
-          {[0, 1, 2].map((i) => (
+          {Array.from({ length: successesNeeded }, (_, i) => i).map((i) => (
             <View key={i} style={[styles.pip, i < successes && styles.pipSuccessOn]} />
           ))}
         </View>
@@ -102,7 +106,7 @@ export function DeathSaveTracker({
       <View style={styles.pipRow}>
         <Text style={styles.pipLabel}>Failures</Text>
         <View style={styles.pips}>
-          {[0, 1, 2].map((i) => (
+          {Array.from({ length: failuresNeeded }, (_, i) => i).map((i) => (
             <View key={i} style={[styles.pip, i < failures && styles.pipFailureOn]} />
           ))}
         </View>
@@ -128,7 +132,7 @@ export function DeathSaveTracker({
       {resolved && (
         <>
           <Text style={styles.resolvedText}>
-            {dead ? "Three failures — this character has died." : "Stabilized."}
+            {dead ? `${failuresNeeded} failures — this character has died.` : "Stabilized."}
           </Text>
           {dead && (
             <Pressable style={styles.reviveButton} onPress={handleRevive}>
@@ -155,7 +159,7 @@ export function DeathSaveTracker({
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.danger,
       borderRadius: theme.radius,
@@ -196,7 +200,7 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     secondaryButton: {
-      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

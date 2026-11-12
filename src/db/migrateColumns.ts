@@ -87,6 +87,23 @@ const COLUMN_MIGRATIONS: ColumnMigration[] = [
     column: "concentrating_spell_name",
     definition: "TEXT NOT NULL DEFAULT ''",
   },
+  { table: "characters", column: "homebrew_enabled", definition: "INTEGER NOT NULL DEFAULT 0" },
+  {
+    table: "characters",
+    column: "extra_concentration_slots",
+    definition: "INTEGER NOT NULL DEFAULT 0",
+  },
+  { table: "characters", column: "extra_concentrations", definition: "TEXT NOT NULL DEFAULT '[]'" },
+  {
+    table: "characters",
+    column: "death_save_successes_needed",
+    definition: "INTEGER NOT NULL DEFAULT 3",
+  },
+  {
+    table: "characters",
+    column: "death_save_failures_needed",
+    definition: "INTEGER NOT NULL DEFAULT 3",
+  },
   {
     table: "characters",
     column: "hit_dice_remaining",

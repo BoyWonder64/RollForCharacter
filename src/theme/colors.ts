@@ -64,6 +64,8 @@ export type Theme = {
   pixel?: PixelKit;
   /** Scenery drawn behind a screen's content (see ThemeBackdropArt). */
   backgroundArt?: BackgroundArt;
+  /** Opacity of bordered-box fills: BOX_ALPHA when transparent boxes are on, else 1. */
+  boxAlpha: number;
 };
 
 /**
@@ -533,5 +535,6 @@ export function buildTheme(
     // Custom borrows its base theme's background too.
     backgroundArt: definition.backgroundArt,
     screenBackground: backdrop ? "transparent" : colors.background,
+    boxAlpha: 1,
   };
 }

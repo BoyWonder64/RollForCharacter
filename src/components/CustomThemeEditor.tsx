@@ -5,7 +5,7 @@ import { useThemeContext } from "../theme/ThemeContext";
 import { THEME_FAMILIES, type BaseThemeFamilyId, type Theme } from "../theme/colors";
 import { CUSTOM_FRAMES, CUSTOM_SCROLLS } from "../theme/customPixelAssets";
 import { CUSTOM_BANNER_COUNT, CUSTOM_FRAME_COUNT } from "../theme/pixelKits";
-import { withAlpha, BOX_ALPHA } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
 
 // Built-in themes the Custom look can borrow its colours, font and background from.
 const BASE_ORDER: BaseThemeFamilyId[] = [
@@ -104,7 +104,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 2,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -116,7 +116,7 @@ function createStyles(theme: Theme) {
     chipText: { color: theme.colors.text, fontWeight: "600", fontSize: 13 },
     chipTextActive: { color: theme.colors.accent },
     thumb: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 2,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

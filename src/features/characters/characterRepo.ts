@@ -1,3 +1,5 @@
+import { deathSaveLimits } from "./homebrewRules";
+import { addConcentration, getConcentrations, removeConcentration, toConcentrationPatch } from "./concentration";
 import { eq } from "drizzle-orm";
 import * as Crypto from "expo-crypto";
 import { db } from "../../db/client";
@@ -198,19 +200,21 @@ export async function applyDamage(
 
   if (character.currentHp <= 0) {
     const failureCount = options?.critical ? 2 : 1;
-    const failures = Math.min(3, character.deathSaveFailures + failureCount);
+    const failures = Math.min(
+      deathSaveLimits(character).failures,
+      character.deathSaveFailures + failureCount
+    );
     await updateCharacter(id, { deathSaveFailures: failures });
     return undefined;
   }
 
-  const wasConcentrating = character.concentratingSpellName !== "";
+  const wasConcentrating = getConcentrations(character).length > 0;
   const nextHp = Math.max(0, character.currentHp - amount);
 
   if (wasConcentrating && nextHp === 0) {
     await updateCharacter(id, {
       currentHp: nextHp,
-      concentratingSpellId: null,
-      concentratingSpellName: "",
+      ...toConcentrationPatch([]),
     });
     return undefined;
   }
@@ -442,6 +446,7 @@ export async function rollDeathSave(id: number): Promise<DeathSaveOutcome | unde
   const roll = rollExpression("1d20");
   await saveRoll(roll, id);
   const value = roll.total;
+  const limits = deathSaveLimits(character);
 
   if (value === 20) {
     await updateCharacter(id, {
@@ -453,18 +458,18 @@ export async function rollDeathSave(id: number): Promise<DeathSaveOutcome | unde
   }
 
   if (value === 1) {
-    const failures = Math.min(3, character.deathSaveFailures + 2);
+    const failures = Math.min(limits.failures, character.deathSaveFailures + 2);
     await updateCharacter(id, { deathSaveFailures: failures });
     return {
       roll: value,
-      result: failures >= 3 ? "dead" : "failure",
+      result: failures >= limits.failures ? "dead" : "failure",
       successes: character.deathSaveSuccesses,
       failures,
     };
   }
 
   if (value >= 10) {
-    const successes = Math.min(3, character.deathSaveSuccesses + 1);
+    const successes = Math.min(limits.successes, character.deathSaveSuccesses + 1);
     await updateCharacter(id, { deathSaveSuccesses: successes });
     return {
       roll: value,
@@ -474,11 +479,11 @@ export async function rollDeathSave(id: number): Promise<DeathSaveOutcome | unde
     };
   }
 
-  const failures = Math.min(3, character.deathSaveFailures + 1);
+  const failures = Math.min(limits.failures, character.deathSaveFailures + 1);
   await updateCharacter(id, { deathSaveFailures: failures });
   return {
     roll: value,
-    result: failures >= 3 ? "dead" : "failure",
+    result: failures >= limits.failures ? "dead" : "failure",
     successes: character.deathSaveSuccesses,
     failures,
   };
@@ -499,21 +504,25 @@ export async function reviveCharacter(id: number): Promise<void> {
   await updateCharacter(id, { currentHp: 1, deathSaveSuccesses: 0, deathSaveFailures: 0 });
 }
 
-/** Starts concentrating on a spell, replacing any previous one -- 5e only allows concentrating on one spell at a time. */
+/**
+ * Starts concentrating on a spell. 5e allows one at a time; with the Homebrew option on,
+ * extra slots let more run at once, and a full set drops the oldest.
+ */
 export async function startConcentration(
   id: number,
   characterSpellId: number,
   spellName: string
 ): Promise<void> {
-  await updateCharacter(id, {
-    concentratingSpellId: characterSpellId,
-    concentratingSpellName: spellName,
-  });
+  const character = await getCharacter(id);
+  if (!character) return;
+  await updateCharacter(id, addConcentration(character, { id: characterSpellId, name: spellName }));
 }
 
-/** Ends concentration, if any -- a deliberate stop, a failed concentration save, or dropping to 0 HP. */
-export async function endConcentration(id: number): Promise<void> {
-  await updateCharacter(id, { concentratingSpellId: null, concentratingSpellName: "" });
+/** Ends one concentration spell (by position in getConcentrations()), or all of them when no index is given -- a deliberate stop, a failed save, or dropping to 0 HP. */
+export async function endConcentration(id: number, index?: number): Promise<void> {
+  const character = await getCharacter(id);
+  if (!character) return;
+  await updateCharacter(id, removeConcentration(character, index));
 }
 
 export type SpendHitDieOutcome = {

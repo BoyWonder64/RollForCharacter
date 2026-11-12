@@ -48,7 +48,7 @@ import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getTabIcon } from "../../features/icons/iconAssets";
 import { useDmMode } from "../../features/settings/DmModeContext";
 import { useRollHistorySetting } from "../../features/settings/RollHistoryContext";
-import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
+import { withAlpha } from "../../theme/alpha";
 
 function inferDieType(expr: string): DieType | null {
   try {
@@ -239,12 +239,20 @@ export default function DiceRollerScreen() {
   // gains focus is deliberate: without it, React Navigation keeps the tab
   // mounted and an old roll from a previous visit stays on screen looking
   // like it "already rolled" something you never asked for.
+  // Latest refreshers live in a ref so the focus callback below stays stable: if its
+  // identity changed (e.g. the history setting finishing its async load) it would
+  // re-run and wipe a roll the user had just made.
+  const refreshRef = useRef({ refreshHistory, refreshCharacters });
+  useEffect(() => {
+    refreshRef.current = { refreshHistory, refreshCharacters };
+  });
+
   useFocusEffect(
     useCallback(() => {
       // Fetches run after the tab-switch paint so the tap feels instant.
       const t = setTimeout(() => {
-        refreshHistory();
-        refreshCharacters();
+        refreshRef.current.refreshHistory();
+        refreshRef.current.refreshCharacters();
       }, 0);
       setLastRoll(null);
       setLastRollFace(undefined);
@@ -252,7 +260,7 @@ export default function DiceRollerScreen() {
       setNaturalFlag(null);
       setError(null);
       return () => clearTimeout(t);
-    },[refreshHistory, refreshCharacters]),
+    }, []),
   );
 
   function selectMode(next: ScreenMode) {
@@ -1149,7 +1157,7 @@ function createStyles(theme: Theme) {
     chipScrollContent: { flexGrow: 1, justifyContent: "center" },
     centerText: { textAlign: "center" },
     chip: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1165,7 +1173,7 @@ function createStyles(theme: Theme) {
     inputRow: { flexDirection: "row", gap: 8 },
     input: {
       flex: 1,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -1178,7 +1186,7 @@ function createStyles(theme: Theme) {
     dieFace: {
       width: 64,
       height: 64,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 2,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1200,7 +1208,7 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       width: 72,
       paddingVertical: 8,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 2,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1214,7 +1222,7 @@ function createStyles(theme: Theme) {
       marginTop: 2,
     },
     skillChip: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 2,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1252,7 +1260,7 @@ function createStyles(theme: Theme) {
     },
     extraInput: {
       width: 70,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -1264,7 +1272,7 @@ function createStyles(theme: Theme) {
     advantageRow: { flexDirection: "row", gap: 8, marginTop: 12 },
     advantageButton: {
       flex: 1,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1285,7 +1293,7 @@ function createStyles(theme: Theme) {
     initiativeRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1415,7 +1423,7 @@ function createStyles(theme: Theme) {
       gap: 4,
     },
     emptyResultCard: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1507,7 +1515,7 @@ function createStyles(theme: Theme) {
     historyRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

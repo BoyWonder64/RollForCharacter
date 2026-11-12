@@ -1,3 +1,5 @@
+import { deathSaveLimits } from "../../../../features/characters/homebrewRules";
+import { getConcentrations } from "../../../../features/characters/concentration";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { ThemeBackdropArt, ThemeBackdropFooter } from "../../../../components/ThemeBackdropArt";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
@@ -222,7 +224,7 @@ function CharacterSheetBody({
   function promptConcentrationCheck(dc: number) {
     Alert.alert(
       "Concentration Check",
-      `You took damage while concentrating on "${character.concentratingSpellName}". Roll a CON save (DC ${dc}) or lose concentration.`,
+      `You took damage while concentrating on ${getConcentrations(character).map((e) => `"${e.name}"`).join(" and ")}. Roll a CON save (DC ${dc}) or lose concentration.`,
       [
         {
           text: "End Concentration",
@@ -367,6 +369,8 @@ function CharacterSheetBody({
             characterId={characterId}
             successes={character.deathSaveSuccesses}
             failures={character.deathSaveFailures}
+            successesNeeded={deathSaveLimits(character).successes}
+            failuresNeeded={deathSaveLimits(character).failures}
             onChanged={refresh}
           />
         )}

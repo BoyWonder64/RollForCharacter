@@ -26,6 +26,11 @@ import {
 } from "../../features/dice/structuredRolls";
 import { ABILITY_LABELS } from "../../features/characters/characterCalculations";
 import { endConcentration, startConcentration } from "../../features/characters/characterRepo";
+import {
+  getConcentrations,
+  isConcentratingOn,
+  maxConcentrations,
+} from "../../features/characters/concentration";
 import { saveRoll } from "../../features/dice/diceRepo";
 import { PixelBanner, PixelFrameOverlay } from "../../components/PixelFrame";
 import { useTheme } from "../../theme/ThemeContext";
@@ -33,7 +38,7 @@ import type { Theme } from "../../theme/colors";
 import type { Character } from "../../types/models";
 import { useIconSettings } from "../../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../../features/icons/iconAssets";
-import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
+import { withAlpha } from "../../theme/alpha";
 
 type SpellRow = Awaited<ReturnType<typeof listSpellsForCharacter>>[number];
 type SlotRow = Awaited<ReturnType<typeof listSpellSlots>>[number];
@@ -105,8 +110,8 @@ export function SpellsTab({
     refresh();
   }
 
-  function handleEndConcentration() {
-    endConcentration(characterId).then(onCharacterChanged);
+  function handleEndConcentration(index?: number) {
+    endConcentration(characterId, index).then(onCharacterChanged);
   }
 
   function beginConcentration(spell: SpellRow) {
@@ -114,15 +119,14 @@ export function SpellsTab({
   }
 
   function handleToggleConcentration(spell: SpellRow) {
-    const isConcentratingOnThis = character.concentratingSpellId === spell.characterSpellId;
-    if (isConcentratingOnThis) {
-      handleEndConcentration();
+    if (isConcentratingOn(character, spell.characterSpellId)) {
+      handleEndConcentration(concentrations.findIndex((e) => e.id === spell.characterSpellId));
       return;
     }
-    if (character.concentratingSpellName) {
+    if (concentrations.length >= maxConcentrations(character)) {
       Alert.alert(
         "Switch concentration?",
-        `You're concentrating on "${character.concentratingSpellName}". Starting "${spell.name}" will end it.`,
+        `You're concentrating on "${concentrations[0].name}". Starting "${spell.name}" will end it.`,
         [
           { text: "Cancel", style: "cancel" },
           { text: "Switch", onPress: () => beginConcentration(spell) },
@@ -177,6 +181,7 @@ export function SpellsTab({
   const knownSpellIds = useMemo(() => new Set(spellRows.map((s) => s.id)), [spellRows]);
   const slotTotals = useMemo(() => slots.map((s) => ({ level: s.level, total: s.total })), [slots]);
   const dc = spellSaveDc(character);
+  const concentrations = getConcentrations(character);
 
   return (
     <View>
@@ -188,16 +193,23 @@ export function SpellsTab({
 
       <View style={styles.concentrationBanner}>
         <PixelFrameOverlay />
-        {character.concentratingSpellName ? (
-          <>
-            <View style={styles.concentrationInfo}>
-              <Text style={styles.concentrationLabel}>Concentrating on</Text>
-              <Text style={styles.concentrationValue}>{character.concentratingSpellName}</Text>
+        {concentrations.length > 0 ? (
+          concentrations.map((entry, index) => (
+            <View key={`${entry.id ?? "n"}-${entry.name}`} style={styles.concentrationRow}>
+              <View style={styles.concentrationInfo}>
+                <Text style={styles.concentrationLabel}>
+                  {concentrations.length > 1 ? `Concentrating on (${index + 1})` : "Concentrating on"}
+                </Text>
+                <Text style={styles.concentrationValue}>{entry.name}</Text>
+              </View>
+              <Pressable
+                style={styles.concentrationEndButton}
+                onPress={() => handleEndConcentration(index)}
+              >
+                <Text style={styles.concentrationEndButtonText}>End</Text>
+              </Pressable>
             </View>
-            <Pressable style={styles.concentrationEndButton} onPress={handleEndConcentration}>
-              <Text style={styles.concentrationEndButtonText}>End</Text>
-            </Pressable>
-          </>
+          ))
         ) : (
           <Text style={styles.concentrationEmpty}>Not concentrating on a spell</Text>
         )}
@@ -274,7 +286,7 @@ export function SpellsTab({
           const icon = iconsEnabled ? getSpellSchoolIcon(iconStyle, spell.school) : undefined;
           const rollType = getSpellRollType(spell.description);
           const saveAbility = getSpellSaveAbility(spell.description);
-          const isConcentratingOnThis = character.concentratingSpellId === spell.characterSpellId;
+          const isConcentratingOnThis = isConcentratingOn(character, spell.characterSpellId);
           return (
             <Pressable
               key={spell.characterSpellId}
@@ -394,7 +406,7 @@ function createStyles(theme: Theme) {
     },
     banner: { marginTop: 4, marginBottom: 8 },
     dcBanner: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -417,11 +429,14 @@ function createStyles(theme: Theme) {
       marginTop: 2,
       fontFamily: theme.displayFontFamily,
     },
-    concentrationBanner: {
+    concentrationRow: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+    },
+    concentrationBanner: {
+      gap: 10,
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -464,7 +479,7 @@ function createStyles(theme: Theme) {
     },
     slotGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
     slotCard: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -499,7 +514,7 @@ function createStyles(theme: Theme) {
     },
     empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily, textAlign: "center" },
     emptyCard: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -508,7 +523,7 @@ function createStyles(theme: Theme) {
       alignItems: "center",
     },
     spellRow: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

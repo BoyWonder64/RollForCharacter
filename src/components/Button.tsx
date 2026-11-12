@@ -3,6 +3,7 @@ import {
   Animated,
   Pressable,
   StyleSheet,
+  View,
   type GestureResponderEvent,
   type StyleProp,
   type TextStyle,
@@ -82,14 +83,7 @@ export function Button({
         contentStyle,
       ]}
     >
-      <Pressable
-        onPress={disabled ? undefined : onPress}
-        onPressIn={disabled ? undefined : handlePressIn}
-        onPressOut={disabled ? undefined : handlePressOut}
-        disabled={disabled}
-        testID={testID}
-        style={styles.pressable}
-      >
+      <View pointerEvents="none" style={styles.pressable}>
         {children ?? (
           <Text
             style={[styles.text, sizing.text, { color: colors.text }, textStyle]}
@@ -98,7 +92,17 @@ export function Button({
             {title}
           </Text>
         )}
-      </Pressable>
+      </View>
+      {/* Overlays the whole padded face so the entire button is tappable, not just its label. */}
+      <Pressable
+        onPress={disabled ? undefined : onPress}
+        onPressIn={disabled ? undefined : handlePressIn}
+        onPressOut={disabled ? undefined : handlePressOut}
+        disabled={disabled}
+        testID={testID}
+        hitSlop={6}
+        style={StyleSheet.absoluteFill}
+      />
     </Animated.View>
   );
 }

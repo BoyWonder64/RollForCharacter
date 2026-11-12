@@ -59,7 +59,7 @@ import { HomebrewSubclassModal, type HomebrewSubclassRow } from "../components/h
 import { CustomResourceModal } from "../components/CustomResourceModal";
 import { AddToCharacterModal } from "../components/homebrew/AddToCharacterModal";
 import type { Character } from "../types/models";
-import { withAlpha, BOX_ALPHA } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
 
 type CategoryKey =
   | "races"
@@ -584,7 +584,7 @@ function createStyles(theme: Theme) {
     categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     categoryCard: {
       width: "31%",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -601,7 +601,7 @@ function createStyles(theme: Theme) {
     },
     categoryCardTextActive: { color: theme.colors.primaryText },
     card: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

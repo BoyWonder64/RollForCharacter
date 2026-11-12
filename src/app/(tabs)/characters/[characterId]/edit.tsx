@@ -53,7 +53,7 @@ import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext"
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../../../theme/colors";
 import { FONT_CHOICE_ORDER, FONT_CHOICES, type FontChoiceId } from "../../../../theme/fonts";
 import { DoneAccessory } from "../../../../components/DoneAccessory";
-import { withAlpha, BOX_ALPHA } from "../../../../theme/alpha";
+import { withAlpha } from "../../../../theme/alpha";
 
 const FAMILY_ORDER: ThemeFamilyId[] = [
   "crimson",
@@ -99,6 +99,10 @@ type FormState = {
   notes: string;
   usesXp: boolean;
   experiencePoints: string;
+  homebrewEnabled: boolean;
+  extraConcentrationSlots: number;
+  deathSaveSuccessesNeeded: number;
+  deathSaveFailuresNeeded: number;
   themeFamily: ThemeFamilyId | null;
   fontChoice: FontChoiceId | null;
   portraitUri: string | null;
@@ -132,6 +136,10 @@ function toFormState(character: Character): FormState {
     notes: character.notes,
     usesXp: character.usesXp,
     experiencePoints: String(character.experiencePoints),
+    homebrewEnabled: character.homebrewEnabled,
+    extraConcentrationSlots: character.extraConcentrationSlots,
+    deathSaveSuccessesNeeded: character.deathSaveSuccessesNeeded,
+    deathSaveFailuresNeeded: character.deathSaveFailuresNeeded,
     themeFamily: character.themeFamily as ThemeFamilyId | null,
     fontChoice: character.fontChoice as FontChoiceId | null,
     portraitUri: character.portraitUri,
@@ -154,6 +162,32 @@ function toFormState(character: Character): FormState {
     ).join(", "),
     customClassTraits: parseCustomClassTraits(character.customClassTraits),
   };
+}
+
+function Stepper({
+  styles,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (next: number) => void;
+}) {
+  return (
+    <View style={styles.homebrewStepper}>
+      <Pressable style={styles.homebrewStepButton} onPress={() => onChange(Math.max(min, value - 1))}>
+        <Text style={styles.homebrewStepText}>−</Text>
+      </Pressable>
+      <Text style={styles.homebrewStepValue}>{value}</Text>
+      <Pressable style={styles.homebrewStepButton} onPress={() => onChange(Math.min(max, value + 1))}>
+        <Text style={styles.homebrewStepText}>+</Text>
+      </Pressable>
+    </View>
+  );
 }
 
 function toInt(value: string, fallback: number): number {
@@ -386,6 +420,10 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
       languages: serializeLanguages(Array.from(languageIds)),
       usesXp: form.usesXp,
       experiencePoints: Math.max(0, toInt(form.experiencePoints, 0)),
+      homebrewEnabled: form.homebrewEnabled,
+      extraConcentrationSlots: Math.max(0, form.extraConcentrationSlots),
+      deathSaveSuccessesNeeded: Math.max(1, form.deathSaveSuccessesNeeded),
+      deathSaveFailuresNeeded: Math.max(1, form.deathSaveFailuresNeeded),
       themeFamily: form.themeFamily,
       fontChoice: form.fontChoice,
       customRaceTraits: serializeCustomRaceTraits(form.customRaceTraits),
@@ -862,7 +900,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         style={styles.collapsibleHeader}
         onPress={() => setAppearanceExpanded((prev) => !prev)}
       >
-        <SectionHeading title="Appearance" textStyle={styles.sectionTitle} />
+        <SectionHeading title="Profile Theme" textStyle={styles.sectionTitle} />
         <Text style={styles.collapsibleChevron}>{appearanceExpanded ? "▾" : "▸"}</Text>
       </Pressable>
       {appearanceExpanded && (
@@ -941,6 +979,51 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         onChangeText={(v) => updateField("notes", v)}
         multiline
       />
+
+      <SectionHeading title="Homebrew" textStyle={styles.sectionTitle} />
+      <Pressable
+        style={styles.xpToggle}
+        onPress={() => updateField("homebrewEnabled", !form.homebrewEnabled)}
+      >
+        <View style={[styles.xpCheckbox, form.homebrewEnabled && styles.xpCheckboxOn]} />
+        <Text style={styles.xpToggleLabel}>Enable homebrew options</Text>
+      </Pressable>
+      {form.homebrewEnabled && (
+        <>
+          <Text style={styles.subLabel}>Extra concentration spells</Text>
+          <Text style={styles.hint}>
+            By the rules you can concentrate on one spell at a time. Each extra slot lets this
+            character concentrate on one more at once.
+          </Text>
+          <Stepper
+            styles={styles}
+            value={form.extraConcentrationSlots}
+            min={0}
+            max={10}
+            onChange={(v) => updateField("extraConcentrationSlots", v)}
+          />
+
+          <Text style={styles.subLabel}>Death save successes needed</Text>
+          <Text style={styles.hint}>Successes that stabilize a dying character (rules: 3).</Text>
+          <Stepper
+            styles={styles}
+            value={form.deathSaveSuccessesNeeded}
+            min={1}
+            max={10}
+            onChange={(v) => updateField("deathSaveSuccessesNeeded", v)}
+          />
+
+          <Text style={styles.subLabel}>Death save failures to die</Text>
+          <Text style={styles.hint}>Failures that kill a dying character (rules: 3).</Text>
+          <Stepper
+            styles={styles}
+            value={form.deathSaveFailuresNeeded}
+            min={1}
+            max={10}
+            onChange={(v) => updateField("deathSaveFailuresNeeded", v)}
+          />
+        </>
+      )}
 
       <Pressable style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save</Text>
@@ -1051,7 +1134,7 @@ function createStyles(theme: Theme) {
       width: 72,
       height: 72,
       borderRadius: theme.radius,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: "center",
@@ -1087,7 +1170,7 @@ function createStyles(theme: Theme) {
       fontFamily: theme.displayFontFamily,
     },
     input: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -1126,7 +1209,7 @@ function createStyles(theme: Theme) {
     familyRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1142,7 +1225,7 @@ function createStyles(theme: Theme) {
     abilityField: { flexBasis: "31%", flexGrow: 0 },
     skillGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
     skillChip: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1164,7 +1247,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "flex-start",
       justifyContent: "space-between",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -1204,6 +1287,26 @@ function createStyles(theme: Theme) {
     },
     xpCheckboxOn: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
     xpToggleLabel: { color: theme.colors.text, fontWeight: "600", fontFamily: theme.displayFontFamily },
+    homebrewStepper: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 14 },
+    homebrewStepButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius,
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
+    },
+    homebrewStepText: { color: theme.colors.text, fontSize: 22, fontWeight: "700" },
+    homebrewStepValue: {
+      color: theme.colors.text,
+      fontSize: 20,
+      fontWeight: "700",
+      minWidth: 28,
+      textAlign: "center",
+      fontFamily: theme.displayFontFamily,
+    },
     saveButton: {
       backgroundColor: theme.colors.primary,
       borderRadius: theme.radius,

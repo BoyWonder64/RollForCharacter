@@ -38,7 +38,7 @@ import { DevToolsSection } from "../../features/dev/DevToolsSection";
 import { useAuth } from "../../features/auth/AuthContext";
 import { AccountSection } from "../../features/auth/AccountSection";
 import { DoneAccessory } from "../../components/DoneAccessory";
-import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
+import { withAlpha } from "../../theme/alpha";
 
 const MODE_OPTIONS: { key: ThemePreference; label: string }[] = [
   { key: "system", label: "System" },
@@ -107,8 +107,18 @@ const FEEDBACK_EMAIL ="maitland.andrus@gmail.com";
 const DONATE_URL = "";
 
 export default function SettingsScreen() {
-  const { theme, preference, setPreference, family, setFamily, fontChoice, setFontChoice, activeCharacterName } =
-    useThemeContext();
+  const {
+    theme,
+    preference,
+    setPreference,
+    family,
+    setFamily,
+    fontChoice,
+    setFontChoice,
+    activeCharacterName,
+    transparentBoxes,
+    setTransparentBoxes,
+  } = useThemeContext();
   const { fontScale, setFontScale } = useFontScale();
   const { keepScreenOn, setKeepScreenOn } = useKeepAwakeSetting();
   const { dmMode, setDmMode, dmEdition, setDmEdition } = useDmMode();
@@ -293,6 +303,21 @@ export default function SettingsScreen() {
             onPress={() => setFontScale(fontScale + FONT_SCALE_STEP)}
           />
         </View>
+
+        <View style={[styles.toggleRow, styles.toggleRowSpaced]}>
+          <PixelFrameOverlay scale={0.75} />
+          <Text style={styles.toggleLabel}>Transparent boxes</Text>
+          <Switch
+            value={transparentBoxes}
+            onValueChange={setTransparentBoxes}
+            trackColor={{
+              false: theme.colors.surfaceAlt,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.primaryText}
+          />
+        </View>
+        <Note styles={styles} text="Lets the theme's background art show faintly through bordered boxes." spaced />
 
         <SectionHeading title="Icons & Sound" textStyle={[styles.sectionTitle, styles.themeSectionTitle]} centered />
         <View style={styles.toggleRow}>
@@ -583,7 +608,7 @@ function createStyles(theme: Theme) {
     },
     seedInput: {
       flex: 1,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -598,7 +623,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -620,7 +645,7 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -651,7 +676,7 @@ function createStyles(theme: Theme) {
       marginTop: 2,
     },
     creditRow: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

@@ -30,7 +30,7 @@ import {
 } from "../features/characters/startingEquipment";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
-import { withAlpha, BOX_ALPHA } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
 
 type Props = {
   classDef: ClassDefinition;
@@ -423,7 +423,7 @@ function createStyles(theme: Theme) {
     },
     hint: { color: theme.colors.textMuted, fontSize: 13, lineHeight: 18, marginBottom: 12 },
     summary: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderRadius: theme.radius,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -450,7 +450,7 @@ function createStyles(theme: Theme) {
       marginBottom: 6,
     },
     fixedCard: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderRadius: theme.radius,
       padding: 14,
       borderWidth: 2,
@@ -490,7 +490,7 @@ function createStyles(theme: Theme) {
       letterSpacing: 0.5,
     },
     pickRow: {
-      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, theme.boxAlpha),
       borderRadius: theme.radius,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -504,7 +504,7 @@ function createStyles(theme: Theme) {
     pickNameActive: { color: theme.colors.primary },
     pickStats: { color: theme.colors.textMuted, fontSize: 11, marginTop: 2 },
     input: {
-      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, theme.boxAlpha),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,

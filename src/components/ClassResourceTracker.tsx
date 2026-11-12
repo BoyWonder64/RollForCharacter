@@ -28,7 +28,7 @@ import { PixelFrameOverlay } from "./PixelFrame";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { DoneAccessory } from "./DoneAccessory";
-import { withAlpha, BOX_ALPHA } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
 
 /**
  * Shows every limited-use class resource the character has gained so far
@@ -394,7 +394,7 @@ export function ClassResourceTracker({
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -424,7 +424,7 @@ function createStyles(theme: Theme) {
     manualEntryRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
     manualInput: {
       width: 56,
-      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, theme.boxAlpha),
       color: theme.colors.text,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -440,7 +440,7 @@ function createStyles(theme: Theme) {
       marginVertical: 14,
     },
     createButton: {
-      backgroundColor: withAlpha(theme.colors.surfaceAlt, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surfaceAlt, theme.boxAlpha),
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

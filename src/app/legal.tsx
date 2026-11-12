@@ -6,7 +6,7 @@ import { Stack } from "expo-router";
 import { Button } from "../components/Button";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
-import { withAlpha, BOX_ALPHA } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
 
 const CREDITS: { title: string; text: string }[] = [
   {
@@ -229,7 +229,7 @@ function createStyles(theme: Theme) {
     sectionTitleSpaced: { marginTop: 24 },
     hint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 10 },
     creditRow: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

@@ -11,6 +11,7 @@ import {
 } from "./colors";
 import type { CustomThemeConfig } from "./pixelKits";
 import { getCharacter, updateCharacter } from "../features/characters/characterRepo";
+import { BOX_ALPHA } from "./alpha";
 import { FONT_CHOICES, type FontChoiceId } from "./fonts";
 
 export type ThemePreference = ThemeMode | "system";
@@ -19,6 +20,7 @@ const MODE_STORAGE_KEY = "rollforcharacter.themePreference";
 const FAMILY_STORAGE_KEY = "rollforcharacter.themeFamily";
 const FONT_STORAGE_KEY = "rollforcharacter.fontChoice";
 const CUSTOM_THEME_STORAGE_KEY = "rollforcharacter.customTheme";
+const BOXES_STORAGE_KEY = "rollforcharacter.transparentBoxes";
 const ACTIVE_CHARACTER_STORAGE_KEY = "rollforcharacter.activeCharacterId";
 const DEFAULT_FAMILY: ThemeFamilyId = "classic";
 const DEFAULT_FONT_CHOICE: FontChoiceId = "auto";
@@ -51,6 +53,9 @@ type ThemeContextValue = {
   /** The Custom theme's base palette, border colour and banner colour. */
   customTheme: CustomThemeConfig;
   setCustomTheme: (config: CustomThemeConfig) => void;
+  /** Whether bordered boxes let the themed backdrop show through (default on). */
+  transparentBoxes: boolean;
+  setTransparentBoxes: (value: boolean) => void;
 };
 
 // Exported so a character-scoped screen can nest a second Provider (see
@@ -65,11 +70,13 @@ export function resolveTheme(
   family: ThemeFamilyId,
   mode: ThemeMode,
   fontChoice: FontChoiceId,
-  custom: CustomThemeConfig = DEFAULT_CUSTOM_THEME
+  custom: CustomThemeConfig = DEFAULT_CUSTOM_THEME,
+  transparentBoxes = true
 ): Theme {
   const familyTheme = buildTheme(family, mode, custom);
   return {
     ...familyTheme,
+    boxAlpha: transparentBoxes ? BOX_ALPHA : 1,
     displayFontFamily:
       fontChoice === "auto" ? familyTheme.displayFontFamily : FONT_CHOICES[fontChoice].fontFamily,
   };
@@ -82,6 +89,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [defaultFontChoice, setDefaultFontChoice] = useState<FontChoiceId>(DEFAULT_FONT_CHOICE);
   const [active, setActive] = useState<ActiveCharacterLook | null>(null);
   const [customTheme, setCustomThemeState] = useState<CustomThemeConfig>(DEFAULT_CUSTOM_THEME);
+  const [transparentBoxes, setTransparentBoxesState] = useState(true);
 
   useEffect(() => {
     AsyncStorage.getItem(MODE_STORAGE_KEY).then((stored) => {
@@ -100,6 +108,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.getItem(ACTIVE_CHARACTER_STORAGE_KEY).then((stored) => {
       const id = stored ? Number(stored) : NaN;
       if (Number.isFinite(id)) loadActiveCharacter(id);
+    });
+    AsyncStorage.getItem(BOXES_STORAGE_KEY).then((stored) => {
+      if (stored === "false") setTransparentBoxesState(false);
     });
     AsyncStorage.getItem(CUSTOM_THEME_STORAGE_KEY).then((stored) => {
       if (!stored) return;
@@ -180,6 +191,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(next)).catch(() => {});
   }
 
+  function updateTransparentBoxes(next: boolean) {
+    setTransparentBoxesState(next);
+    AsyncStorage.setItem(BOXES_STORAGE_KEY, String(next)).catch(() => {});
+  }
+
   function updateFontChoice(next: FontChoiceId) {
     if (active) {
       setActive({ ...active, fontChoice: next });
@@ -197,8 +213,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     preference === "system" ? (systemScheme === "dark" ? "dark" : "light") : preference;
 
   const theme = useMemo<Theme>(
-    () => resolveTheme(family, resolvedMode, fontChoice, customTheme),
-    [family, resolvedMode, fontChoice, customTheme]
+    () => resolveTheme(family, resolvedMode, fontChoice, customTheme, transparentBoxes),
+    [family, resolvedMode, fontChoice, customTheme, transparentBoxes]
   );
 
   const value = useMemo(
@@ -217,8 +233,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       activeCharacterName: active?.name ?? null,
       customTheme,
       setCustomTheme: updateCustomTheme,
+      transparentBoxes,
+      setTransparentBoxes: updateTransparentBoxes,
     }),
-    [theme, preference, family, fontChoice, defaultFamily, defaultFontChoice, active, customTheme]
+    [theme, preference, family, fontChoice, defaultFamily, defaultFontChoice, active, customTheme, transparentBoxes]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

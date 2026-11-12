@@ -1,3 +1,4 @@
+import { stripExtraConcentrationIds } from "../characters/concentration";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import {
@@ -289,6 +290,7 @@ export async function createCharacterFromDocument(doc: CharacterDocument, syncId
     .values({
       ...doc.character,
       concentratingSpellId: null,
+      extraConcentrations: stripExtraConcentrationIds(doc.character.extraConcentrations),
       syncId,
     })
     .returning();
@@ -301,7 +303,11 @@ export async function createCharacterFromDocument(doc: CharacterDocument, syncId
 export async function applyCharacterDocument(characterId: number, doc: CharacterDocument): Promise<void> {
   await db
     .update(characters)
-    .set({ ...doc.character, concentratingSpellId: null })
+    .set({
+      ...doc.character,
+      concentratingSpellId: null,
+      extraConcentrations: stripExtraConcentrationIds(doc.character.extraConcentrations),
+    })
     .where(eq(characters.id, characterId));
 
   await Promise.all([

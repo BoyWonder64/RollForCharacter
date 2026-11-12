@@ -19,7 +19,7 @@ import type { Theme } from "../../theme/colors";
 import type { Character } from "../../types/models";
 import { useIconSettings } from "../icons/IconSettingsContext";
 import { getCampaignItemIcon, type CampaignItemIconId } from "../icons/iconAssets";
-import { withAlpha, BOX_ALPHA } from "../../theme/alpha";
+import { withAlpha } from "../../theme/alpha";
 
 type ItemRow = Awaited<ReturnType<typeof listCampaignItems>>[number];
 type NoteRow = Awaited<ReturnType<typeof listCampaignNotes>>[number];
@@ -256,7 +256,7 @@ function createStyles(theme: Theme) {
     },
     empty: { color: theme.colors.textMuted, fontFamily: theme.displayFontFamily },
     emptyBox: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -264,7 +264,7 @@ function createStyles(theme: Theme) {
       marginBottom: 8,
     },
     noteCard: {
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,
@@ -307,7 +307,7 @@ function createStyles(theme: Theme) {
     itemRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: withAlpha(theme.colors.surface, BOX_ALPHA),
+      backgroundColor: withAlpha(theme.colors.surface, theme.boxAlpha),
       borderWidth: theme.pixel ? 0 : 1,
       borderColor: theme.colors.border,
       borderRadius: theme.radius,

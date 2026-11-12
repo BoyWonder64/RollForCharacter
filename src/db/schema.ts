@@ -79,6 +79,15 @@ export const characters = sqliteTable("characters", {
     { onDelete: "set null" }
   ),
   concentratingSpellName: text("concentrating_spell_name").notNull().default(""),
+  // Homebrew option: when on, `extraConcentrationSlots` more concentration spells can be held
+  // at once. Spells beyond the first are JSON [{id,name}] in `extraConcentrations`
+  // (see features/characters/concentration.ts).
+  homebrewEnabled: integer("homebrew_enabled", { mode: "boolean" }).notNull().default(false),
+  extraConcentrationSlots: integer("extra_concentration_slots").notNull().default(0),
+  extraConcentrations: text("extra_concentrations").notNull().default("[]"),
+  // Homebrew option: how many death save successes / failures end the dying state (stock 3 / 3).
+  deathSaveSuccessesNeeded: integer("death_save_successes_needed").notNull().default(3),
+  deathSaveFailuresNeeded: integer("death_save_failures_needed").notNull().default(3),
   // Comma-separated SkillDefinition ids (e.g. "perception,animal-handling").
   skillProficiencies: text("skill_proficiencies").notNull().default(""),
   // Comma-separated AbilityScoreKey ids (e.g. "wisdom") -- EXTRA saving-throw

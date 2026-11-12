@@ -28,11 +28,12 @@ export function CharacterThemeProvider({
   const fontChoice = (character.fontChoice as FontChoiceId | null) ?? global.defaultFontChoice;
   const mode = global.theme.mode;
   const customTheme = global.customTheme;
+  const transparentBoxes = global.transparentBoxes;
   // Memoised: a fresh theme object on every render would make every component below
   // rebuild its styles each time the sheet refreshes.
   const theme = useMemo(
-    () => resolveTheme(family, mode, fontChoice, customTheme),
-    [family, mode, fontChoice, customTheme]
+    () => resolveTheme(family, mode, fontChoice, customTheme, transparentBoxes),
+    [family, mode, fontChoice, customTheme, transparentBoxes]
   );
   const value = useMemo(() => ({ ...global, theme, family, fontChoice }), [global, theme, family, fontChoice]);
 
