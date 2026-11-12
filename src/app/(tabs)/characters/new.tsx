@@ -74,7 +74,8 @@ import type { Theme } from "../../../theme/colors";
 import { useIconSettings } from "../../../features/icons/IconSettingsContext";
 import { getSpellSchoolIcon } from "../../../features/icons/iconAssets";
 import { DoneAccessory } from "../../../components/DoneAccessory";
-import { withAlpha } from "../../../theme/alpha";
+import { withAlpha } from "../../../theme/alpha";
+import { formatRulesText } from "../../../features/catalog/formatRulesText";
 
 const ALL_STEPS = [
   "ruleset",
@@ -1202,7 +1203,7 @@ export default function NewCharacterScreen() {
                     <View style={styles.traitInfo}>
                       <Text style={styles.traitName}>{trait.name}</Text>
                       {trait.description.length > 0 && (
-                        <Text style={styles.traitDescription}>{trait.description}</Text>
+                        <Text style={styles.traitDescription}>{formatRulesText(trait.description)}</Text>
                       )}
                     </View>
                     <Pressable
@@ -1485,7 +1486,7 @@ export default function NewCharacterScreen() {
                     <View style={styles.traitInfo}>
                       <Text style={styles.traitName}>{trait.name}</Text>
                       {trait.description.length > 0 && (
-                        <Text style={styles.traitDescription}>{trait.description}</Text>
+                        <Text style={styles.traitDescription}>{formatRulesText(trait.description)}</Text>
                       )}
                     </View>
                     <Pressable
@@ -2148,7 +2149,7 @@ export default function NewCharacterScreen() {
                     Level {feature.level}: {feature.name}
                   </Text>
                   {feature.description.length > 0 && (
-                    <Text style={styles.traitDescription}>{feature.description}</Text>
+                    <Text style={styles.traitDescription}>{formatRulesText(feature.description)}</Text>
                   )}
                 </View>
                 <Pressable onPress={() => setHomebrewFeatures((prev) => prev.filter((_, idx) => idx !== i))}>
@@ -2364,7 +2365,7 @@ export default function NewCharacterScreen() {
                     <Text style={styles.choiceRowSub}>
                       {spell.level === 0 ? "Cantrip" : `Level ${spell.level}`} · {spell.school}
                     </Text>
-                    {expanded && <Text style={styles.spellDescription}>{spell.description}</Text>}
+                    {expanded && <Text style={styles.spellDescription}>{formatRulesText(spell.description)}</Text>}
                   </View>
                 </Pressable>
               );

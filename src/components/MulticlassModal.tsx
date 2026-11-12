@@ -20,6 +20,7 @@ import type { HpGainMethod, LevelUpChoices } from "../features/characters/charac
 import type { AbilityScoreKey, Character, CharacterClass } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
+import { formatRulesText } from "../features/catalog/formatRulesText";
 
 type MulticlassModalFormProps = {
   character: Character;
@@ -348,7 +349,7 @@ export function MulticlassModalForm({
             <View key={`${f.name}-${idx}`} style={styles.traitRow}>
               <View style={styles.traitInfo}>
                 <Text style={styles.featureName}>{f.name}</Text>
-                {f.description.length > 0 && <Text style={styles.featureText}>{f.description}</Text>}
+                {f.description.length > 0 && <Text style={styles.featureText}>{formatRulesText(f.description)}</Text>}
               </View>
               <Pressable
                 onPress={() => setHomebrewFeatures((prev) => prev.filter((_, i) => i !== idx))}
@@ -410,7 +411,7 @@ export function MulticlassModalForm({
           {gainedFeatures.map((f, idx) => (
             <View key={`${f.name}-${idx}`}>
               <Text style={styles.featureName}>{f.name}</Text>
-              <Text style={styles.featureText}>{f.description}</Text>
+              <Text style={styles.featureText}>{formatRulesText(f.description)}</Text>
             </View>
           ))}
         </View>

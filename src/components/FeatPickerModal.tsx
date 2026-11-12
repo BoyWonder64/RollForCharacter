@@ -15,6 +15,7 @@ import {
 } from "../features/characters/characterCalculations";
 import type { AbilityScoreKey, Character } from "../types/models";
 import { DoneAccessory } from "./DoneAccessory";
+import { formatRulesText } from "../features/catalog/formatRulesText";
 
 type CatalogRow = Awaited<ReturnType<typeof listFeatCatalog>>[number];
 
@@ -407,7 +408,7 @@ function FeatPickerModalForm({
                       {feat.prerequisite ? `Prerequisite: ${feat.prerequisite} · ` : ""}
                       {feat.sourceName}
                     </Text>
-                    {expanded && <Text style={styles.catalogDescription}>{feat.description}</Text>}
+                    {expanded && <Text style={styles.catalogDescription}>{formatRulesText(feat.description)}</Text>}
                   </View>
                 </Pressable>
               );

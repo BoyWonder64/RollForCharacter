@@ -15,7 +15,8 @@ import type { Character } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { FeatPickerModal } from "./FeatPickerModal";
-import { withAlpha } from "../theme/alpha";
+import { withAlpha } from "../theme/alpha";
+import { formatRulesText } from "../features/catalog/formatRulesText";
 
 /**
  * Every feat a character has taken -- catalog or homebrew -- shown as a
@@ -110,7 +111,7 @@ export function FeatsList({ character }: { character: Character }) {
                   {describeFeatEffect(effect, character.ruleset)}
                 </Text>
               ))}
-              {expanded && feat.description ? <Text style={styles.description}>{feat.description}</Text> : null}
+              {expanded && feat.description ? <Text style={styles.description}>{formatRulesText(feat.description)}</Text> : null}
             </Pressable>
             <Pressable onPress={() => handleRemove(feat)} hitSlop={8}>
               <Text style={styles.remove}>×</Text>

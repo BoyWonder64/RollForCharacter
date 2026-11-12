@@ -53,7 +53,8 @@ import { CharacterThemeProvider } from "../../../../theme/CharacterThemeContext"
 import { THEME_FAMILIES, type Theme, type ThemeFamilyId } from "../../../../theme/colors";
 import { FONT_CHOICE_ORDER, FONT_CHOICES, type FontChoiceId } from "../../../../theme/fonts";
 import { DoneAccessory } from "../../../../components/DoneAccessory";
-import { withAlpha } from "../../../../theme/alpha";
+import { withAlpha } from "../../../../theme/alpha";
+import { formatRulesText } from "../../../../features/catalog/formatRulesText";
 
 const FAMILY_ORDER: ThemeFamilyId[] = [
   "crimson",
@@ -582,7 +583,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
               <View style={styles.traitInfo}>
                 <Text style={styles.traitName}>{trait.name}</Text>
                 {trait.description.length > 0 && (
-                  <Text style={styles.traitDescription}>{trait.description}</Text>
+                  <Text style={styles.traitDescription}>{formatRulesText(trait.description)}</Text>
                 )}
               </View>
               <Pressable
@@ -669,7 +670,7 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
               <View style={styles.traitInfo}>
                 <Text style={styles.traitName}>{trait.name}</Text>
                 {trait.description.length > 0 && (
-                  <Text style={styles.traitDescription}>{trait.description}</Text>
+                  <Text style={styles.traitDescription}>{formatRulesText(trait.description)}</Text>
                 )}
               </View>
               <Pressable
@@ -1000,6 +1001,9 @@ function EditCharacterBody({ characterId }: { characterId: number }) {
         <View style={[styles.xpCheckbox, form.homebrewEnabled && styles.xpCheckboxOn]} />
         <Text style={styles.xpToggleLabel}>Enable homebrew options</Text>
       </Pressable>
+      <Text style={styles.hint}>
+        ⚠ These options change the standard rules. Check with your DM before using them.
+      </Text>
       {form.homebrewEnabled && (
         <>
           <Text style={styles.subLabel}>Extra concentration spells</Text>

@@ -27,7 +27,8 @@ import { CUSTOM_OPTION_ID } from "../data/rulesets";
 import { useTheme } from "../theme/ThemeContext";
 import type { Theme } from "../theme/colors";
 import { FeatPickerModal } from "./FeatPickerModal";
-import { MulticlassModalForm } from "./MulticlassModal";
+import { MulticlassModalForm } from "./MulticlassModal";
+import { formatRulesText } from "../features/catalog/formatRulesText";
 
 type LevelUpModalProps = {
   visible: boolean;
@@ -456,7 +457,7 @@ function LevelUpModalForm({
             <View key={`${f.name}-${idx}`} style={styles.traitRow}>
               <View style={styles.traitInfo}>
                 <Text style={styles.featureName}>{f.name}</Text>
-                {f.description.length > 0 && <Text style={styles.featureText}>{f.description}</Text>}
+                {f.description.length > 0 && <Text style={styles.featureText}>{formatRulesText(f.description)}</Text>}
               </View>
               <Pressable
                 onPress={() => setHomebrewFeatures((prev) => prev.filter((_, i) => i !== idx))}
@@ -664,7 +665,7 @@ function LevelUpModalForm({
                 {f.name}
                 {f.source === "subclass" ? " (subclass)" : ""}
               </Text>
-              <Text style={styles.featureText}>{f.description}</Text>
+              <Text style={styles.featureText}>{formatRulesText(f.description)}</Text>
             </View>
           ))}
         </View>

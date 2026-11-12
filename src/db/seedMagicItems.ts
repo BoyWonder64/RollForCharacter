@@ -8,6 +8,22 @@ const INSERT_SQL = `
 `;
 
 /**
+ * Brings already-seeded catalog rows in line with the bundled text, so
+ * wording corrections reach existing installs. Only touches rows whose
+ * description differs.
+ */
+function resyncMagicItemDescriptions(sqliteDb: SQLiteDatabase): void {
+  sqliteDb.withTransactionSync(() => {
+    for (const item of MAGIC_ITEMS) {
+      sqliteDb.runSync(
+        "UPDATE magic_items SET description = ? WHERE slug = ? AND description != ?",
+        [item.description, item.slug, item.description]
+      );
+    }
+  });
+}
+
+/**
  * One-time seed of the magic item catalog (5e SRD 5.1 + 5.2) into the local
  * `magic_items` table. Runs synchronously on first launch only -- skipped
  * once the catalog is already present. Guards on `slug IS NOT NULL`, same
@@ -19,7 +35,10 @@ export function seedMagicItemsIfNeeded(sqliteDb: SQLiteDatabase): void {
     "SELECT COUNT(*) as count FROM magic_items WHERE slug IS NOT NULL",
     []
   );
-  if (existing && existing.count > 0) return;
+  if (existing && existing.count > 0) {
+    resyncMagicItemDescriptions(sqliteDb);
+    return;
+  }
 
   sqliteDb.withTransactionSync(() => {
     for (const item of MAGIC_ITEMS) {

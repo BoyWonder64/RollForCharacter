@@ -9,6 +9,7 @@ import {
   listMagicItemRarities,
   type CustomMagicItemInput,
 } from "../features/characters/magicItemRepo";
+import { formatRulesText } from "../features/catalog/formatRulesText";
 
 type CatalogRow = Awaited<ReturnType<typeof listMagicItemCatalog>>[number];
 
@@ -170,7 +171,7 @@ function AddMagicItemModalForm({
                       {item.requiresAttunement ? " · Requires attunement" : ""}
                     </Text>
                     {expanded && item.description ? (
-                      <Text style={styles.catalogDescription}>{item.description}</Text>
+                      <Text style={styles.catalogDescription}>{formatRulesText(item.description)}</Text>
                     ) : null}
                   </View>
                   <Pressable

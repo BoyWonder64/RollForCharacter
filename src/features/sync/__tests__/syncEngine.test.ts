@@ -2,10 +2,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { eq } from "drizzle-orm";
 import { db } from "../../../db/client";
 import { characters } from "../../../db/schema";
-import { createCharacter, getCharacter, updateCharacter } from "../../characters/characterRepo";
+import { createCharacter, deleteCharacter, getCharacter, updateCharacter } from "../../characters/characterRepo";
 import { addGearItem, listGearItems } from "../../characters/gearRepo";
 import { buildCharacterDocument } from "../characterDocument";
-import { pullCharacters, pushCharacter, syncAll } from "../syncEngine";
+import { pullCharacters, pushCharacter, syncAll, timestampMs } from "../syncEngine";
+
+// Pulled portraits are copied into device storage; here that's just a predictable local path.
+jest.mock("../../characters/portraitStorage", () => ({
+  persistPortrait: async (uri: string) => `file:///local/${uri.split("/").pop()}`,
+  deletePortrait: () => {},
+}));
 
 jest.mock("../../../db/client");
 jest.mock("@react-native-async-storage/async-storage", () =>
@@ -46,6 +52,22 @@ jest.mock("../../supabase/supabaseClient", () => ({
         else mockCloud.rows.push(stored);
         return { error: null };
       },
+      update: (changes: Partial<CloudRow>) => {
+        const filters: [keyof CloudRow, unknown][] = [];
+        const query = {
+          eq(column: keyof CloudRow, value: unknown) {
+            filters.push([column, value]);
+            return query;
+          },
+          then(resolve: (result: { error: null }) => void) {
+            for (const r of mockCloud.rows) {
+              if (filters.every(([c, v]) => r[c] === v)) Object.assign(r, changes);
+            }
+            resolve({ error: null });
+          },
+        };
+        return query;
+      },
       select: () => {
         const filters: [keyof CloudRow, unknown][] = [];
         const query = {
@@ -67,6 +89,7 @@ jest.mock("../../supabase/supabaseClient", () => ({
           mockCloud.uploads.push(path);
           return { error: null };
         },
+        remove: async () => ({ error: null }),
         createSignedUrl: async (path: string) => ({ data: { signedUrl: `https://signed.example/${path}` }, error: null }),
       }),
     },
@@ -198,7 +221,7 @@ describe("pullCharacters", () => {
     expect((await listGearItems(local.id)).map((g) => g.name)).toEqual(["Lantern"]);
   });
 
-  it("applies the cloud portrait as a signed URL", async () => {
+  it("copies the cloud portrait into local storage instead of keeping the signed URL", async () => {
     const source = await makeSyncedCharacter("Portrait Pull");
     await updateCharacter(source.id, { portraitUri: "file:///p.jpg" });
     await pushCharacter(source.id);
@@ -206,7 +229,44 @@ describe("pullCharacters", () => {
 
     await pullCharacters();
     const [local] = await db.select().from(characters);
-    expect(local.portraitUri).toBe(`https://signed.example/user-1/${source.syncId}.jpg`);
+    expect(local.portraitUri).toBe(`file:///local/${source.syncId}.jpg`);
+  });
+
+  it("keeps the cloud copy's timestamp so a pulled character isn't pushed straight back", async () => {
+    const source = await makeSyncedCharacter("Clock");
+    await pushCharacter(source.id);
+    const cloudTime = cloudRowFor(source.syncId!)!.client_updated_at;
+    await deleteAllLocalCharacters();
+
+    await pullCharacters();
+    const [local] = await db.select().from(characters);
+    expect(local.updatedAt).toBe(cloudTime);
+
+    mockCloud.rows = [];
+    await pushCharacter(local.id);
+    expect(mockCloud.rows).toEqual([]);
+  });
+
+  it("removes a local character another device deleted", async () => {
+    const hero = await makeSyncedCharacter("Deleted Elsewhere");
+    await pushCharacter(hero.id);
+    const row = cloudRowFor(hero.syncId!)!;
+    row.deleted = true;
+    row.client_updated_at = new Date(Date.now() + 60_000).toISOString();
+
+    await pullCharacters();
+    expect(await getCharacter(hero.id)).toBeUndefined();
+  });
+
+  it("keeps a local character edited after another device deleted it", async () => {
+    const hero = await makeSyncedCharacter("Edited After Delete");
+    await pushCharacter(hero.id);
+    const row = cloudRowFor(hero.syncId!)!;
+    row.deleted = true;
+    row.client_updated_at = "2020-01-01T00:00:00.000Z";
+
+    await pullCharacters();
+    expect(await getCharacter(hero.id)).toBeDefined();
   });
 
   it("overwrites a local character when the cloud copy is newer", async () => {
@@ -279,10 +339,79 @@ describe("syncAll", () => {
     expect(names).toEqual(["Alpha", "Beta", "Gamma"]);
   });
 
+  it("doesn't bring back a character deleted on this device", async () => {
+    const hero = await makeSyncedCharacter("Gone");
+    await syncAll();
+    expect(cloudRowFor(hero.syncId!)!.deleted).toBe(false);
+
+    await deleteCharacter(hero.id);
+    await syncAll();
+
+    expect(cloudRowFor(hero.syncId!)!.deleted).toBe(true);
+    expect(await db.select().from(characters)).toEqual([]);
+  });
+
+  it("doesn't re-upload a portrait that is still a cloud URL", async () => {
+    const hero = await makeSyncedCharacter("Remote Portrait");
+    await updateCharacter(hero.id, { portraitUri: "https://signed.example/old.jpg" });
+
+    await syncAll();
+    expect(mockCloud.uploads).toEqual([]);
+    expect(cloudRowFor(hero.syncId!)!.portrait_path).toBe(`user-1/${hero.syncId}.jpg`);
+  });
+
+  it("still syncs the character when its portrait file can't be read", async () => {
+    const hero = await makeSyncedCharacter("Missing File");
+    await updateCharacter(hero.id, { portraitUri: "file:///missing.jpg" });
+    globalThis.fetch = jest.fn(async () => {
+      throw new Error("no such file");
+    }) as unknown as typeof fetch;
+
+    await syncAll();
+    expect(cloudRowFor(hero.syncId!)).toBeDefined();
+  });
+
+  it("keeps syncing other characters and pulling when one push fails", async () => {
+    await makeSyncedCharacter("Blocked");
+    mockCloud.upsertError = new Error("network down");
+    mockCloud.rows.push({
+      user_id: "user-1",
+      client_sync_id: "from-cloud",
+      name: "Cloud Only",
+      data: (await buildCharacterDocument((await db.select().from(characters))[0].id))!,
+      portrait_path: null,
+      client_updated_at: new Date().toISOString(),
+      deleted: false,
+    });
+
+    await expect(syncAll()).rejects.toThrow("network down");
+    expect((await db.select().from(characters)).length).toBe(2);
+  });
+
+  it("shares one run between overlapping calls so a new cloud character isn't created twice", async () => {
+    const source = await makeSyncedCharacter("Once");
+    await pushCharacter(source.id);
+    await deleteAllLocalCharacters();
+
+    await Promise.all([syncAll(), syncAll()]);
+    expect((await db.select().from(characters)).length).toBe(1);
+  });
+
   it("does nothing when signed out", async () => {
     await makeSyncedCharacter("Offline");
     mockCloud.user = null;
     await syncAll();
     expect(mockCloud.rows).toEqual([]);
+  });
+});
+
+describe("timestampMs", () => {
+  it("reads SQLite's zone-less timestamps as UTC", () => {
+    expect(timestampMs("2026-01-02 03:04:05")).toBe(Date.parse("2026-01-02T03:04:05Z"));
+  });
+
+  it("reads ISO timestamps and treats junk as zero", () => {
+    expect(timestampMs("2026-01-02T03:04:05.000Z")).toBe(Date.parse("2026-01-02T03:04:05.000Z"));
+    expect(timestampMs("not a date")).toBe(0);
   });
 });

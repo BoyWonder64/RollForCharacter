@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "../../components/AppText";
 import { useTheme } from "../../theme/ThemeContext";
 import type { Theme } from "../../theme/colors";
+import { formatRulesText } from "../catalog/formatRulesText";
 
 export type SpellDetailData = {
   name: string;
@@ -69,7 +70,7 @@ export function SpellDetailModal({ visible, spell, onClose }: SpellDetailModalPr
               </View>
 
               <Text style={styles.description}>
-                {spell.description || "No description available for this spell."}
+                {formatRulesText(spell.description) || "No description available for this spell."}
               </Text>
             </ScrollView>
 

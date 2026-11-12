@@ -52,6 +52,10 @@ export async function getMyParty(): Promise<MyPartyView | null> {
     .from("party_members")
     .select("party_id, role")
     .eq("user_id", user.id)
+    // Nothing stops an account joining a second party; without a limit,
+    // maybeSingle() errors on two rows and the Party tab stops loading.
+    .order("joined_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
   if (membershipError) throw membershipError;
   if (!myMembership) return null;

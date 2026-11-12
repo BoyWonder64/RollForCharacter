@@ -40,7 +40,8 @@ import type { RollSink } from "../features/dm/rollLog";
 import type { AbilityScoreKey } from "../types/models";
 import { useTheme } from "../theme/ThemeContext";
 import { createDmStyles } from "./dmStyles";
-import { DoneAccessory } from "./DoneAccessory";
+import { DoneAccessory } from "./DoneAccessory";
+import { formatRulesText } from "../features/catalog/formatRulesText";
 
 const ADVANTAGE_OPTIONS: { key: AdvantageMode; label: string }[] = [
   { key: "disadvantage", label: "Disadv" },
@@ -369,7 +370,7 @@ export function DmCreatureCard({
         {critHint ? (
           <Text style={natural === 20 ? styles.good : styles.bad}>{critHint}</Text>
         ) : null}
-        {openText === entry.name ? <Text style={styles.hint}>{entry.description}</Text> : null}
+        {openText === entry.name ? <Text style={styles.hint}>{formatRulesText(entry.description)}</Text> : null}
       </View>
     );
   }

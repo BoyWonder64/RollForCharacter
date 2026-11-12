@@ -32,10 +32,17 @@
         "expo-image-picker",
         {
           "photosPermission": "Let RollForCharacter use your photo library to set a character's profile picture.",
-          "cameraPermission": "Let RollForCharacter use your camera to take a character's profile picture."
+          "cameraPermission": "Let RollForCharacter use your camera to take a character's profile picture.",
+          "microphonePermission": false
         }
       ],
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
       "expo-web-browser"
     ],
     "experiments": {

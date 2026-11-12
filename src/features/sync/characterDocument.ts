@@ -284,14 +284,22 @@ async function resolveMagicItemCatalogId(slug: string | null): Promise<number | 
  * `dice_roll_history`/`dm_party_initiative` (not synced at all -- local-only
  * bookkeeping, not "the character").
  */
-export async function createCharacterFromDocument(doc: CharacterDocument, syncId: string): Promise<number> {
+export async function createCharacterFromDocument(
+  doc: CharacterDocument,
+  syncId: string,
+  updatedAt?: string
+): Promise<number> {
   const [row] = await db
     .insert(characters)
     .values({
       ...doc.character,
+      // The document carries the pushing device's local file path; this device's portrait is set separately.
+      portraitUri: null,
       concentratingSpellId: null,
       extraConcentrations: stripExtraConcentrationIds(doc.character.extraConcentrations),
       syncId,
+      // Keep the cloud copy's clock so a freshly pulled character doesn't look newer than it is.
+      ...(updatedAt ? { updatedAt } : {}),
     })
     .returning();
   const characterId = row.id;
@@ -300,13 +308,20 @@ export async function createCharacterFromDocument(doc: CharacterDocument, syncId
 }
 
 /** Overwrites an existing local character's scalar fields + every sync-managed child table from a (newer) cloud document. */
-export async function applyCharacterDocument(characterId: number, doc: CharacterDocument): Promise<void> {
+export async function applyCharacterDocument(
+  characterId: number,
+  doc: CharacterDocument,
+  updatedAt?: string
+): Promise<void> {
+  // The document's portraitUri is a file path on the device that pushed it -- keep this device's own.
+  const { portraitUri: _remotePortraitUri, ...remoteCharacter } = doc.character;
   await db
     .update(characters)
     .set({
-      ...doc.character,
+      ...remoteCharacter,
       concentratingSpellId: null,
       extraConcentrations: stripExtraConcentrationIds(doc.character.extraConcentrations),
+      ...(updatedAt ? { updatedAt } : {}),
     })
     .where(eq(characters.id, characterId));
 

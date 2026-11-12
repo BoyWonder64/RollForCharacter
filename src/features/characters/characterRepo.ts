@@ -35,6 +35,7 @@ import { resetSpellSlotUsage, setSpellSlot } from "../spells/spellRepo";
 import { applyShortRestRecharge, restoreAllResources } from "./resourceRepo";
 import { addResolvedFeat } from "./featRepo";
 import { recomputeArmorClass } from "./armorClassRepo";
+import { recordPendingDelete } from "../sync/pendingDeletes";
 
 export { ABILITY_LABELS, abilityModifier };
 
@@ -155,7 +156,10 @@ export async function createCharacterFromOnboarding(
 }
 
 export async function deleteCharacter(id: number): Promise<void> {
+  const [row] = await db.select({ syncId: characters.syncId }).from(characters).where(eq(characters.id, id));
   await db.delete(characters).where(eq(characters.id, id));
+  // Tell cloud sync about the deletion, or the next pull would bring the character back.
+  if (row?.syncId) await recordPendingDelete(row.syncId);
 }
 
 export async function updateCharacter(
@@ -619,9 +623,10 @@ export async function longRest(id: number): Promise<LongRestOutcome | undefined>
 
   const hpRestored = character.maxHp - character.currentHp;
   const hitDiceRegain = Math.max(1, Math.floor(character.level / 2));
-  const hitDiceRestored = Math.min(
-    character.level - character.hitDiceRemaining,
-    hitDiceRegain
+  // Never negative: a pool edited above the character's level would otherwise shrink on a rest.
+  const hitDiceRestored = Math.max(
+    0,
+    Math.min(character.level - character.hitDiceRemaining, hitDiceRegain)
   );
 
   await updateCharacter(id, {

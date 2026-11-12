@@ -1,4 +1,5 @@
 import "../db/client";
+import "../features/platform/webAlert";
 import { useEffect } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";

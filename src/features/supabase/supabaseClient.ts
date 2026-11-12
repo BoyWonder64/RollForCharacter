@@ -33,6 +33,11 @@ export const supabase = createClient(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
+      // AuthContext's OAuth flow reads `?code=` from the redirect and calls
+      // exchangeCodeForSession, which only exists in the PKCE flow. The
+      // default (implicit) flow returns tokens in the URL fragment instead,
+      // so sign-in with Google/Facebook failed with "No authorization code".
+      flowType: "pkce",
     },
   }
 );
