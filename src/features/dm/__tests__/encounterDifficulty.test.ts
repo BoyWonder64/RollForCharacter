@@ -1,62 +1,53 @@
-import {
-  encounterMultiplier,
-  partyXpThreshold,
-  rateEncounterDifficulty,
-} from "../encounterDifficulty";
+import { partyXpBudget, rateEncounterDifficulty } from "../encounterDifficulty";
 
-describe("partyXpThreshold", () => {
-  it("matches the published DMG thresholds for a single level-1 character", () => {
-    expect(partyXpThreshold([1], "easy")).toBe(25);
-    expect(partyXpThreshold([1], "medium")).toBe(50);
-    expect(partyXpThreshold([1], "hard")).toBe(75);
-    expect(partyXpThreshold([1], "deadly")).toBe(100);
+describe("partyXpBudget", () => {
+  it("matches the SRD 5.2.1 budgets for a single level-1 character", () => {
+    expect(partyXpBudget([1], "low")).toBe(50);
+    expect(partyXpBudget([1], "moderate")).toBe(75);
+    expect(partyXpBudget([1], "high")).toBe(100);
   });
 
-  it("sums per-character thresholds for a mixed-level party", () => {
-    expect(partyXpThreshold([1, 1, 3, 3], "medium")).toBe(50 + 50 + 150 + 150);
-  });
-});
-
-describe("encounterMultiplier", () => {
-  it("is 1x for a single monster against a normal party", () => {
-    expect(encounterMultiplier(1, 4)).toBe(1);
+  it("matches the SRD 5.2.1 budgets at level 20", () => {
+    expect(partyXpBudget([20], "low")).toBe(6400);
+    expect(partyXpBudget([20], "moderate")).toBe(13200);
+    expect(partyXpBudget([20], "high")).toBe(22000);
   });
 
-  it("steps up for more monsters", () => {
-    expect(encounterMultiplier(2, 4)).toBe(1.5);
-    expect(encounterMultiplier(4, 4)).toBe(2);
-    expect(encounterMultiplier(8, 4)).toBe(2.5);
-    expect(encounterMultiplier(15, 4)).toBe(4);
+  it("sums per-character budgets for a mixed-level party", () => {
+    expect(partyXpBudget([1, 1, 3, 3], "moderate")).toBe(75 + 75 + 225 + 225);
   });
 
-  it("adjusts one bracket up for a small party and down for a large one", () => {
-    expect(encounterMultiplier(4, 2)).toBe(2.5);
-    expect(encounterMultiplier(4, 6)).toBe(1.5);
+  it("clamps out-of-range levels to the 1-20 table", () => {
+    expect(partyXpBudget([0], "low")).toBe(50);
+    expect(partyXpBudget([25], "high")).toBe(22000);
   });
 });
 
 describe("rateEncounterDifficulty", () => {
-  it("rates a single 75-XP monster against a normal-sized level-1 party as Easy", () => {
-    // Party of exactly 3 triggers no size adjustment, so the 1-monster
-    // multiplier stays 1x and the party's Easy threshold is 75 (25 * 3).
-    const result = rateEncounterDifficulty([75], [1, 1, 1]);
-    expect(result.baseXp).toBe(75);
-    expect(result.adjustedXp).toBe(75);
-    expect(result.band).toBe("easy");
+  it("rates a 200-XP encounter for four level-1 characters as Low", () => {
+    // SRD example: a Low encounter for four level 1 characters has a 200 XP budget.
+    const result = rateEncounterDifficulty([50, 50, 50, 50], [1, 1, 1, 1]);
+    expect(result.totalXp).toBe(200);
+    expect(result.band).toBe("low");
   });
 
-  it("applies the monster-count multiplier before comparing to thresholds", () => {
-    // Base 100 XP alone would only clear the Easy threshold (100) for four
-    // level-1 characters, but 4 monsters carries a 2x multiplier -> 200
-    // adjusted, which clears the Medium threshold (200) instead.
-    const result = rateEncounterDifficulty([25, 25, 25, 25], [1, 1, 1, 1]);
-    expect(result.baseXp).toBe(100);
-    expect(result.adjustedXp).toBe(200);
-    expect(result.band).toBe("medium");
+  it("picks the highest band whose budget is reached", () => {
+    expect(rateEncounterDifficulty([300], [1, 1, 1, 1]).band).toBe("moderate");
+    expect(rateEncounterDifficulty([400], [1, 1, 1, 1]).band).toBe("high");
+  });
+
+  it("does not multiply XP by monster count", () => {
+    const one = rateEncounterDifficulty([200], [1, 1, 1, 1]);
+    const four = rateEncounterDifficulty([50, 50, 50, 50], [1, 1, 1, 1]);
+    expect(four.totalXp).toBe(one.totalXp);
+    expect(four.band).toBe(one.band);
+  });
+
+  it("returns a null band below the Low budget", () => {
+    expect(rateEncounterDifficulty([10], [1, 1, 1, 1]).band).toBeNull();
   });
 
   it("returns a null band for an empty party", () => {
-    const result = rateEncounterDifficulty([50], []);
-    expect(result.band).toBeNull();
+    expect(rateEncounterDifficulty([50], []).band).toBeNull();
   });
 });

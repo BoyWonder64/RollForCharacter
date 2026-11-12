@@ -77,7 +77,7 @@ export type BackgroundArt =
   | { kind: "gears"; sprites: GearSprite[]; chains: number; minPerChain: number; maxPerChain: number }
   | { kind: "specks"; count: number }
   | { kind: "stars"; count: number }
-  | { kind: "desert"; sand: ImageSourcePropType; props: ImageSourcePropType[]; propCount: number }
+  | { kind: "desert"; props: ImageSourcePropType[]; propCount: number }
   | {
       kind: "castle";
       wall: ImageSourcePropType;
@@ -369,12 +369,9 @@ export const THEME_FAMILIES: Record<ThemeFamilyId, ThemeFamilyDefinition> = {
   western: {
     label: "Western",
     pixel: WESTERN_PIXEL_KIT,
-    // Free Sand tileset: sand floor tiles with cacti, a sign and bones scattered on top.
+    // Cacti, a sign and bones scattered over the plain background.
     backgroundArt: {
       kind: "desert",
-      // 8x8 sand tiles pre-baked into one sheet (scripts/build_background_sheets.py),
-      // so a page needs a handful of images instead of one per 80dp tile.
-      sand: require("../../assets/ui/backgrounds/desert/sand-sheet.png"),
       props: [
         require("../../assets/ui/backgrounds/desert/cactus.png"),
         require("../../assets/ui/backgrounds/desert/barrel-cactus.png"),

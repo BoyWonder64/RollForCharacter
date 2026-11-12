@@ -15235,7 +15235,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
       },
       {
         "name": "Eldritch Restoration",
-        "description": "If destroyed, the aboleth gains a new body in 5d10 days, reviving with all its Hit Points in the Far Realm or another location chosen by the DM."
+        "description": "If destroyed, the aboleth gains a new body in 5d10 days, reviving with all its Hit Points in the Far Realm or another location chosen by the GM."
       },
       {
         "name": "Legendary Resistance (3/Day, or 4/Day in Lair)",
@@ -18705,7 +18705,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "traits": [
       {
         "name": "Training",
-        "description": "The commoner has proficiency in one skill of the DM's choice and has Advantage whenever it makes an ability check using that skill."
+        "description": "The commoner has proficiency in one skill of the GM's choice and has Advantage whenever it makes an ability check using that skill."
       }
     ],
     "actions": [
@@ -22379,7 +22379,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "traits": [
       {
         "name": "Draconic Origin",
-        "description": "The half-dragon is related to a type of dragon associated with one of the following damage types (DM's choice): Acid, Cold, Fire, Lightning, or Poison. This choice affects other aspects of the stat block."
+        "description": "The half-dragon is related to a type of dragon associated with one of the following damage types (GM's choice): Acid, Cold, Fire, Lightning, or Poison. This choice affects other aspects of the stat block."
       }
     ],
     "actions": [
@@ -28867,7 +28867,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "actions": [
       {
         "name": "Bite",
-        "description": "Melee Attack Roll: +7, reach 5 ft. 17 (2d12 + 4) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 14. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Werebear under the DM's control and has 10 Hit Points. Success: The target is immune to this werebear's curse for 24 hours."
+        "description": "Melee Attack Roll: +7, reach 5 ft. 17 (2d12 + 4) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 14. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Werebear under the GM's control and has 10 Hit Points. Success: The target is immune to this werebear's curse for 24 hours."
       },
       {
         "name": "Handaxe",
@@ -28915,7 +28915,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "actions": [
       {
         "name": "Gore",
-        "description": "Melee Attack Roll: +5, reach 5 ft. 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 12. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Wereboar under the DM's control and has 10 Hit Points. Success: The target is immune to this wereboar's curse for 24 hours."
+        "description": "Melee Attack Roll: +5, reach 5 ft. 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 12. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Wereboar under the GM's control and has 10 Hit Points. Success: The target is immune to this wereboar's curse for 24 hours."
       },
       {
         "name": "Javelin",
@@ -28963,7 +28963,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "actions": [
       {
         "name": "Bite ",
-        "description": "Melee Attack Roll: +5, reach 5 ft. 8 (2d4 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 11. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Wererat under the DM's control and has 10 Hit Points. Success: The target is immune to this wererat's curse for 24 hours."
+        "description": "Melee Attack Roll: +5, reach 5 ft. 8 (2d4 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 11. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Wererat under the GM's control and has 10 Hit Points. Success: The target is immune to this wererat's curse for 24 hours."
       },
       {
         "name": "Hand Crossbow",
@@ -29011,7 +29011,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "actions": [
       {
         "name": "Bite",
-        "description": "Melee Attack Roll: +5, reach 5 ft. 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 13. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Weretiger under the DM's control and has 10 Hit Points. Success: The target is immune to this weretiger's curse for 24 hours."
+        "description": "Melee Attack Roll: +5, reach 5 ft. 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 13. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Weretiger under the GM's control and has 10 Hit Points. Success: The target is immune to this weretiger's curse for 24 hours."
       },
       {
         "name": "Longbow",
@@ -29068,7 +29068,7 @@ export const MONSTERS_5E: MonsterRecord[] = [
     "actions": [
       {
         "name": "Bite",
-        "description": "Melee Attack Roll: +5, reach 5 ft. 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 12. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Werewolf under the DM's control and has 10 Hit Points. Success: The target is immune to this werewolf's curse for 24 hours."
+        "description": "Melee Attack Roll: +5, reach 5 ft. 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the following effect. Constitution Saving Throw: DC 12. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Werewolf under the GM's control and has 10 Hit Points. Success: The target is immune to this werewolf's curse for 24 hours."
       },
       {
         "name": "Longbow",

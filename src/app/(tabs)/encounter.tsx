@@ -213,9 +213,9 @@ export default function EncounterScreen() {
 
               {creatures.length > 0 && characters.length > 0 && (
                 <Text style={[styles.hint, { marginBottom: 10 }]}>
-                  {difficulty.band ? DIFFICULTY_LABELS[difficulty.band] : "Below Easy"} for the party ·{" "}
-                  {difficulty.adjustedXp} XP (adjusted) vs {difficulty.thresholds.medium} Medium /{" "}
-                  {difficulty.thresholds.deadly} Deadly
+                  {difficulty.band ? DIFFICULTY_LABELS[difficulty.band] : "Below Low"} for the party ·{" "}
+                  {difficulty.totalXp} XP vs {difficulty.budgets.moderate} Moderate /{" "}
+                  {difficulty.budgets.high} High budget
                 </Text>
               )}
 

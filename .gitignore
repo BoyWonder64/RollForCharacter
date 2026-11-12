@@ -51,3 +51,7 @@ yarn-error.*
 # locally for manual compliance audits -- not read by the app at runtime,
 # not meant to bloat repo history.
 /legal/
+
+# Raw third-party art packs (licences forbid redistribution; the processed
+# files actually used are in assets/). Kept locally for the build scripts.
+/pixel assets/

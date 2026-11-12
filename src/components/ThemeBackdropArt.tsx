@@ -325,27 +325,14 @@ const SpeckLayer = memo(function SpeckLayer({ art }: { art: SpecksArt }) {
 
 type DesertArt = Extract<BackgroundArt, { kind: "desert" }>;
 
-const DESERT_SHEET = 640; // dp; the sand sheet is 8x8 tiles of 80dp
-const DESERT_PROP = 140; // dp; props are drawn well larger than a sand tile
+const DESERT_PROP = 140; // dp; props are drawn large
 const DESERT_MARGIN = 12; // dp kept clear at every edge so no prop is cut off
 
-/** Sand floor (pre-baked sheets of randomly-picked tiles), with cacti, signs and bones scattered on top. */
+/** Cacti, signs and bones scattered over the plain themed background. */
 const DesertLayer = memo(function DesertLayer({ art }: { art: DesertArt }) {
   const { mode } = useTheme();
   const light = mode === "light";
   const [size, onLayout] = useLayerSize();
-  const cols = Math.ceil(size.w / DESERT_SHEET);
-  const rows = Math.ceil(size.h / DESERT_SHEET);
-
-  const tiles = useMemo(
-    () =>
-      Array.from({ length: rows * cols }, (_, i) => ({
-        key: i,
-        left: (i % cols) * DESERT_SHEET,
-        top: Math.floor(i / cols) * DESERT_SHEET,
-      })),
-    [rows, cols]
-  );
 
   // Props sit on a jittered grid: one per cell, cells bigger than a prop plus a gap, so props
   // never touch whatever the screen width. Fixed seed keeps the layout stable.
@@ -398,20 +385,6 @@ const DesertLayer = memo(function DesertLayer({ art }: { art: DesertArt }) {
 
   return (
     <View pointerEvents="none" style={styles.layer} onLayout={onLayout}>
-      <View style={[StyleSheet.absoluteFill, { opacity: light ? 0.55 : 1 }]}>
-        {tiles.map((t) => (
-          <Image
-            key={t.key}
-            source={art.sand}
-            resizeMode="stretch"
-            style={[{ position: "absolute", left: t.left, top: t.top, width: DESERT_SHEET, height: DESERT_SHEET }, CRISP]}
-          />
-        ))}
-      </View>
-      {/* Rust-brown wash knocks the yellow out of the sand for a dustier, more rustic feel. */}
-      <View
-        style={[StyleSheet.absoluteFill, { backgroundColor: light ? "#8B4A2B" : "#6B3A22", opacity: light ? 0.28 : 0.35 }]}
-      />
       <View style={[StyleSheet.absoluteFill, { opacity: light ? 0.8 : 0.75 }]}>
         {props.map((p) => {
           return (
