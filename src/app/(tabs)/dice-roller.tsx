@@ -995,6 +995,7 @@ export default function DiceRollerScreen() {
             {!isRolling && lastRoll && (
               <>
                 <View style={styles.resultBreakdownCard}>
+                  <PixelFrameOverlay scale={0.75} />
                   {splitBreakdownTerms(lastRoll.breakdown).map((term, index) => (
                     <Text
                       key={index}
@@ -1404,6 +1405,8 @@ function createStyles(theme: Theme) {
     rollStageIdleImage: { opacity: 0.35 },
     resultBreakdownCard: {
       backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: theme.pixel ? 0 : 1,
+      borderColor: theme.colors.border,
       borderRadius: theme.radius,
       paddingHorizontal: 14,
       paddingVertical: 10,

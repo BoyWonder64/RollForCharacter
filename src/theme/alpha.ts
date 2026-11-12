@@ -8,4 +8,4 @@ export function withAlpha(color: string, alpha: number): string {
 }
 
 /** Opacity for bordered boxes so the themed backdrop art shows faintly through. */
-export const BOX_ALPHA = 0.88;
+export const BOX_ALPHA = 0.75;
